@@ -1,3 +1,5 @@
+'use strict';
+
 function gameFlappy(g){
  const {box,c,ctx}=startCanvas(520,330);let bird={x:100,y:160,vy:0},pipes=[],score=0,stars=0,raf=0,playing=false,ended=false,last=0;
  const status=scoreLine([['Gates','0'],['Bonus stars','0']]);box.appendChild(status);
