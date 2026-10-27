@@ -1,3 +1,5 @@
+'use strict';
+
 function gameMines(g){
  const b=baseBox();const size=8,mineCount=10;let board=[],revealed=new Set(),flags=new Set(),flagMode=false,ended=false;
  const status=scoreLine([['Safe tiles','0 / 54'],['Flags','0 / 10']]);b.appendChild(status);
