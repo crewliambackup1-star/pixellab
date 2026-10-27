@@ -1,4 +1,4 @@
-# PixelLab V5 — Your Browser Arcade
+# PixelLab V6 — Your Browser Arcade
 
 PixelLab is a responsive, no-account browser arcade. It's built as a static site with no build step or third-party JavaScript dependencies.
 
@@ -11,6 +11,9 @@ PixelLab is a responsive, no-account browser arcade. It's built as a static site
 - **V5 Arcade Passport:** browser-local XP, levels, five rank tiers, achievements, and three daily quests with bonus XP.
 - Finished runs reward XP; personal records, run milestones, and trying different game engines help unlock achievements.
 - Fixed Orbit Dodger's displayed survival timer so it tracks elapsed gameplay time correctly.
+- **V6 Gameplay Overhaul:** Snake bonus fruit, Brick Breaker power-ups and extra lives, Orbit Dodger shields and ramping challenge, and Flappy Pixel bonus stars with tighter gates.
+- Maze Runner now generates a fresh maze each run with optional gems to collect.
+- Connect Four's CPU evaluates winning threats and developing lines instead of relying mostly on center-column preference.
 - Search, category filters, sorting, random play, favorites, recently played, and local game records.
 - Responsive desktop/mobile layout, keyboard controls where supported, and browser-local saved favorites/history/records.
 - No account, install, payment, or backend needed.
