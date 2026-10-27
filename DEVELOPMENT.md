@@ -25,7 +25,7 @@ New work should start from `development`. Do not use the backup branch as a work
 
 ## What validation checks
 
-The validation script parses every JavaScript file, checks required local assets, verifies the 24 × 8 + 3 = 195 catalog structure, and confirms that all 27 launch routes lead to a matching game file. It intentionally uses only Node.js built-ins, so no dependency installation or package manager is required.
+The validation script parses every JavaScript file, checks required local assets, verifies that the 192 legacy catalog variants plus 3 originals total 195 entries (the code defines 10 visual theme presets), and confirms that all 27 launch routes lead to a matching game file. It intentionally uses only Node.js built-ins, so no dependency installation or package manager is required.
 
 A passing check catches common wiring and syntax mistakes; it cannot replace playing each game in a browser.
 
