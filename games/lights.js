@@ -1,3 +1,5 @@
+'use strict';
+
 function gameLights(g){
  const b=baseBox();let grid=[],moves=0,over=false;const status=scoreLine([['Moves','0'],['Lights on','—']]);b.appendChild(status);const panel=document.createElement('div');panel.className='lights-grid';panel.style.display='grid';panel.style.gridTemplateColumns='repeat(5,minmax(34px,54px))';panel.style.gap='7px';panel.style.padding='10px';b.appendChild(panel);
  function flip(x,y){if(x<0||x>=5||y<0||y>=5)return;grid[y*5+x]=!grid[y*5+x]}
