@@ -23,13 +23,32 @@ PixelLab is a responsive, no-account browser arcade. It's built as a static site
 
 **Catalog note:** the first 192 entries are theme/visual variants across the original 24 engines; the 3 V7 originals are separately implemented games.
 
+## Development workflow
+
+- `main` is the live publishing branch.
+- `development` is the work-in-progress branch for changes and experiments.
+- `backup/v7-stable-2026-10-27` preserves the V7 site as a recovery point.
+- The automated validation workflow checks JavaScript syntax, required files, unique catalog IDs, the 195-entry catalog, and that every playable engine has a matching launch route.
+- Keep changes on `development`, wait for validation to pass, then merge a reviewed pull request into `main` to publish.
+
+## Project structure
+
+- `index.html`: page structure and the ordered script/style references.
+- `styles.css`: all site styling.
+- `catalog.js`: base engines, visual themes, and generated catalog entries.
+- `app.js`: catalog UI, local progress, shared utilities, and game-launch routing.
+- `games/*.js`: one file per playable game engine.
+- `scripts/validate-site.cjs`: dependency-free repository checks.
+- `.github/workflows/validate.yml`: runs validation on pushes to `main` / `development` and pull requests into `main`.
+- `.github/workflows/pages.yml`: validates and deploys `main` to GitHub Pages.
+
 ## Run locally
 
-Open `index.html` in a modern browser.
+Keep the project files together, then open `index.html` in a modern browser. The site has no build step and no third-party browser libraries.
 
 ## Deployment
 
-GitHub Pages deploys the repository root using `.github/workflows/pages.yml` on pushes to `main`.
+GitHub Pages deploys the repository root using `.github/workflows/pages.yml` on pushes to `main`. Changes on `development` do not publish to the public site.
 
 Public site: https://crewliambackup1-star.github.io/pixellab/
 
