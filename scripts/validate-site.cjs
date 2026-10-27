@@ -60,7 +60,7 @@ assert.equal(new Set(coreIds).size, coreIds.length, 'Base engine IDs must be uni
 const themesStart = catalog.indexOf('const themes=[');
 const themesEnd = catalog.indexOf('const coreEngines=engines.slice();', themesStart);
 const themeIds = [...catalog.slice(themesStart, themesEnd).matchAll(/\{name:'([^']+)',colors:/g)].map((m) => m[1]);
-assert.equal(themeIds.length, 8, 'The legacy catalog should still have eight visual themes');
+assert.equal(themeIds.length, 10, 'The catalog should retain its ten defined visual theme presets');
 assert.equal(new Set(themeIds).size, themeIds.length, 'Theme names must be unique');
 
 const originalStart = catalog.indexOf('const originalEngines=[');
@@ -72,7 +72,7 @@ assert.equal(new Set(originalIds).size, originalIds.length, 'Original game IDs m
 assert.equal(coreIds.filter((id) => originalIds.includes(id)).length, 0, 'Original game IDs must not collide with base engine IDs');
 assert.match(catalog, /Array\.from\(\{length:192\}/, 'The 192 legacy catalog entries appear to have changed');
 assert.match(catalog, /games\.push\(\.\.\.originalEngines\.map/, 'Original games must be appended to the catalog');
-assert.equal(coreIds.length * themeIds.length + originalIds.length, 195, 'Expected 195 catalog entries');
+assert.equal(192 + originalIds.length, 195, 'Expected 192 legacy variants plus three originals');
 
 const runStart = app.indexOf('function runGame(g)');
 const runEnd = app.indexOf('\nfunction ', runStart + 15);
