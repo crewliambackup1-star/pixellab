@@ -1,3 +1,5 @@
+'use strict';
+
 function gameSnake(g){
  const {box,c,ctx}=startCanvas(600,340);let snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}],dir={x:1,y:0},food={x:15,y:8},bonus=null,score=0,foodCount=0,iv=null;
  const cols=30,rows=17,cell=20;
