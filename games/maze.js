@@ -1,3 +1,5 @@
+'use strict';
+
 function gameMaze(g){
  const b=baseBox();let maze=[],px=1,py=1,steps=0,won=false,gems=new Set(),collected=0;const W=11,H=9;
  const status=scoreLine([['Steps','0'],['Gems','0 / 3'],['Goal','Find the exit']]);b.appendChild(status);
