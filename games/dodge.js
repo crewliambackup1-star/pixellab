@@ -1,3 +1,5 @@
+'use strict';
+
 function gameDodge(g){
  const {box,c,ctx}=startCanvas(600,340);let px=285,objs=[],pickups=[],score=0,bonusPoints=0,shields=0,iv=null,started=false,elapsed=0;
  const status=scoreLine([['Score','0'],['Time','0.0s'],['Shields','0']]);box.appendChild(status);
