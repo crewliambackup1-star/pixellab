@@ -23,18 +23,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Validate inline JavaScript syntax
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const vm = require('node:vm');
-          const html = fs.readFileSync('index.html', 'utf8');
-          const start = html.indexOf('<script>');
-          const end = html.indexOf('</script>', start + 8);
-          if (start < 0 || end < 0) throw new Error('Could not find the inline script in index.html');
-          new vm.Script(html.slice(start + 8, end), { filename: 'index.html:inline-script' });
-          console.log('Inline JavaScript syntax is valid.');
-          NODE
+      - name: Validate PixelLab source and game launchers
+        run: node scripts/validate-site.cjs
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
