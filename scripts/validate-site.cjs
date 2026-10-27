@@ -75,7 +75,7 @@ assert.match(catalog, /games\.push\(\.\.\.originalEngines\.map/, 'Original games
 assert.equal(192 + originalIds.length, 195, 'Expected 192 legacy variants plus three originals');
 
 const runStart = app.indexOf('function runGame(g)');
-const runEnd = app.indexOf('\nfunction ', runStart + 15);
+const runEnd = app.indexOf('\n\nsetupDaily();', runStart + 15);
 assert.ok(runStart >= 0 && runEnd > runStart, 'Could not locate runGame dispatcher');
 const routes = [...app.slice(runStart, runEnd).matchAll(/case'([^']+)':return\s+(game\w+)\(g\)/g)].map((m) => ({ id: m[1], fn: m[2] }));
 assert.equal(routes.length, 27, 'Every one of the 27 engines should have a launch route');
