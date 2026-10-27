@@ -1,3 +1,5 @@
+'use strict';
+
 function gameCircuitCrafter(g){
  const b=baseBox(),N=5;let tiles=[],moves=0,over=false;const source=10,goal=14;
  const status=scoreLine([['Moves','0'],['Powered tiles','0 / 25'],['Goal','Power the exit']]);b.appendChild(status);
