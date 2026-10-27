@@ -1,3 +1,5 @@
+'use strict';
+
 function gamePlatform(g){
  const {box,c,ctx}=startCanvas(600,340);let player={x:35,y:260,vx:0,vy:0,w:18,h:24,ground:false},left=false,right=false,playing=false,raf=0,collected=new Set();
  const platforms=[{x:0,y:300,w:600,h:40},{x:105,y:250,w:105,h:12},{x:240,y:195,w:95,h:12},{x:375,y:250,w:98,h:12},{x:465,y:170,w:95,h:12}];
