@@ -1,0 +1,8 @@
+function gameLights(g){
+ const b=baseBox();let grid=[],moves=0,over=false;const status=scoreLine([['Moves','0'],['Lights on','—']]);b.appendChild(status);const panel=document.createElement('div');panel.className='lights-grid';panel.style.display='grid';panel.style.gridTemplateColumns='repeat(5,minmax(34px,54px))';panel.style.gap='7px';panel.style.padding='10px';b.appendChild(panel);
+ function flip(x,y){if(x<0||x>=5||y<0||y>=5)return;grid[y*5+x]=!grid[y*5+x]}
+ function update(){panel.querySelectorAll('button').forEach((el,i)=>{el.style.aspectRatio='1';el.style.borderRadius='10px';el.style.border='1px solid '+(grid[i]?'#5fe3d0':'#383b50');el.style.background=grid[i]?'linear-gradient(140deg,#8ef2df,#48b8af)':'#202231';el.style.boxShadow=grid[i]?'0 0 16px #5fe3d033':'none';el.textContent=grid[i]?'✦':''});const n=grid.filter(Boolean).length;status.innerHTML='<span>Moves: <strong>'+moves+'</strong></span><span>Lights on: <strong>'+n+'</strong></span>';if(n===0&&!over){over=true;setBest(g,moves);b.insertAdjacentHTML('beforeend','<div class="message">All dark in '+moves+' moves!</div>');b.appendChild(button('New puzzle',()=>runGame(g),true))}}
+ for(let i=0;i<25;i++){const c=button('',()=>{if(over)return;const x=i%5,y=Math.floor(i/5);flip(x,y);flip(x-1,y);flip(x+1,y);flip(x,y-1);flip(x,y+1);moves++;update()});c.className='light-cell';panel.appendChild(c)}
+ function init(){grid=Array.from({length:25},()=>false);moves=0;over=false;for(let k=0;k<16;k++){const i=Math.floor(Math.random()*25);flip(i%5,Math.floor(i/5))}if(!grid.some(Boolean))grid[12]=true;update()}
+ b.appendChild(button('Restart puzzle',init));init();
+}
