@@ -1,3 +1,5 @@
+'use strict';
+
 function gameSimon(g){
  const b=baseBox(),colors=[['#ff729f','Coral'],['#60dfcd','Mint'],['#a48bff','Violet'],['#ffc66d','Gold']];let seq=[],step=0,playing=false,started=false,best=0,timers=[];
  const label=document.createElement('div');label.className='big-number';label.style.fontSize='38px';label.textContent='Simon says…';b.appendChild(label);
