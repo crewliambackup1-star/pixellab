@@ -1,3 +1,5 @@
+'use strict';
+
 function gameMath(g){
  const b=baseBox();let score=0,sec=30,iv=null,started=false,answer=0;
  const title=document.createElement('div');title.className='big-number';title.textContent='Math Sprint';b.appendChild(title);
