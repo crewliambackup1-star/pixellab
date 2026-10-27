@@ -1,3 +1,5 @@
+'use strict';
+
 function gameStarCourier(g){
  const {box,c,ctx}=startCanvas(600,360);let player={x:42,y:180},keys={up:false,down:false,left:false,right:false},boost=100,dashUntil=0,invulnUntil=0,delivered=0,carried=false,lives=3,seconds=60,playing=false,raf=0,last=0,over=false;
  const cargoSites=[{x:140,y:70},{x:286,y:292},{x:445,y:76}];let drones=[];
