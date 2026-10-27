@@ -1,3 +1,5 @@
+'use strict';
+
 function gameRiftRunner(g){
  const {box,c,ctx}=startCanvas(620,360);const W=1820,H=360;let player={x:42,y:268,w:18,h:24,vx:0,vy:0,ground:false},phase=0,left=false,right=false,jumpQueued=false,shards=new Set(),lives=3,checkpoint=40,playing=false,raf=0,noticeUntil=0;
  const platforms=[
