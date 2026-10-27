@@ -1,3 +1,5 @@
+'use strict';
+
 function gameScramble(g){
  const b=baseBox(),words=['planet','puzzle','rocket','pixel','galaxy','jungle','castle','winter','comet','orange','thunder','diamond','monster','journey','rainbow','keyboard','mystery','volcano','gravity','lantern','crystal','adventure'];let word='',score=0,sec=45,iv=null,started=false,used=[];
  const label=document.createElement('div');label.className='big-number';label.textContent='Unscramble it';b.appendChild(label);
