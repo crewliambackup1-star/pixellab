@@ -1,3 +1,5 @@
+'use strict';
+
 function gameConnect4(g){
  const b=baseBox();let board=Array.from({length:42},()=>0),over=false,aiTimer=null;const msg=document.createElement('div');msg.className='big-number';msg.style.fontSize='32px';msg.textContent='Your turn';b.appendChild(msg);
  const grid=document.createElement('div');grid.style.display='grid';grid.style.gridTemplateColumns='repeat(7,minmax(28px,44px))';grid.style.gap='5px';grid.style.padding='10px';grid.style.background='#202847';grid.style.borderRadius='16px';b.appendChild(grid);
