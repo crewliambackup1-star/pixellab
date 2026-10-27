@@ -28,7 +28,7 @@ PixelLab is a responsive, no-account browser arcade. It's built as a static site
 - `main` is the live publishing branch.
 - `development` is the work-in-progress branch for changes and experiments.
 - `backup/v7-stable-2026-10-27` preserves the V7 site as a recovery point.
-- The automated validation workflow checks JavaScript syntax, required files, unique catalog IDs, the 195-entry catalog, and that every playable engine has a matching launch route.
+- The automated validation workflow checks JavaScript syntax, required files, unique catalog IDs, the 195-entry catalog, and that every playable engine has a matching launch route. Ten visual theme presets are defined; the published legacy catalog remains capped at 192 themed entries.
 - Keep changes on `development`, wait for validation to pass, then merge a reviewed pull request into `main` to publish.
 
 ## Project structure
