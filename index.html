@@ -432,7 +432,7 @@ function gameRiftRunner(g){
   if(player.x>1740&&player.y<305&&shards.size>=5){draw();finish(true);return}
   draw();raf=requestAnimationFrame(frame)
  }
- installKeys(e=>{const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')left=true;if(k==='arrowright'||k==='d')right=true;if(k==='arrowup'||k===' '||k==='w')jump();if((k==='x'||e.key==='shift')&&!e.repeat){phase=1-phase;noticeUntil=performance.now()+600;flash(phase===0?'Cyan phase':'Violet phase')}});
+ installKeys(e=>{const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')left=true;if(k==='arrowright'||k==='d')right=true;if(k==='arrowup'||k===' '||k==='w')jump();if((k==='x'||k==='shift')&&!e.repeat){phase=1-phase;noticeUntil=performance.now()+600;flash(phase===0?'Cyan phase':'Violet phase')}});
  const up=e=>{const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')left=false;if(k==='arrowright'||k==='d')right=false};
  window.addEventListener('keyup',up);
  const controls=document.createElement('div');controls.className='mobile-controls';
