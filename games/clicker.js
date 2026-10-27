@@ -1,3 +1,5 @@
+'use strict';
+
 function gameClicker(g){
  const b=baseBox();let energy=0,power=1,auto=0,sec=30,iv=null,started=false;
  const title=document.createElement('div');title.className='big-number';title.textContent='0';b.appendChild(title);
