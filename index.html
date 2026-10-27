@@ -36,6 +36,31 @@ body{background:radial-gradient(ellipse at 18% 8%,#2b2149 0,transparent 31%),rad
 @media(max-width:560px){.daily-strip{padding:17px 15px;gap:8px;border-radius:16px}.daily-strip h2{font-size:18px}.daily-strip p{max-width:245px;font-size:11px}.daily-art{width:65px;height:80px}.daily-art strong{font-size:39px}.daily-art span,.daily-art i{font-size:17px}.game-grid{gap:10px}.cover{height:110px}.cover-emoji{font-size:45px}.card-desc{min-height:28px}.daily-strip:after{right:10px}}
 
 </style>
+<style>
+.quest-strip{display:grid;grid-template-columns:minmax(220px,.85fr) minmax(0,1.5fr);gap:14px;margin:0 0 30px}
+.quest-profile,.quest-daily{border:1px solid #32364c;border-radius:17px;background:linear-gradient(145deg,#1b1d2d,#151722);padding:19px;min-width:0}
+.quest-profile{background:radial-gradient(circle at 100% 0,#9e83ff1f,transparent 48%),linear-gradient(145deg,#1e2032,#151722)}
+.quest-kicker{font-size:9px;letter-spacing:1.5px;font-weight:900;color:var(--cyan)}
+.quest-rank{display:flex;align-items:center;gap:11px;margin:12px 0}
+.quest-rank>span{width:46px;height:46px;display:grid;place-items:center;font-size:25px;border:1px solid #65578e;border-radius:14px;background:#29243c}
+.quest-rank strong,.quest-rank small{display:block}.quest-rank strong{font-size:16px;letter-spacing:-.3px}.quest-rank small{font-size:10px;color:#a7aec4;margin-top:3px}
+.xp-track{height:8px;overflow:hidden;border-radius:99px;background:#303347;margin-top:13px}.xp-track span{display:block;height:100%;width:0;background:linear-gradient(90deg,#a58aff,#63e8d4);border-radius:99px;transition:width .25s}
+.xp-caption{display:flex;justify-content:space-between;margin-top:6px;font-size:9px;color:#8f96ae}
+.achievement-line{font-size:10px;color:#b6bdd2;border-top:1px solid #303247;margin-top:13px;padding-top:11px;line-height:1.5}
+.quest-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.quest-title-row h2{font-size:16px;margin:5px 0 0;letter-spacing:-.35px}
+.quest-reset{font-size:8px;letter-spacing:.8px;border:1px solid #34384c;color:#999fb5;border-radius:7px;padding:5px 7px;white-space:nowrap}
+.quest-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.quest-item{border:1px solid #303449;border-radius:12px;padding:11px 10px;background:#11131d;min-width:0}
+.quest-item.done{border-color:#3e6c68;background:linear-gradient(145deg,#172c2b,#151722)}
+.quest-item .quest-emoji{font-size:17px;display:block;margin-bottom:7px}
+.quest-item strong{font-size:10px;display:block;line-height:1.4}
+.quest-item p{font-size:9px;line-height:1.4;color:#8e96b0;margin:4px 0 9px;min-height:25px}
+.quest-progress{display:flex;justify-content:space-between;gap:5px;font-size:9px;color:#a8afc5}.quest-progress b{color:#68e5d1}
+.quest-mini-track{height:4px;background:#303348;border-radius:99px;overflow:hidden;margin-top:6px}.quest-mini-track span{display:block;height:100%;background:#a48bff;border-radius:99px}
+.quest-item.done .quest-mini-track span{background:#65e5d4}
+@media(max-width:850px){.quest-strip{grid-template-columns:1fr}.quest-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.quest-profile,.quest-daily{padding:15px}.quest-title-row h2{font-size:14px}.quest-list{grid-template-columns:1fr;gap:7px}.quest-item{display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:center;column-gap:8px;padding:9px}.quest-item .quest-emoji{grid-row:1/3;margin:0}.quest-item strong{font-size:11px}.quest-item p{grid-column:2;margin:2px 0 0;min-height:0}.quest-item .quest-progress{grid-column:3;grid-row:1;align-self:start}.quest-item .quest-mini-track{grid-column:3;width:62px;grid-row:2;margin:0}}
+</style>
 </head>
 <body>
 <div class="app">
@@ -64,6 +89,19 @@ body{background:radial-gradient(ellipse at 18% 8%,#2b2149 0,transparent 31%),rad
 </section>
 <section class="daily-strip"><div class="daily-copy"><div class="daily-kicker"><span class="pulse"></span> THE DAILY DROP</div><h2 id="dailyGameTitle">Today&#39;s arcade pick</h2><p id="dailyGameDesc">A fresh challenge picked for your next break.</p><button id="dailyPlay" class="primary">Play today&#39;s pick ↗</button></div><div class="daily-art" aria-hidden="true"><span>✦</span><strong id="dailyEmoji">🎮</strong><i>✧</i></div></section>
 <div class="stats"><div class="stat"><strong id="statCount">192</strong> games to explore</div><div class="stat"><strong>24</strong> playable game engines</div><div class="stat"><strong>0</strong> accounts needed</div><div class="stat">↗ Runs in your browser</div></div>
+<section class="quest-strip" aria-label="Arcade progress">
+  <div class="quest-profile">
+    <div class="quest-kicker">✦ YOUR ARCADE PASSPORT</div>
+    <div class="quest-rank"><span id="rankIcon">🕹️</span><div><strong id="rankName">Pixel Rookie</strong><small><span id="xpTotal">0</span> XP · Level <span id="levelNum">1</span></small></div></div>
+    <div class="xp-track" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="xpBar"></span></div>
+    <div class="xp-caption"><span id="xpCurrent">0 / 100 XP</span><span>Next level</span></div>
+    <div class="achievement-line" id="achievementLine">Play a game to start your collection of achievements.</div>
+  </div>
+  <div class="quest-daily">
+    <div class="quest-title-row"><div><div class="quest-kicker">DAILY QUESTS</div><h2>Three ways to earn bonus XP</h2></div><span class="quest-reset">RESETS DAILY</span></div>
+    <div class="quest-list" id="questList"><div class="quest-item">Loading today's quests…</div></div>
+  </div>
+</section>
 <div class="section-head" id="games"><div><h2 id="sectionTitle">Explore all games</h2><p id="sectionSub">Find your next five-minute obsession.</p></div><div class="section-right"><select id="sort" class="sort" aria-label="Sort games"><option value="featured">Featured</option><option value="az">A to Z</option><option value="new">Variation order</option></select></div></div>
 <div class="chip-row" id="chips" aria-label="Genres"></div>
 <div id="gameGrid" class="game-grid"></div>
@@ -130,7 +168,66 @@ $('randomBtn').addEventListener('click',()=>{const arr=games.filter(g=>g.engine!
 $('browseBtn').addEventListener('click',()=>$('games').scrollIntoView({behavior:'smooth'}));
 $('closeModal').addEventListener('click',closeGame);
 $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeGame()});
-function setBest(game,score){const old=scores[game.id];if(old===undefined||score<old){scores[game.id]=score;storage.set('scores',scores)}updateBest(game)}
+
+let profile=storage.get('arcadeProfile',{xp:0,runs:0,engines:[],records:0,achievements:[],daily:{day:'',runs:0,engines:[],records:0,claimed:[]}});
+if(!Number.isFinite(profile.xp))profile.xp=0;
+if(!Number.isFinite(profile.runs))profile.runs=0;
+if(!Array.isArray(profile.engines))profile.engines=[];
+if(!Number.isFinite(profile.records))profile.records=0;
+if(!Array.isArray(profile.achievements))profile.achievements=[];
+if(!profile.daily||typeof profile.daily!=='object')profile.daily={day:'',runs:0,engines:[],records:0,claimed:[]};
+function localDay(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function ensureDaily(){if(profile.daily.day!==localDay())profile.daily={day:localDay(),runs:0,engines:[],records:0,claimed:[]};if(!Array.isArray(profile.daily.engines))profile.daily.engines=[];if(!Array.isArray(profile.daily.claimed))profile.daily.claimed=[]}
+const questDefs=[
+{id:'runs',emoji:'🎮',title:'Arcade regular',desc:'Finish 3 game runs today.',target:3,reward:15},
+{id:'variety',emoji:'🧭',title:'Try something new',desc:'Play 3 different game types.',target:3,reward:15},
+{id:'record',emoji:'🏆',title:'Personal-best hunter',desc:'Set a new personal record.',target:1,reward:10}
+];
+function renderProgress(){
+ ensureDaily();
+ const xp=Math.max(0,profile.xp),level=Math.floor(xp/100)+1,into=xp%100;
+ const ranks=[['🕹️','Pixel Rookie'],['🎯','Score Chaser'],['⚡','Combo Starter'],['💎','Arcade Ace'],['👑','Pixel Legend']];
+ const rank=ranks[Math.min(ranks.length-1,Math.floor((level-1)/3))];
+ $('rankIcon').textContent=rank[0];$('rankName').textContent=rank[1];$('xpTotal').textContent=xp;$('levelNum').textContent=level;$('xpCurrent').textContent=into+' / 100 XP';$('xpBar').style.width=into+'%';
+ const track=document.querySelector('.xp-track');if(track)track.setAttribute('aria-valuenow',String(into));
+ const unlocked=[];
+ if(profile.achievements.includes('first'))unlocked.push('First run');
+ if(profile.achievements.includes('ten'))unlocked.push('10 runs');
+ if(profile.achievements.includes('explorer'))unlocked.push('5 game types');
+ if(profile.achievements.includes('records'))unlocked.push('10 records');
+ $('achievementLine').textContent=unlocked.length?'🏅 Achievements: '+unlocked.join(' · '):'Play, explore different games, and set records to unlock achievements.';
+ $('questList').innerHTML=questDefs.map(q=>{
+   const val=q.id==='runs'?Math.min(profile.daily.runs,q.target):q.id==='variety'?Math.min(profile.daily.engines.length,q.target):Math.min(profile.daily.records,q.target);
+   const done=profile.daily.claimed.includes(q.id)||val>=q.target;
+   return '<div class="quest-item '+(done?'done':'')+'"><span class="quest-emoji">'+q.emoji+'</span><strong>'+q.title+(profile.daily.claimed.includes(q.id)?' ✓':'')+'</strong><p>'+q.desc+'</p><div class="quest-progress"><span>'+val+' / '+q.target+'</span><b>+'+q.reward+' XP</b></div><div class="quest-mini-track"><span style="width:'+(100*val/q.target)+'%"></span></div></div>';
+ }).join('');
+}
+function awardRun(game,score,isRecord){
+ ensureDaily();
+ profile.runs++;
+ if(!profile.engines.includes(game.engine))profile.engines.push(game.engine);
+ profile.daily.runs++;
+ if(!profile.daily.engines.includes(game.engine))profile.daily.engines.push(game.engine);
+ let gained=10;
+ if(isRecord){gained+=8;profile.records++;profile.daily.records++}
+ const bonuses=[];
+ const claim=(id,reward,label)=>{if(!profile.daily.claimed.includes(id)){profile.daily.claimed.push(id);gained+=reward;bonuses.push(label)}};
+ if(profile.daily.runs>=3)claim('runs',15,'3 runs');
+ if(profile.daily.engines.length>=3)claim('variety',15,'variety');
+ if(profile.daily.records>=1)claim('record',10,'new record');
+ const achievements=[];
+ const unlock=(id,label)=>{if(!profile.achievements.includes(id)){profile.achievements.push(id);profile.xp+=20;achievements.push(label)}};
+ unlock('first','First Run');
+ if(profile.runs>=10)unlock('ten','10 Runs');
+ if(profile.engines.length>=5)unlock('explorer','Explorer');
+ if(profile.records>=10)unlock('records','Record Hunter');
+ profile.xp+=gained;
+ storage.set('arcadeProfile',profile);
+ renderProgress();
+ const msg='+'+gained+' XP'+(bonuses.length?' · Daily bonus: '+bonuses.join(', '):'')+(achievements.length?' · Achievement: '+achievements.join(', '):'');
+ flash(msg);
+}
+function setBest(game,score){const old=scores[game.id];const isRecord=old===undefined||score<old;if(isRecord){scores[game.id]=score;storage.set('scores',scores)}awardRun(game,score,isRecord);updateBest(game)}
 function updateBest(game){let val=scores[game.id];if(val!==undefined&&['snake','pong','breakout','dodge','whack','tap','typing','simon','scramble','clicker','flappy','math','trivia','color','platform','connect4'].includes(game.engine))val=Math.abs(val);$('gameBest').textContent='Best: '+(val===undefined?'—':String(val))}
 function openGame(id){const game=games.find(g=>g.id===id);if(!game)return;closeGame(false);currentGame=game;recent=[id,...recent.filter(x=>x!==id)].slice(0,12);storage.set('recent',recent);$('modalEmoji').textContent=game.emoji;$('modalTitle').textContent=game.name;$('modalDesc').textContent=game.desc;$('instructions').innerHTML='<strong>How to play:</strong> '+esc(getEngine(game).instructions);updateBest(game);$('modal').classList.add('open');document.body.style.overflow='hidden';runGame(game)}
 function closeGame(reset=true){if(reset){cleanup();cleanup=()=>{};if(keyHandler)window.removeEventListener('keydown',keyHandler);keyHandler=null;currentGame=null} $('modal').classList.remove('open');document.body.style.overflow='';}
@@ -152,7 +249,7 @@ function gameMerge(g){const b=baseBox();let grid=Array(16).fill(0),over=false;co
 function gameSnake(g){const {box,c,ctx}=startCanvas(600,340);let snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}],dir={x:1,y:0},food={x:15,y:8},score=0,dead=false,iv=null;const cols=30,rows=17,cell=20;function placeFood(){do{food={x:Math.floor(Math.random()*cols),y:Math.floor(Math.random()*rows)}}while(snake.some(p=>p.x===food.x&&p.y===food.y))}function draw(){drawCanvasBackground(ctx,c.width,c.height);ctx.fillStyle='#5fe3d0';ctx.beginPath();ctx.arc(food.x*cell+cell/2,food.y*cell+cell/2,7,0,Math.PI*2);ctx.fill();snake.forEach((p,i)=>{ctx.fillStyle=i?'#8270cd':'#b7a7ff';ctx.fillRect(p.x*cell+2,p.y*cell+2,cell-4,cell-4)});ctx.fillStyle='#e8e5ff';ctx.font='bold 15px system-ui';ctx.fillText('SCORE '+score,12,22)}function step(){const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};if(head.x<0||head.x>=cols||head.y<0||head.y>=rows||snake.some(p=>p.x===head.x&&p.y===head.y)){clearInterval(iv);dead=true;box.insertAdjacentHTML('beforeend','<div class="message">Game over · Score '+score+'</div>');setBest(g,-score);box.appendChild(button('Play again',()=>runGame(g),true));return}snake.unshift(head);if(head.x===food.x&&head.y===food.y){score++;placeFood()}else snake.pop();draw()}installKeys(e=>{const map={'ArrowUp':[0,-1],'w':[0,-1],'W':[0,-1],'ArrowDown':[0,1],'s':[0,1],'S':[0,1],'ArrowLeft':[-1,0],'a':[-1,0],'A':[-1,0],'ArrowRight':[1,0],'d':[1,0],'D':[1,0]};const v=map[e.key];if(v&&!(v[0]===-dir.x&&v[1]===-dir.y))dir={x:v[0],y:v[1]}});draw();box.appendChild(button('Start / restart',()=>{clearInterval(iv);snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}];dir={x:1,y:0};score=0;dead=false;placeFood();iv=setInterval(step,125);draw()},true));box.appendChild(button('↑',()=>{if(dir.y!==1)dir={x:0,y:-1}}));box.appendChild(button('←',()=>{if(dir.x!==1)dir={x:-1,y:0}}));box.appendChild(button('↓',()=>{if(dir.y!==-1)dir={x:0,y:1}}));box.appendChild(button('→',()=>{if(dir.x!==-1)dir={x:1,y:0}}));cleanup=()=>clearInterval(iv)}
 function gamePong(g){const {box,c,ctx}=startCanvas(600,340);let py=125,ay=125,ball={x:300,y:170,vx:4,vy:2},score=0,aiScore=0,iv=null,started=false;const status=scoreLine([['You',0],['CPU',0]]);box.appendChild(status);function reset(dir=1){ball={x:300,y:170,vx:4*dir,vy:(Math.random()-.5)*4}}function draw(){drawCanvasBackground(ctx,600,340);ctx.setLineDash([6,8]);ctx.strokeStyle='#ffffff30';ctx.beginPath();ctx.moveTo(300,0);ctx.lineTo(300,340);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#a48bff';ctx.fillRect(22,py,11,85);ctx.fillStyle='#5fe3d0';ctx.fillRect(567,ay,11,85);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,Math.PI*2);ctx.fill();ctx.font='bold 28px system-ui';ctx.fillStyle='#fff';ctx.fillText(score,240,38);ctx.fillText(aiScore,335,38)}function tick(){ball.x+=ball.vx;ball.y+=ball.vy;if(ball.y<8||ball.y>332)ball.vy*=-1;if(ball.x<40&&ball.y>py&&ball.y<py+85){ball.vx=Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-(py+42))*0.06}if(ball.x>560&&ball.y>ay&&ball.y<ay+85){ball.vx=-Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-(ay+42))*0.06}ay+=Math.sign(ball.y-(ay+42))*Math.min(3.7,Math.abs(ball.y-(ay+42))*.06);ay=Math.max(0,Math.min(255,ay));if(ball.x<0){aiScore++;reset(1)}if(ball.x>600){score++;reset(-1)}status.innerHTML='<span>You: <strong>'+score+'</strong></span><span>CPU: <strong>'+aiScore+'</strong></span>';draw();if(score>=5||aiScore>=5){clearInterval(iv);started=false;setBest(g,-score);box.insertAdjacentHTML('beforeend','<div class="message">'+(score>aiScore?'You win the rally!':'CPU takes this round.')+'</div>');box.appendChild(button('Play again',()=>runGame(g),true))}}installKeys(e=>{if(['ArrowUp','w','W'].includes(e.key))py=Math.max(0,py-24);if(['ArrowDown','s','S'].includes(e.key))py=Math.min(255,py+24)});c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();py=Math.max(0,Math.min(255,(e.clientY-r.top)*c.height/r.height-42))});draw();box.appendChild(button('Start match',()=>{clearInterval(iv);score=aiScore=0;py=ay=125;reset();started=true;iv=setInterval(tick,16)},true));cleanup=()=>clearInterval(iv)}
 function gameBreakout(g){const {box,c,ctx}=startCanvas(600,340);let paddle=250,ball={x:300,y:270,vx:3,vy:-4},bricks=[],score=0,iv=null,started=false;const status=scoreLine([['Bricks','0 / 30'],['Score','0']]);box.appendChild(status);function reset(){bricks=[];for(let r=0;r<5;r++)for(let col=0;col<6;col++)bricks.push({x:22+col*94,y:28+r*24,w:82,h:15,on:true,color:['#9e83ff','#5fe3d0','#ff76b5','#f0b46f','#79a6ff'][r]});ball={x:300,y:270,vx:3,vy:-4};score=0;paddle=250}function draw(){drawCanvasBackground(ctx,600,340);bricks.forEach(br=>{if(br.on){ctx.fillStyle=br.color;ctx.beginPath();ctx.roundRect(br.x,br.y,br.w,br.h,4);ctx.fill()}});ctx.fillStyle='#e7e1ff';ctx.fillRect(paddle,315,100,10);ctx.fillStyle='#5fe3d0';ctx.beginPath();ctx.arc(ball.x,ball.y,7,0,Math.PI*2);ctx.fill()}function tick(){ball.x+=ball.vx;ball.y+=ball.vy;if(ball.x<7||ball.x>593)ball.vx*=-1;if(ball.y<7)ball.vy*=-1;if(ball.y>307&&ball.y<330&&ball.x>paddle&&ball.x<paddle+100){ball.vy=-Math.abs(ball.vy);ball.vx+=(ball.x-paddle-50)*.035}bricks.forEach(br=>{if(br.on&&ball.x>br.x&&ball.x<br.x+br.w&&ball.y>br.y&&ball.y<br.y+br.h){br.on=false;ball.vy*=-1;score++}});status.innerHTML='<span>Bricks: <strong>'+score+' / 30</strong></span><span>Score: <strong>'+score*10+'</strong></span>';draw();if(ball.y>350||score===30){clearInterval(iv);started=false;setBest(g,-score);box.insertAdjacentHTML('beforeend','<div class="message">'+(score===30?'All bricks cleared!':'Ball dropped — score '+score*10)+'</div>');box.appendChild(button('Play again',()=>runGame(g),true))}}installKeys(e=>{if(e.key==='ArrowLeft')paddle=Math.max(0,paddle-24);if(e.key==='ArrowRight')paddle=Math.min(500,paddle+24)});c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();paddle=Math.max(0,Math.min(500,(e.clientX-r.left)*c.width/r.width-50))});reset();draw();box.appendChild(button('Launch ball / restart',()=>{clearInterval(iv);reset();started=true;iv=setInterval(tick,16)},true));cleanup=()=>clearInterval(iv)}
-function gameDodge(g){const {box,c,ctx}=startCanvas(600,340);let px=285,objs=[],score=0,iv=null,started=false,secs=0;const status=scoreLine([['Score','0'],['Time','0s']]);box.appendChild(status);function draw(){drawCanvasBackground(ctx,600,340);ctx.fillStyle='#a48bff';ctx.beginPath();ctx.moveTo(px+15,303);ctx.lineTo(px,328);ctx.lineTo(px+30,328);ctx.closePath();ctx.fill();objs.forEach(o=>{ctx.fillStyle=o.color;ctx.fillRect(o.x,o.y,o.w,o.h)})}function tick(){secs++;if(Math.random()<.065)objs.push({x:Math.random()*570,y:-25,w:18+Math.random()*27,h:18+Math.random()*25,color:Math.random()<.5?'#ff76b5':'#5fe3d0',v:2+Math.random()*2.8});objs.forEach(o=>o.y+=o.v);objs=objs.filter(o=>o.y<355);score++;status.innerHTML='<span>Score: <strong>'+score+'</strong></span><span>Time: <strong>'+(secs/60).toFixed(1)+'s</strong></span>';if(objs.some(o=>px+27>o.x&&px<o.x+o.w&&325>o.y&&301<o.y+o.h)){clearInterval(iv);started=false;setBest(g,-score);box.insertAdjacentHTML('beforeend','<div class="message">Crashed after '+score+' points. Try again!</div>');box.appendChild(button('Retry',()=>runGame(g),true));return}draw()}installKeys(e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')px=Math.max(0,px-24);if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')px=Math.min(570,px+24)});draw();box.appendChild(button('Start dodging',()=>{clearInterval(iv);px=285;objs=[];score=0;secs=0;started=true;iv=setInterval(tick,50)},true));box.appendChild(button('←',()=>px=Math.max(0,px-22)));box.appendChild(button('→',()=>px=Math.min(570,px+22)));cleanup=()=>clearInterval(iv)}
+function gameDodge(g){const {box,c,ctx}=startCanvas(600,340);let px=285,objs=[],score=0,iv=null,started=false,secs=0;const status=scoreLine([['Score','0'],['Time','0s']]);box.appendChild(status);function draw(){drawCanvasBackground(ctx,600,340);ctx.fillStyle='#a48bff';ctx.beginPath();ctx.moveTo(px+15,303);ctx.lineTo(px,328);ctx.lineTo(px+30,328);ctx.closePath();ctx.fill();objs.forEach(o=>{ctx.fillStyle=o.color;ctx.fillRect(o.x,o.y,o.w,o.h)})}function tick(){secs+=0.05;if(Math.random()<.065)objs.push({x:Math.random()*570,y:-25,w:18+Math.random()*27,h:18+Math.random()*25,color:Math.random()<.5?'#ff76b5':'#5fe3d0',v:2+Math.random()*2.8});objs.forEach(o=>o.y+=o.v);objs=objs.filter(o=>o.y<355);score++;status.innerHTML='<span>Score: <strong>'+score+'</strong></span><span>Time: <strong>'+secs.toFixed(1)+'s</strong></span>';if(objs.some(o=>px+27>o.x&&px<o.x+o.w&&325>o.y&&301<o.y+o.h)){clearInterval(iv);started=false;setBest(g,-score);box.insertAdjacentHTML('beforeend','<div class="message">Crashed after '+score+' points. Try again!</div>');box.appendChild(button('Retry',()=>runGame(g),true));return}draw()}installKeys(e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')px=Math.max(0,px-24);if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')px=Math.min(570,px+24)});draw();box.appendChild(button('Start dodging',()=>{clearInterval(iv);px=285;objs=[];score=0;secs=0;started=true;iv=setInterval(tick,50)},true));box.appendChild(button('←',()=>px=Math.max(0,px-22)));box.appendChild(button('→',()=>px=Math.min(570,px+22)));cleanup=()=>clearInterval(iv)}
 
 function setupDaily(){const day=Math.floor(Date.now()/86400000);const pick=games[(day*7+Math.floor(day/3))%games.length];$('dailyGameTitle').textContent=pick.name;$('dailyGameDesc').textContent=pick.desc;$('dailyEmoji').textContent=pick.emoji;$('dailyPlay').addEventListener('click',()=>openGame(pick.id))}
 function gameMines(g){
@@ -289,6 +386,7 @@ function gameMaze(g){
 }
 
 setupDaily();
+renderProgress();
 render();
 </script>
 </body>
