@@ -1,0 +1,12 @@
+'use strict';
+
+function gameMath(g){
+ const b=baseBox();let score=0,sec=30,iv=null,started=false,answer=0;
+ const title=document.createElement('div');title.className='big-number';title.textContent='Math Sprint';b.appendChild(title);
+ const question=document.createElement('div');question.className='subtext';question.style.fontSize='18px';b.appendChild(question);
+ const status=scoreLine([['Correct','0'],['Time','30s']]);b.appendChild(status);
+ const choices=document.createElement('div');choices.style.display='grid';choices.style.gridTemplateColumns='repeat(2,minmax(100px,175px))';choices.style.gap='10px';b.appendChild(choices);
+ function next(){let a,bv,op=Math.floor(Math.random()*4);if(op===0){a=1+Math.floor(Math.random()*30);bv=1+Math.floor(Math.random()*30);answer=a+bv;question.textContent=a+' + '+bv+' = ?'}else if(op===1){a=5+Math.floor(Math.random()*35);bv=1+Math.floor(Math.random()*a);answer=a-bv;question.textContent=a+' − '+bv+' = ?'}else if(op===2){a=2+Math.floor(Math.random()*12);bv=2+Math.floor(Math.random()*12);answer=a*bv;question.textContent=a+' × '+bv+' = ?'}else{bv=2+Math.floor(Math.random()*10);answer=2+Math.floor(Math.random()*12);a=bv*answer;question.textContent=a+' ÷ '+bv+' = ?'}const opts=new Set([answer]);while(opts.size<4)opts.add(Math.max(0,answer+Math.floor(Math.random()*17)-8));const arr=[...opts].sort(()=>Math.random()-.5);choices.innerHTML='';arr.forEach(v=>choices.appendChild(button(String(v),()=>{if(!started)return;if(v===answer){score++;title.textContent='+'+score;next()}else{title.textContent='Keep going'}status.innerHTML='<span>Correct: <strong>'+score+'</strong></span><span>Time: <strong>'+sec+'s</strong></span>'})));}
+ function finish(){clearInterval(iv);started=false;setBest(g,-score);question.textContent='Time! You solved '+score+' questions.';choices.innerHTML='';b.appendChild(button('Run it back',()=>runGame(g),true))}
+ b.appendChild(button('Start 30 seconds',()=>{if(started)return;started=true;score=0;sec=30;next();iv=setInterval(()=>{sec--;status.innerHTML='<span>Correct: <strong>'+score+'</strong></span><span>Time: <strong>'+sec+'s</strong></span>';if(sec<=0)finish()},1000)},true));cleanup=()=>clearInterval(iv);
+}
