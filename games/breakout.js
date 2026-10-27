@@ -1,3 +1,5 @@
+'use strict';
+
 function gameBreakout(g){
  const {box,c,ctx}=startCanvas(600,340);let paddle=250,paddleWidth=100,ball={x:300,y:270,vx:3,vy:-4},bricks=[],drops=[],score=0,lives=3,iv=null,wideUntil=0,slowUntil=0,started=false;
  const status=scoreLine([['Bricks','0 / 30'],['Score','0'],['Lives','3']]);box.appendChild(status);
