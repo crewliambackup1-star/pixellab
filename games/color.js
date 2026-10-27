@@ -1,3 +1,5 @@
+'use strict';
+
 function gameColor(g){
  const b=baseBox(),names=['CORAL','MINT','VIOLET','GOLD'],colors=['#ff729f','#5fe3d0','#a48bff','#ffc66d'];let score=0,sec=25,iv=null,started=false,target=0;
  const label=document.createElement('div');label.className='big-number';label.style.fontSize='45px';b.appendChild(label);const prompt=document.createElement('div');prompt.className='subtext';prompt.textContent='Choose the ink color — not the word.';b.appendChild(prompt);const status=scoreLine([['Correct','0'],['Time','25s']]);b.appendChild(status);
