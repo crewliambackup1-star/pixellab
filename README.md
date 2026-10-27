@@ -9,7 +9,7 @@ PixelLab is a responsive, no-account browser arcade. It's built as a static site
 - Update 4 adds: **Minefield, Simon Sequence, Word Scramble, Cosmic Clicker, Flappy Pixel, Math Sprint, Connect Four, Pixel Platformer, Trivia Blitz, Color Clash, Lights Out, and Maze Runner**.
 - Update 4 arcade styling, upgraded game cards, clearer catalog discovery, and a **Daily Drop** pick.
 - **V5 Arcade Passport:** browser-local XP, levels, five rank tiers, achievements, and three daily quests with bonus XP.
-- Finished runs reward XP; personal records, run streak milestones, and trying different game engines help unlock achievements.
+- Finished runs reward XP; personal records, run milestones, and trying different game engines help unlock achievements.
 - Fixed Orbit Dodger's displayed survival timer so it tracks elapsed gameplay time correctly.
 - Search, category filters, sorting, random play, favorites, recently played, and local game records.
 - Responsive desktop/mobile layout, keyboard controls where supported, and browser-local saved favorites/history/records.
