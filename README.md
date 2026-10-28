@@ -1,4 +1,4 @@
-# PixelLab V7 — Original Games Update
+# PixelLab V8 — Local Multiplayer Update
 
 PixelLab is a responsive, no-account browser arcade. It's built as a static site with no build step or third-party JavaScript dependencies.
 
@@ -16,10 +16,11 @@ PixelLab is a responsive, no-account browser arcade. It's built as a static site
 - Connect Four's CPU evaluates winning threats and developing lines instead of relying mostly on center-column preference.
 - **V7 Original Games:** Rift Runner (phase-shifting platformer), Circuit Crafter (rotating circuit-routing puzzle), and Star Courier (cargo delivery through moving patrol drones).
 - The three original games appear in both the **Recommended** and **Popular** filters, alongside curated existing favorites.
+- **V8 Multiplayer (first phase):** Tic-Tac-Toe and Connect Four now offer AI matches or two-player pass-and-play on the same device. Online-room choices are clearly marked as coming soon while a realtime backend is still unconfigured.
 - Existing catalog IDs remain stable so browser-local favorites, recent-play history, and per-game records for the original catalog are preserved.
 - Search, category filters, sorting, random play, favorites, recently played, and local game records.
 - Responsive desktop/mobile layout, keyboard controls where supported, and browser-local saved favorites/history/records.
-- No account, install, payment, or backend needed.
+- Single-player and same-device play need no account or backend. Online multiplayer is not active yet and will require a realtime service.
 
 **Catalog note:** the first 192 entries are theme/visual variants across the original 24 engines; the 3 V7 originals are separately implemented games.
 
