@@ -105,7 +105,7 @@ for (const [name, source] of [['Tic-Tac-Toe', ticTacToe], ['Connect Four', conne
   assert.match(source, /Play vs AI/, `${name} must retain its AI mode`);
   assert.match(source, /2 Players · Same Device/, `${name} must offer same-device multiplayer`);
   assert.match(source, /Online room/, `${name} should disclose the online-room roadmap`);
-  assert.match(source, /modeButton\\('🌐 Online room'.*true\\)/s, `${name} must not present online rooms as working yet`);
+  assert.match(source, /modeButton\('🌐 Online room'.*true\)/s, `${name} must not present online rooms as working yet`);
   assert.match(source, /btn\.disabled=disabled/, `${name} must be able to disable unavailable modes`);
 }
 assert.match(css, /\.mp-mode-picker/, 'Multiplayer mode-picker styles are missing');
