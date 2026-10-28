@@ -48,3 +48,16 @@ body{background:radial-gradient(ellipse at 18% 8%,#2b2149 0,transparent 31%),rad
 .quest-item.done .quest-mini-track span{background:#65e5d4}
 @media(max-width:850px){.quest-strip{grid-template-columns:1fr}.quest-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:560px){.quest-profile,.quest-daily{padding:15px}.quest-title-row h2{font-size:14px}.quest-list{grid-template-columns:1fr;gap:7px}.quest-item{display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:center;column-gap:8px;padding:9px}.quest-item .quest-emoji{grid-row:1/3;margin:0}.quest-item strong{font-size:11px}.quest-item p{grid-column:2;margin:2px 0 0;min-height:0}.quest-item .quest-progress{grid-column:3;grid-row:1;align-self:start}.quest-item .quest-mini-track{grid-column:3;width:62px;grid-row:2;margin:0}}
+
+
+/* V8 Multiplayer modes */
+.mp-title{margin:4px auto 18px;font-size:clamp(23px,4vw,32px);text-align:center;line-height:1.25}
+.mp-mode-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:min(100%,560px);margin:0 auto}
+.mp-mode-card{min-width:0;border:1px solid #373b53;border-radius:15px;padding:13px;background:linear-gradient(150deg,#1d2032,#151722);text-align:center}
+.mp-mode-button{width:100%;min-height:55px;border:1px solid #514b72;border-radius:11px;background:linear-gradient(110deg,#302b4b,#1d3440);font-weight:850;font-size:13px;padding:10px;color:#f5f4ff;transition:transform .15s,border-color .15s}
+.mp-mode-button:hover:not(:disabled){transform:translateY(-2px);border-color:var(--cyan)}
+.mp-mode-button:disabled{cursor:not-allowed;opacity:.55;background:#242635;border-color:#383b4e}
+.mp-mode-note{font-size:11px;line-height:1.5;color:#9ba3bc;margin:9px 2px 0}
+.mp-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin:16px auto 2px}
+.mp-actions .game-button{min-width:120px}
+@media(max-width:470px){.mp-mode-picker{grid-template-columns:1fr;gap:8px}.mp-mode-card{padding:10px}.mp-mode-button{min-height:47px}.mp-mode-note{margin-top:6px}}
