@@ -2,7 +2,7 @@
 
 const engines=[
 {id:'snake',name:'Snake Sprint',category:'Arcade',emoji:'🐍',desc:'Grow your snake and chase golden bonus fruit.',instructions:'Use arrow keys or WASD. Every fourth fruit spawns a golden bonus worth 3 points that disappears after a few seconds.'},
-{id:'pong',name:'Neon Pong',category:'Sports',emoji:'🏓',desc:'Outplay the computer in a neon rally.',instructions:'Use W/S or ↑/↓ to move your paddle. First to 5 points wins.'},
+{id:'pong',name:'Neon Pong',category:'Sports',emoji:'🏓',desc:'Play against the AI or challenge a friend on the same device.',instructions:'Choose Play vs AI or 2 Players · Same Device. Use W/S for Player 1 and ↑/↓ for Player 2. First to 5 points wins. Online rooms are planned for a future update.'},
 {id:'breakout',name:'Brick Breaker',category:'Arcade',emoji:'🧱',desc:'Break every brick and catch falling power-ups.',instructions:'Move your paddle with the mouse, touch, or ←/→. Catch W for a wide paddle, S to slow the ball, or + for an extra life.'},
 {id:'reaction',name:'Reaction Rush',category:'Quick Play',emoji:'⚡',desc:'Wait for the signal, then click fast.',instructions:'Press start, wait for the panel to turn green, then click as fast as you can. Do not jump the signal.'},
 {id:'memory',name:'Memory Match',category:'Puzzle',emoji:'🧠',desc:'Flip cards and find every matching pair.',instructions:'Flip two cards at a time. Remember what you saw and match all eight pairs.'},
