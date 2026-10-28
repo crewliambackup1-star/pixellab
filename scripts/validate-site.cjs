@@ -17,6 +17,8 @@ const html = read('index.html');
 const css = read('styles.css');
 const catalog = read('catalog.js');
 const app = read('app.js');
+const ticTacToe = read('games/tictactoe.js');
+const connectFour = read('games/connect4.js');
 
 assert.match(html, /^<!doctype html>/i, 'index.html must declare an HTML doctype');
 assert.match(html, /<html\s+lang="en"/i, 'The page should declare its language');
@@ -98,6 +100,14 @@ const scriptTags = [...html.matchAll(/<script\s+src="([^"]+)"\s*><\/script>/g)].
 assert.equal(scriptTags.length, 2 + routes.length, 'All catalog, app, and game modules must be included in index.html');
 assert.ok(html.includes('Search 195 games...'), 'Search placeholder should reflect the current catalog count');
 assert.match(html, /id="allCount">195</, 'The displayed game count should be 195');
+
+for (const [name, source] of [['Tic-Tac-Toe', ticTacToe], ['Connect Four', connectFour]]) {
+  assert.match(source, /Play vs AI/, `${name} must retain its AI mode`);
+  assert.match(source, /2 Players · Same Device/, `${name} must offer same-device multiplayer`);
+  assert.match(source, /Online room/, `${name} should disclose the online-room roadmap`);
+  assert.match(source, /btn\\.disabled=disabled/, `${name} must be able to disable unavailable modes`);
+}
+assert.match(css, /\\.mp-mode-picker/, 'Multiplayer mode-picker styles are missing');
 
 console.log('PixelLab validation passed.');
 console.log(`Catalog: ${coreIds.length} engines × ${themeIds.length} themes + ${originalIds.length} originals = 195 entries.`);
