@@ -1,7 +1,7 @@
 'use strict';
 
 function gameConnect4(g){
- const b=baseBox();let mode=null,board=Array.from({length:42},()=>0),over=false,aiTimer=null;
+ const b=baseBox();let mode=null,board=Array.from({length:42},()=>0),over=false,aiTimer=null,thinking=false;
  function modeButton(label,description,next,disabled=false){
   const wrap=document.createElement('div');wrap.className='mp-mode-card';
   const btn=button(label,()=>{if(!disabled)startRound(next)});btn.className='mp-mode-button';btn.disabled=disabled;wrap.append(btn);
@@ -16,7 +16,7 @@ function gameConnect4(g){
   choices.append(modeButton('🌐 Online room','Invite someone on another device — coming soon.','online',true));
   b.append(choices);
  }
- function startRound(nextMode=mode){clearTimeout(aiTimer);mode=nextMode;board=Array.from({length:42},()=>0);over=false;renderGame()}
+ function startRound(nextMode=mode){clearTimeout(aiTimer);mode=nextMode;board=Array.from({length:42},()=>0);over=false;thinking=false;renderGame()}
  function renderGame(){
   b.innerHTML='';const msg=document.createElement('div');msg.className='big-number mp-title';msg.style.fontSize='28px';b.append(msg);
   const grid=document.createElement('div');grid.style.display='grid';grid.style.gridTemplateColumns='repeat(7,minmax(25px,44px))';grid.style.gap='5px';grid.style.padding='10px';grid.style.background='#202847';grid.style.borderRadius='16px';grid.style.width='max-content';grid.style.maxWidth='100%';grid.style.margin='0 auto';b.append(grid);
@@ -35,8 +35,8 @@ function gameConnect4(g){
   function rowFree(c){for(let r=5;r>=0;r--)if(!board[at(r,c)])return r;return -1}
   function draw(){
    cells.forEach((el,i)=>{el.style.background=board[i]===1?'#ff637f':board[i]===2?'#ffd166':'#101423';el.style.boxShadow=board[i]?'inset 0 2px 5px #0005':'';el.style.borderColor=board[i]?'#ffffff2b':'#58607d'});
-   cols.forEach((c,i)=>c.disabled=over||rowFree(i)<0||(mode==='ai'&&msg.textContent.startsWith('AI')));
-   if(!over)msg.textContent=mode==='ai'?(msg.textContent.startsWith('AI')?'AI thinking…':'Your turn — Red'):board.every(Boolean)?'Draw game':(board.filter(Boolean).length%2===0?'Player 1’s turn — Red':'Player 2’s turn — Yellow');
+   cols.forEach((c,i)=>c.disabled=over||rowFree(i)<0||(mode==='ai'&&thinking));
+   if(!over)msg.textContent=mode==='ai'?(thinking?'AI thinking…':'Your turn — Red'):board.filter(Boolean).length%2===0?'Player 1’s turn — Red':'Player 2’s turn — Yellow';
   }
   function end(t){
    over=true;msg.textContent=t;if(mode==='ai')setBest(g,t==='You win!'?-3:t==='CPU wins!'?-1:-2);draw();msg.textContent=t;
@@ -61,11 +61,11 @@ function gameConnect4(g){
    return moves.length?moves[Math.floor(Math.random()*moves.length)]:-1;
   }
   function drop(c,p){
-   if(over||rowFree(c)<0||(mode==='ai'&&p===1&&msg.textContent.startsWith('AI')))return;
+   if(over||rowFree(c)<0||(mode==='ai'&&p===1&&thinking))return;
    const r=rowFree(c);board[at(r,c)]=p;draw();
    if(won(p)){end(mode==='ai'?(p===1?'You win!':'CPU wins!'):(p===1?'Player 1 wins!':'Player 2 wins!'));return}
    if(board.every(Boolean)){end('Draw game');return}
-   if(mode==='ai'&&p===1){msg.textContent='AI thinking…';cols.forEach(c=>c.disabled=true);aiTimer=setTimeout(()=>{if(over||!currentGame||mode!=='ai')return;const move=chooseAI();if(move>=0)drop(move,2);else draw()},330)}
+   if(mode==='ai'&&p===1){thinking=true;draw();aiTimer=setTimeout(()=>{if(over||!currentGame||mode!=='ai')return;thinking=false;const move=chooseAI();if(move>=0)drop(move,2);else draw()},330)}
   }
   draw();
   const actions=document.createElement('div');actions.className='mp-actions';actions.append(button('Reset game',()=>startRound(mode)),button('Change mode',showModePicker));b.append(actions);
