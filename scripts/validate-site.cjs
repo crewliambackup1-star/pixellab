@@ -19,6 +19,7 @@ const catalog = read('catalog.js');
 const app = read('app.js');
 const ticTacToe = read('games/tictactoe.js');
 const connectFour = read('games/connect4.js');
+const neonPong = read('games/pong.js');
 
 assert.match(html, /^<!doctype html>/i, 'index.html must declare an HTML doctype');
 assert.match(html, /<html\s+lang="en"/i, 'The page should declare its language');
@@ -101,7 +102,7 @@ assert.equal(scriptTags.length, 2 + routes.length, 'All catalog, app, and game m
 assert.ok(html.includes('Search 195 games...'), 'Search placeholder should reflect the current catalog count');
 assert.match(html, /id="allCount">195</, 'The displayed game count should be 195');
 
-for (const [name, source] of [['Tic-Tac-Toe', ticTacToe], ['Connect Four', connectFour]]) {
+for (const [name, source] of [['Tic-Tac-Toe', ticTacToe], ['Connect Four', connectFour], ['Neon Pong', neonPong]]) {
   assert.match(source, /Play vs AI/, `${name} must retain its AI mode`);
   assert.match(source, /2 Players · Same Device/, `${name} must offer same-device multiplayer`);
   assert.match(source, /Online room/, `${name} should disclose the online-room roadmap`);
