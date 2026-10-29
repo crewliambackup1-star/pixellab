@@ -18,10 +18,11 @@ function gameTTT(g){
   const choices=document.createElement('div');choices.className='mp-mode-picker';
   choices.append(modeButton('🤖 Play vs AI','Challenge the computer. You play X.','ai'));
   choices.append(modeButton('👥 2 Players · Same Device','Take turns on this screen. X goes first.','local'));
-  choices.append(modeButton('🌐 Online room','Invite someone on another device — coming soon.','online',true));
+  choices.append(modeButton('🌐 Online room','Sign in, then create or join a private room on another device.','online',false));
   b.append(choices);
  }
  function startRound(nextMode=mode){
+  if(nextMode==='online'){if(typeof window.PixelLabMultiplayer?.openOnlineTicTacToe==='function')window.PixelLabMultiplayer.openOnlineTicTacToe();else if(typeof flash==='function')flash('Online room services are not connected yet.');return;}
   clearTimeout(aiTimer);mode=nextMode;board=Array(9).fill('');over=false;turn='X';renderBoard();
  }
  function renderBoard(){
