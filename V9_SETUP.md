@@ -16,7 +16,7 @@ Because this is a young person's project, have a parent/guardian review and hand
 
 1. Create a Supabase project with parent/guardian help as appropriate, then open its SQL Editor.
 2. Review and run supabase/migrations/001_multiplayer_universe.sql.
-3. Configure email/password authentication and confirmation. Add the GitHub Pages site URL to allowed site/redirect URLs: https://crewliambackup1-star.github.io
+3. Configure email/password authentication and confirmation. Add the GitHub Pages URL to allowed site/redirect URLs: https://crewliambackup1-star.github.io/pixellab/ (use the exact project-page URL shown in your browser).
 4. In backend-config.js, set url to your project URL and publishableKey to the project's publishable browser key. These are public client values. Never use a secret/service-role key.
 5. In Realtime settings, make sure the rooms table is available for Postgres Changes. Keep room reads protected by the migration's RLS policy.
 6. Test signup, confirmation, sign-in, sign-out, password reset, create/join, turns, two-player results, reconnects, and leaving a room in two separate browser profiles. Do not announce online play as ready until tests pass.
