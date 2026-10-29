@@ -18,6 +18,7 @@ $('search').addEventListener('input',e=>{searchText=e.target.value.trim().toLowe
 $('sort').addEventListener('change',e=>{sortMode=e.target.value;render()});
 $('randomBtn').addEventListener('click',()=>{const arr=games.filter(g=>g.engine!=='tap');openGame(arr[Math.floor(Math.random()*arr.length)].id)});
 $('browseBtn').addEventListener('click',()=>$('games').scrollIntoView({behavior:'smooth'}));
+if($('multiplayerBtn'))$('multiplayerBtn').addEventListener('click',()=>window.PixelLabMultiplayer?.openHub());
 $('closeModal').addEventListener('click',closeGame);
 $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeGame()});
 
