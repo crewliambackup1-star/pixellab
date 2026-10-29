@@ -1,6 +1,6 @@
 # PixelLab V9 — Multiplayer Universe
 
-PixelLab is a responsive, no-account browser arcade. It's built as a static site with no build step or third-party JavaScript dependencies.
+PixelLab is a responsive browser arcade. Solo and same-device games need no account; online rooms require a configured account backend. The site is static and has no build step; the account feature loads the Supabase JavaScript client from its CDN.
 
 ## What is included
 
