@@ -288,6 +288,9 @@
       });
     }
     renderHub();
+    if (!validConfig()) setStatus('Online rooms are not connected yet. Solo and same-device play remain available.', 'warning');
+    else if (!client) setStatus('The account library is unavailable. Reload the page or check the connection.', 'error');
+    else if (!user) setStatus('Sign in or create an account to use private online rooms.');
   }
   window.PixelLabMultiplayer = {
     isConfigured: validConfig,
