@@ -11,12 +11,15 @@ const requireFile = (relativePath) => {
   assert.ok(fs.existsSync(path.join(root, relativePath)), `Missing required file: ${relativePath}`);
 };
 
-for (const file of ['index.html', 'styles.css', 'catalog.js', 'app.js', 'icon.svg']) requireFile(file);
+for (const file of ['index.html', 'styles.css', 'catalog.js', 'app.js', 'backend-config.js', 'multiplayer.js', 'icon.svg', 'supabase/migrations/001_multiplayer_universe.sql', 'V9_SETUP.md']) requireFile(file);
 
 const html = read('index.html');
 const css = read('styles.css');
 const catalog = read('catalog.js');
 const app = read('app.js');
+const backendConfig = read('backend-config.js');
+const multiplayer = read('multiplayer.js');
+const multiplayerSql = read('supabase/migrations/001_multiplayer_universe.sql');
 const ticTacToe = read('games/tictactoe.js');
 const connectFour = read('games/connect4.js');
 const neonPong = read('games/pong.js');
@@ -45,6 +48,8 @@ for (const match of html.matchAll(/\b(?:src|href)="([^"]+)"/g)) {
 const scriptFiles = [
   'catalog.js',
   'app.js',
+  'backend-config.js',
+  'multiplayer.js',
   ...fs.readdirSync(path.join(root, 'games')).filter((name) => name.endsWith('.js')).sort().map((name) => path.posix.join('games', name)),
 ];
 for (const file of scriptFiles) {
@@ -98,7 +103,7 @@ for (const route of routes) {
 }
 
 const scriptTags = [...html.matchAll(/<script\s+src="([^"]+)"\s*><\/script>/g)].map((m) => m[1]);
-assert.equal(scriptTags.length, 2 + routes.length, 'All catalog, app, and game modules must be included in index.html');
+assert.equal(scriptTags.length, 5 + routes.length, 'Catalog, app, backend config, multiplayer, CDN, and game modules must be included in index.html');
 assert.ok(html.includes('Search 195 games...'), 'Search placeholder should reflect the current catalog count');
 assert.match(html, /id="allCount">195</, 'The displayed game count should be 195');
 
@@ -106,10 +111,21 @@ for (const [name, source] of [['Tic-Tac-Toe', ticTacToe], ['Connect Four', conne
   assert.match(source, /Play vs AI/, `${name} must retain its AI mode`);
   assert.match(source, /2 Players · Same Device/, `${name} must offer same-device multiplayer`);
   assert.match(source, /Online room/, `${name} should disclose the online-room roadmap`);
-  assert.match(source, /mode(?:Button|Card)\('🌐 Online room'.*true\)/s, `${name} must not present online rooms as working yet`);
   assert.match(source, /btn\.disabled=disabled/, `${name} must be able to disable unavailable modes`);
+  if (name === 'Tic-Tac-Toe') assert.match(source, /openOnlineTicTacToe/, 'Tic-Tac-Toe must connect to the V9 account and room flow');
+  else assert.match(source, /mode(?:Button|Card)\('🌐 Online room'.*true\)/s, `${name} must remain disabled online until its own move validation is built`);
 }
 assert.match(css, /\.mp-mode-picker/, 'Multiplayer mode-picker styles are missing');
+assert.match(html, /id="multiplayerHub"/, 'The V9 multiplayer hub is missing');
+assert.match(html, /src="multiplayer\.js"/, 'The multiplayer client is not loaded');
+assert.match(backendConfig, /publishableKey:\s*''/, 'Backend config must start without a live key');
+assert.doesNotMatch(backendConfig, /sb_secret_|service_role/i, 'A server secret must never be added to browser config');
+assert.match(multiplayer, /create_private_room/, 'The room creation flow is missing');
+assert.match(multiplayer, /join_private_room/, 'The room join flow is missing');
+assert.match(multiplayer, /make_ttt_move/, 'The online move flow is missing');
+assert.match(multiplayerSql, /enable row level security/i, 'Database RLS must be enabled');
+assert.match(multiplayerSql, /make_ttt_move/, 'Server-side Tic-Tac-Toe validation is missing');
+assert.doesNotMatch(multiplayerSql, /grant\s+(?:all|insert|update|delete)\s+on\s+public\.rooms\s+to\s+authenticated/i, 'Clients must not get direct room mutation rights');
 
 console.log('PixelLab validation passed.');
 console.log(`Catalog: ${coreIds.length} engines × ${themeIds.length} themes + ${originalIds.length} originals = 195 entries.`);
