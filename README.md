@@ -1,4 +1,4 @@
-# PixelLab V8 — Local Multiplayer Update
+# PixelLab V9 — Multiplayer Universe
 
 PixelLab is a responsive, no-account browser arcade. It's built as a static site with no build step or third-party JavaScript dependencies.
 
@@ -16,11 +16,13 @@ PixelLab is a responsive, no-account browser arcade. It's built as a static site
 - Connect Four's CPU evaluates winning threats and developing lines instead of relying mostly on center-column preference.
 - **V7 Original Games:** Rift Runner (phase-shifting platformer), Circuit Crafter (rotating circuit-routing puzzle), and Star Courier (cargo delivery through moving patrol drones).
 - The three original games appear in both the **Recommended** and **Popular** filters, alongside curated existing favorites.
-- **V8 Multiplayer (first phase):** Tic-Tac-Toe, Connect Four, and Neon Pong now offer AI matches or two-player local play on the same device. Online-room choices are clearly marked as coming soon while a realtime backend is still unconfigured.
+- **V8 Local Multiplayer:** Tic-Tac-Toe, Connect Four, and Neon Pong offer AI matches or two-player same-device play.
+- **V9 Multiplayer Universe foundation:** account/profile UI, private six-character room codes, invite links, and the first online Tic-Tac-Toe flow. Online features remain inactive until a Supabase project is configured and the reviewed SQL migration is applied. Connect Four and Neon Pong keep online mode disabled until their own server-side move validation is ready.
+- Public profiles use pseudonymous usernames and game stats only; there is no public chat. See V9_SETUP.md before configuring a backend.
 - Existing catalog IDs remain stable so browser-local favorites, recent-play history, and per-game records for the original catalog are preserved.
 - Search, category filters, sorting, random play, favorites, recently played, and local game records.
 - Responsive desktop/mobile layout, keyboard controls where supported, and browser-local saved favorites/history/records.
-- Single-player and same-device play need no account or backend. Online multiplayer is not active yet and will require a realtime service.
+- Single-player and same-device play need no account or backend. Online multiplayer remains inactive until the backend is configured and tested. See V9_SETUP.md before activation.
 
 **Catalog note:** the first 192 entries are theme/visual variants across the original 24 engines; the 3 V7 originals are separately implemented games.
 
@@ -29,12 +31,16 @@ PixelLab is a responsive, no-account browser arcade. It's built as a static site
 - `main` is the live publishing branch.
 - `development` is the work-in-progress branch for changes and experiments.
 - `backup/v7-stable-2026-10-27` preserves the V7 site as a recovery point.
-- The automated validation workflow checks JavaScript syntax, required files, unique catalog IDs, the 195-entry catalog, and that every playable engine has a matching launch route. Ten visual theme presets are defined; the published legacy catalog remains capped at 192 themed entries.
+- The automated validation workflow checks JavaScript syntax, required files, unique catalog IDs, the 195-entry catalog, launch routes, and V9 backend/config guardrails. Ten visual theme presets are defined; the published legacy catalog remains capped at 192 themed entries.
 - Keep changes on `development`, wait for validation to pass, then merge a reviewed pull request into `main` to publish.
 
 ## Project structure
 
 - `index.html`: page structure and the ordered script/style references.
+- `backend-config.js`: blank public Supabase URL/key configuration; never store a secret key here.
+- `multiplayer.js`: account, profile, room-code, Realtime subscription, and online Tic-Tac-Toe UI.
+- `supabase/migrations/001_multiplayer_universe.sql`: profile/room tables, RLS, and server-validated room functions.
+- `V9_SETUP.md`: backend setup and private testing checklist.
 - `styles.css`: all site styling.
 - `catalog.js`: base engines, visual themes, and generated catalog entries.
 - `app.js`: catalog UI, local progress, shared utilities, and game-launch routing.
