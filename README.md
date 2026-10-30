@@ -18,7 +18,7 @@ PixelLab is a responsive browser arcade. Solo and same-device games need no acco
 - The three original games appear in both the **Recommended** and **Popular** filters, alongside curated existing favorites.
 - **V8 Local Multiplayer:** Tic-Tac-Toe, Connect Four, and Neon Pong offer AI matches or two-player same-device play.
 - **V9 Multiplayer Universe foundation:** account/profile UI, private six-character room codes, invite links, and the first online Tic-Tac-Toe flow. Online features remain inactive until a Supabase project is configured and the reviewed SQL migration is applied. Connect Four and Neon Pong keep online mode disabled until their own server-side move validation is ready.
-- Public profiles use pseudonymous usernames and game stats only; there is no public chat. See V9_SETUP.md before configuring a backend.
+- Public profiles use pseudonymous usernames, match stats, and recent online results. Completed match history is visible only to its two participants; there is no public chat. See V9_SETUP.md before configuring a backend.
 - Existing catalog IDs remain stable so browser-local favorites, recent-play history, and per-game records for the original catalog are preserved.
 - Search, category filters, sorting, random play, favorites, recently played, and local game records.
 - Responsive desktop/mobile layout, keyboard controls where supported, and browser-local saved favorites/history/records.
