@@ -15,7 +15,7 @@
 <header class="topbar">
 <a href="#" class="brand" aria-label="PixelLab home"><span class="logo">✳</span><span>Pixel<em>Lab</em></span></a>
 <div class="search-wrap"><span>⌕</span><input id="search" class="search" type="search" placeholder="Search 195 games..." aria-label="Search games"><span class="search-hint">⌘ K</span></div>
-<div class="top-pill">✦ No downloads · No account</div>
+<button type="button" class="top-mp-button" id="multiplayerBtn">🌐 Online play</button><div class="top-pill">No downloads · Solo play is always free</div>
 </header>
 <div class="layout">
 <aside class="sidebar" aria-label="Game navigation">
@@ -34,11 +34,24 @@
 </aside>
 <main class="main">
 <section class="hero">
-<div class="hero-copy"><div class="eyebrow"><span class="pulse"></span> V8 LOCAL MULTIPLAYER</div><h1>Your next favorite game.<br><span class="gradient">One click away.</span></h1><p>Fast rounds, clever puzzles, and chaotic little challenges. Pick a game and play instantly.</p><div class="hero-actions"><button class="primary" id="randomBtn">✦ Play something random</button><button class="secondary" id="browseBtn">Explore the arcade ↓</button></div></div>
+<div class="hero-copy"><div class="eyebrow"><span class="pulse"></span> V9 MULTIPLAYER UNIVERSE</div><h1>Your next favorite game.<br><span class="gradient">One click away.</span></h1><p>Fast rounds, clever puzzles, and chaotic little challenges. Pick a game and play instantly.</p><div class="hero-actions"><button class="primary" id="randomBtn">✦ Play something random</button><button class="secondary" id="browseBtn">Explore the arcade ↓</button></div></div>
 <div class="hero-art" aria-hidden="true"><span class="art-star s1">✦</span><span class="art-star s2">✧</span><div class="art-orb">🎮</div></div>
 </section>
 <section class="daily-strip"><div class="daily-copy"><div class="daily-kicker"><span class="pulse"></span> THE DAILY DROP</div><h2 id="dailyGameTitle">Today&#39;s arcade pick</h2><p id="dailyGameDesc">A fresh challenge picked for your next break.</p><button id="dailyPlay" class="primary">Play today&#39;s pick ↗</button></div><div class="daily-art" aria-hidden="true"><span>✦</span><strong id="dailyEmoji">🎮</strong><i>✧</i></div></section>
-<div class="stats"><div class="stat"><strong id="statCount">195</strong> games to explore</div><div class="stat"><strong>27</strong> playable game engines</div><div class="stat"><strong>0</strong> accounts needed</div><div class="stat">↗ Runs in your browser</div></div>
+<div class="stats"><div class="stat"><strong id="statCount">195</strong> games to explore</div><div class="stat"><strong>27</strong> playable game engines</div><div class="stat"><strong>Free</strong> solo + local play</div><div class="stat">↗ Runs in your browser</div></div>
+<section class="multiplayer-hub" id="multiplayerHub" aria-labelledby="mpHubTitle">
+  <div class="mp-hub-head">
+    <div><div class="mp-kicker">V9 · MULTIPLAYER UNIVERSE</div><h2 id="mpHubTitle">Your next match starts here.</h2><p>Private rooms, friends across devices, and a profile that tracks your matches.</p></div>
+    <div class="mp-hub-badge">🎮 <span>PRIVATE ROOMS</span></div>
+  </div>
+  <div id="mpStatus" class="mp-status" role="status" aria-live="polite">Checking online services…</div>
+  <div class="mp-hub-grid">
+    <div id="mpAuthArea"><section class="mp-panel"><div class="mp-icon">🔐</div><h3>Online accounts</h3><p>Solo and same-device games never need an account.</p><a class="mp-guide-link" href="V9_SETUP.md" target="_blank" rel="noopener">V9 setup guide ↗</a></section></div>
+    <div class="mp-account-column"><div id="mpProfileArea"></div><div id="mpLobbyArea"></div></div>
+  </div>
+  <div id="mpRoomLive" aria-live="polite"></div>
+  <div class="mp-hub-foot">No public chat · Pseudonymous profiles · Server-checked moves</div>
+</section>
 <section class="quest-strip" aria-label="Arcade progress">
   <div class="quest-profile">
     <div class="quest-kicker">✦ YOUR ARCADE PASSPORT</div>
@@ -56,7 +69,7 @@
 <div class="chip-row" id="chips" aria-label="Genres"></div>
 <div id="gameGrid" class="game-grid"></div>
 <div id="empty" class="empty"><strong>No games found</strong>Try another search, or choose a different category.</div>
-<footer class="footer"><div><strong>✳ PixelLab</strong> · A little arcade for your downtime.</div><div>Free to play · No account · Progress saved locally</div></footer>
+<footer class="footer"><div><strong>✳ PixelLab</strong> · A little arcade for your downtime.</div><div>Free solo play · Accounts only for online matches · Progress saved locally</div></footer>
 </main>
 </div>
 </div>
@@ -66,6 +79,9 @@
 <div class="toast" id="toast"></div>
 <script src="catalog.js"></script>
 <script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="backend-config.js"></script>
+<script src="multiplayer.js"></script>
 <script src="games/rift-runner.js"></script>
 <script src="games/circuit-crafter.js"></script>
 <script src="games/star-courier.js"></script>
