@@ -137,3 +137,11 @@ body{background:radial-gradient(ellipse at 18% 8%,#2b2149 0,transparent 31%),rad
 .mp-resume-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 11px;border:1px solid #47405f;border-radius:11px;background:#211e31;color:#d9d3f5;font-size:11px}
 .mp-resume-row b{letter-spacing:2px;color:#8ce8d8}
 @media(max-width:520px){.mp-resume-row{align-items:flex-start;flex-direction:column}}
+
+.mp-history{margin-top:16px;padding-top:13px;border-top:1px solid #2b2e40}
+.mp-history h4{margin:0 0 9px;color:#bfc5d8;font-size:10px;letter-spacing:.8px;text-transform:uppercase}
+.mp-history-row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:9px;align-items:center;padding:8px 0;border-top:1px solid #242738}
+.mp-history-result{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.6px}
+.mp-history-result.win{color:#67dfc8}.mp-history-result.loss{color:#ff9bb2}.mp-history-result.draw{color:#d6c078}
+.mp-history-row strong{font-size:11px;color:#dbe0f2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-history-row small,.mp-history-empty{font-size:10px;color:#7f88a2}
