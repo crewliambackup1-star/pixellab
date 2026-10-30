@@ -10,6 +10,7 @@ create table if not exists public.profiles (
   draws integer not null default 0 check (draws >= 0),
   created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
+grant usage on schema public to authenticated;
 alter table public.profiles enable row level security;
 revoke all on public.profiles from public, anon, authenticated;
 grant select, update (username, avatar_key) on public.profiles to authenticated;
@@ -31,6 +32,7 @@ end;
 $$;
 drop trigger if exists on_pixel_lab_user_created on auth.users;
 create trigger on_pixel_lab_user_created after insert on auth.users for each row execute function public.handle_new_pixel_lab_user();
+revoke all on function public.handle_new_pixel_lab_user() from public, anon, authenticated;
 
 create table if not exists public.rooms (
   id uuid primary key default gen_random_uuid(),
