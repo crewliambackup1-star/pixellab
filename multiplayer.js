@@ -10,6 +10,8 @@
   let user = null;
   let profile = null;
   let resumableRoom = null;
+  let recentMatches = [];
+  let profileNames = {};
   let recoveryMode = false;
   let currentRoom = null;
   let roomChannel = null;
@@ -45,7 +47,19 @@
     if (!user || user.id !== userId) return;
     profile = error ? null : data;
     resumableRoom = null;
+    recentMatches = [];
+    profileNames = {};
     if (profile) {
+      const { data: history } = await client.from('match_history')
+        .select('id,game_id,player_x,player_o,winner_user_id,is_draw,created_at')
+        .or('player_x.eq.' + userId + ',player_o.eq.' + userId)
+        .order('created_at', { ascending: false }).limit(5);
+      recentMatches = history || [];
+      const playerIds = [...new Set(recentMatches.flatMap(match => [match.player_x, match.player_o]))];
+      if (playerIds.length) {
+        const { data: players } = await client.from('profiles').select('id,username').in('id', playerIds);
+        profileNames = Object.fromEntries((players || []).map(player => [player.id, player.username]));
+      }
       const { data: room } = await client.from('rooms').select('*')
         .or('host_user_id.eq.' + userId + ',guest_user_id.eq.' + userId)
         .in('status', ['waiting', 'playing'])
@@ -89,12 +103,20 @@
     const total = profile.wins + profile.losses + profile.draws;
     const rate = total ? Math.round(profile.wins * 100 / total) : 0;
     const avatars = { pixel: '🎮', spark: '✨', comet: '☄️', bolt: '⚡', orbit: '🪐', wave: '🌊' };
+    const historyMarkup = recentMatches.length ? recentMatches.map(match => {
+      const opponentId = match.player_x === user.id ? match.player_o : match.player_x;
+      const opponent = profileNames[opponentId] || 'PixelLab player';
+      const result = match.is_draw ? 'Draw' : match.winner_user_id === user.id ? 'Win' : 'Loss';
+      const date = new Date(match.created_at).toLocaleDateString();
+      return '<div class="mp-history-row"><span class="mp-history-result ' + result.toLowerCase() + '">' + result + '</span><strong>@' + esc(opponent) + '</strong><small>' + esc(date) + '</small></div>';
+    }).join('') : '<p class="mp-history-empty">Your completed online matches will appear here.</p>';
     return '<div class="mp-profile-card"><div class="mp-profile-top"><div class="mp-avatar">' + (avatars[profile.avatar_key] || '🎮') +
       '</div><div><span class="mp-kicker">SIGNED IN</span><h3>@' + esc(profile.username) + '</h3><p>Your email stays private.</p></div>' +
       '<button type="button" id="mpSignOut" class="mp-quiet-button">Sign out</button></div>' +
       '<div class="mp-profile-controls"><label>Avatar<select id="mpAvatar">' + Object.entries(avatars).map(([k,v]) => '<option value="' + k + '"' + (profile.avatar_key === k ? ' selected' : '') + '>' + v + ' ' + k[0].toUpperCase() + k.slice(1) + '</option>').join('') + '</select></label>' +
       '<label>Username<input id="mpUsername" value="' + esc(profile.username) + '" minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}"></label><button type="button" id="mpSaveProfile" class="secondary">Save profile</button></div>' +
-      '<div class="mp-profile-stats"><div><strong>' + profile.wins + '</strong><span>Wins</span></div><div><strong>' + profile.losses + '</strong><span>Losses</span></div><div><strong>' + profile.draws + '</strong><span>Draws</span></div><div><strong>' + rate + '%</strong><span>Win rate</span></div></div></div>';
+      '<div class="mp-profile-stats"><div><strong>' + profile.wins + '</strong><span>Wins</span></div><div><strong>' + profile.losses + '</strong><span>Losses</span></div><div><strong>' + profile.draws + '</strong><span>Draws</span></div><div><strong>' + rate + '%</strong><span>Win rate</span></div></div>' +
+      '<div class="mp-history"><h4>Recent online matches</h4>' + historyMarkup + '</div></div>';
   }
   function lobbyCard() {
     if (!user || !profile) return '';
@@ -307,7 +329,7 @@
         if (event === 'INITIAL_SESSION') return;
         user = session?.user || null;
         if (event === 'PASSWORD_RECOVERY') recoveryMode = true;
-        if (!user) { profile = null; resumableRoom = null; recoveryMode = false; stopRoomWatch(); currentRoom = null; if ($('mpRoomLive')) $('mpRoomLive').innerHTML = ''; }
+        if (!user) { profile = null; resumableRoom = null; recentMatches = []; profileNames = {}; recoveryMode = false; stopRoomWatch(); currentRoom = null; if ($('mpRoomLive')) $('mpRoomLive').innerHTML = ''; }
         else { window.setTimeout(() => loadProfile().catch(() => setStatus('Could not load your profile. Refresh and try again.', 'error')), 0); }
         renderHub();
       });
