@@ -11,7 +11,7 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
 alter table public.profiles enable row level security;
-revoke all on public.profiles from anon;
+revoke all on public.profiles from public, anon, authenticated;
 grant select, update (username, avatar_key) on public.profiles to authenticated;
 drop policy if exists "Signed-in players can view public profiles" on public.profiles;
 create policy "Signed-in players can view public profiles" on public.profiles for select to authenticated using (true);
