@@ -141,6 +141,14 @@ assert.match(multiplayerSql, /v_room\.turn_user_id <> v_uid/i, 'The database mus
 assert.match(multiplayerSql, /That square is already taken/i, 'The database must reject occupied squares');
 assert.match(multiplayerSql, /insert into public\.match_history/i, 'Completed matches must be stored');
 assert.match(multiplayerSql, /board jsonb not null default '\["","","","","","","","",""\]'::jsonb/i, 'The Tic-Tac-Toe board must start with exactly nine cells');
+assert.doesNotMatch(multiplayer, /watchRoom\(/, 'All active room views must use the shared room renderer');
+const sqlTags = [...multiplayerSql.matchAll(/\$[a-z_]+\$/g)].map((match) => match[0]);
+for (const tag of new Set(sqlTags)) {
+  assert.equal(sqlTags.filter((item) => item === tag).length, 2, `SQL dollar-quote tag ${tag} must be paired`);
+}
+assert.match(multiplayerSql, /create trigger on_pixel_lab_user_created/i, 'New accounts must receive a profile row');
+assert.match(multiplayerSql, /pg_advisory_xact_lock/i, 'Room creation must serialize duplicate active-room checks');
+assert.match(multiplayerSql, /expires_at > now\(\)/i, 'Expired rooms must not be joinable');
 
 console.log('PixelLab validation passed.');
 console.log(`Catalog: ${coreIds.length} engines × ${themeIds.length} themes + ${originalIds.length} originals = 195 entries.`);
