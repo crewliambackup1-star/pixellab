@@ -35,6 +35,6 @@ The public site is deployed from `main`. The `backup/v7-stable-2026-10-27` branc
 
 ## Multiplayer note
 
-V8 adds AI and same-device play to Tic-Tac-Toe, Connect Four, and Neon Pong. V9 adds the account/profile UI, private-room workflow, and the first cross-device Tic-Tac-Toe implementation backed by Supabase Auth, Postgres, and Realtime. The browser configuration intentionally starts blank. Online play is not ready until a Supabase project is configured, the migration is reviewed and applied, and two-browser testing succeeds.
+V8 adds AI and same-device play to Tic-Tac-Toe, Connect Four, and Neon Pong. V9 adds the account/profile UI, private-room workflow, password recovery, active-room resume after reload, and the first cross-device Tic-Tac-Toe implementation backed by Supabase Auth, Postgres, and Realtime. The browser configuration intentionally starts blank. Online play is not ready until a Supabase project is configured, the migration is reviewed and applied, and two-browser testing succeeds.
 
 The SQL migration uses row-level security and server-side RPCs to validate room membership, turns, moves, and results. Clients do not receive direct room-row mutation rights. Do not add a secret/service-role key to the static frontend. Keep Connect Four and Neon Pong online options disabled until each game has its own validated backend moves. Read V9_SETUP.md before enabling registration.
