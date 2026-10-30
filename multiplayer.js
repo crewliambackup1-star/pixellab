@@ -123,7 +123,7 @@
     return '<div class="mp-lobby-card"><span class="mp-kicker">PRIVATE MATCHMAKING</span><h3>Play with a friend</h3>' +
       '<p>Create a room and share its six-character code, or enter a friend’s code. Both players must sign in.</p>' +
       (resumableRoom ? '<div class="mp-resume-row"><span>Active room · <b>' + esc(resumableRoom.code) + '</b></span><button type="button" id="mpResumeRoom" class="secondary">Resume match</button></div>' : '') +
-      '<label>Game<select id="mpGameSelect"><option value="tictactoe">Tic-Tac-Toe · Online beta</option><option disabled>Connect Four · Online coming next</option><option disabled>Neon Pong · Online coming next</option></select></label>' +
+      '<label>Game<select id="mpGameSelect"><option value="tictactoe">Tic-Tac-Toe · Online beta</option><option value="connect4">Connect Four · Online beta</option><option disabled>Neon Pong · Online coming next</option></select></label>' +
       '<button type="button" id="mpCreateRoom" class="primary">＋ Create private room</button>' +
       '<form id="mpJoinRoomForm" class="mp-join-form"><label>Room code<input id="mpJoinCode" name="code" autocomplete="off" maxlength="6" minlength="6" pattern="[A-HJ-NP-Z2-9]{6}" placeholder="ABC234" required></label><button class="secondary" type="submit">Join room</button></form>' +
       '<p class="mp-safe-note">Room codes are private invitations, not passwords. Only the two joined accounts can access a match. Open chat is intentionally not included.</p></div>';
@@ -235,8 +235,11 @@
   }
   async function createRoom() {
     if (!client || !user || busy) { openHub(); return; }
+    const gameId = $('mpGameSelect')?.value || targetGame || 'tictactoe';
+    if (!['tictactoe', 'connect4'].includes(gameId)) { setStatus('Choose a game that is ready for online play.', 'error'); return; }
+    targetGame = gameId;
     busy = true; setStatus('Creating private room…');
-    const { data, error } = await client.rpc('create_private_room', { p_game_id: 'tictactoe' });
+    const { data, error } = await client.rpc('create_private_room', { p_game_id: gameId });
     busy = false;
     if (error) { setStatus(error.message || 'Could not create room.', 'error'); return; }
     await showRoom(data);
@@ -253,6 +256,7 @@
   async function showRoom(room) {
     stopRoomWatch();
     currentRoom = room;
+    targetGame = room.game_id || 'tictactoe';
     renderRoom(room);
     const live = $('mpRoomLive');
     if (live) live.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -276,22 +280,52 @@
   }
   function renderRoom(room) {
     currentRoom = room;
+    targetGame = room.game_id || 'tictactoe';
     const live = $('mpRoomLive');
     if (!live) return;
+    const isConnectFour = room.game_id === 'connect4';
     const waiting = room.status === 'waiting';
     const finished = room.status === 'finished';
     const isHost = room.host_user_id === (user && user.id);
-    const myMark = isHost ? 'X' : 'O';
+    const hostMark = isConnectFour ? 'Red' : 'X';
+    const guestMark = isConnectFour ? 'Yellow' : 'O';
+    const myMark = isHost ? hostMark : guestMark;
     let outcome = '';
     if (finished) outcome = room.is_draw ? 'Draw game.' : room.winner_user_id === user.id ? 'You won! 🎉' : 'Your friend won this round.';
     else if (waiting) outcome = 'Waiting for a friend to join…';
     else outcome = room.turn_user_id === user.id ? 'Your turn (' + myMark + ').' : 'Your friend’s turn.';
     const cells = Array.isArray(room.board) ? room.board : [];
-    live.innerHTML = '<div class="mp-room-card"><div class="mp-room-head"><div><span class="mp-kicker">PRIVATE TICTACTOE ROOM</span><h3>Room ' + esc(room.code) + '</h3><p>' + esc(outcome) + '</p></div>' +
+    const players = '<div class="mp-player-row"><span>✳ <b>' +
+      (isHost ? 'You · ' + hostMark : 'Host · ' + hostMark) +
+      '</b></span><span>✳ <b>' +
+      (isHost ? (room.guest_user_id ? 'Guest · ' + guestMark : 'Waiting for player') : 'You · ' + guestMark) +
+      '</b></span></div>';
+    let boardMarkup = '';
+    if (!waiting && isConnectFour) {
+      const canMove = !finished && room.turn_user_id === user.id;
+      const drops = Array.from({ length: 7 }, (_, col) => {
+        const full = Array.from({ length: 6 }, (_, row) => Number(cells[row * 7 + col] || 0)).every(value => value !== 0);
+        return '<button type="button" class="mp-connect4-drop" data-column="' + col + '"' +
+          ((!canMove || full) ? ' disabled' : '') + ' aria-label="Drop in column ' + (col + 1) + '">↓</button>';
+      }).join('');
+      const pieces = Array.from({ length: 42 }, (_, i) => {
+        const value = Number(cells[i] || 0);
+        const state = value === 1 ? ' red' : value === 2 ? ' yellow' : '';
+        return '<span class="mp-connect4-cell' + state + '" aria-hidden="true"></span>';
+      }).join('');
+      boardMarkup = '<div class="mp-connect4-board" role="group" aria-label="Online Connect Four board">' +
+        '<div class="mp-connect4-drop-row">' + drops + '</div><div class="mp-connect4-grid">' + pieces + '</div></div>';
+    } else if (!waiting) {
+      boardMarkup = '<div class="mp-online-board" role="group" aria-label="Online Tic-Tac-Toe board">' +
+        Array.from({ length: 9 }, (_, i) => '<button type="button" class="mp-online-cell" data-cell="' + i + '"' +
+          ((cells[i] || finished || room.turn_user_id !== user.id) ? ' disabled' : '') + '>' +
+          esc(cells[i] || '') + '</button>').join('') + '</div>';
+    }
+    const roomName = isConnectFour ? 'CONNECT FOUR' : 'TIC-TAC-TOE';
+    live.innerHTML = '<div class="mp-room-card"><div class="mp-room-head"><div><span class="mp-kicker">PRIVATE ' + roomName + ' ROOM</span><h3>Room ' + esc(room.code) + '</h3><p>' + esc(outcome) + '</p></div>' +
       '<button type="button" id="mpLeaveRoom" class="mp-quiet-button">Leave room</button></div>' +
       (waiting ? '<div class="mp-waiting"><span class="mp-wait-pulse"></span><strong>Room created</strong><p>Share the code or invite link with your friend. They must sign in and enter this code.</p><div class="mp-code-row"><strong>' + esc(room.code) + '</strong><button type="button" id="mpCopyInvite" class="secondary">Copy invite link</button></div></div>' : '') +
-      '<div class="mp-player-row"><span>✳ <b>' + (isHost ? 'You · X' : 'Host · X') + '</b></span><span>✳ <b>' + (isHost ? (room.guest_user_id ? 'Guest · O' : 'Waiting for player') : 'You · O') + '</b></span></div>' +
-      (!waiting ? '<div class="mp-online-board" role="group" aria-label="Online Tic-Tac-Toe board">' + Array.from({length:9}, (_, i) => '<button type="button" class="mp-online-cell" data-cell="' + i + '"' + ((cells[i] || finished || room.turn_user_id !== user.id) ? ' disabled' : '') + '>' + esc(cells[i] || '') + '</button>').join('') + '</div>' : '') +
+      players + boardMarkup +
       (finished ? '<p class="mp-room-result">' + esc(outcome) + '</p><button type="button" id="mpNewRoom" class="primary">Create another room</button>' : '') +
       '<p class="mp-safe-note">Moves are checked by the database. Do not share your room code publicly.</p></div>';
     const copy = $('mpCopyInvite');
@@ -304,6 +338,16 @@
       if (!currentRoom || currentRoom.status !== 'playing' || currentRoom.turn_user_id !== user.id) return;
       cell.disabled = true;
       const { data, error } = await client.rpc('make_ttt_move', { p_room_id: currentRoom.id, p_cell: Number(cell.dataset.cell) });
+      if (error) { setStatus(error.message || 'Move was not accepted.', 'error'); await refreshRoom(); }
+      else { setStatus('Move sent.', 'success'); if (data) renderRoom(data); await refreshRoom(); }
+    }));
+    document.querySelectorAll('[data-column]').forEach(column => column.addEventListener('click', async () => {
+      if (!currentRoom || currentRoom.game_id !== 'connect4' || currentRoom.status !== 'playing' || currentRoom.turn_user_id !== user.id) return;
+      column.disabled = true;
+      const { data, error } = await client.rpc('make_connect4_move', {
+        p_room_id: currentRoom.id,
+        p_column: Number(column.dataset.column)
+      });
       if (error) { setStatus(error.message || 'Move was not accepted.', 'error'); await refreshRoom(); }
       else { setStatus('Move sent.', 'success'); if (data) renderRoom(data); await refreshRoom(); }
     }));
@@ -322,6 +366,7 @@
     const newRoom = $('mpNewRoom');
     if (newRoom) newRoom.addEventListener('click', () => { live.innerHTML = ''; createRoom(); });
   }
+
   async function init() {
     if (validConfig() && window.supabase && typeof window.supabase.createClient === 'function') {
       client = window.supabase.createClient(config.url.replace(/\/$/, ''), config.publishableKey);
@@ -348,6 +393,13 @@
     openOnlineTicTacToe() {
       if (typeof window.closeGame === 'function') window.closeGame();
       openHub('tictactoe');
+      if (!validConfig()) setStatus('Online play is not connected yet. Solo and same-device modes remain available.');
+      else if (!client) setStatus('The account library did not load. Reload and try again.', 'error');
+      else if (!user) setStatus('Sign in or create an account to create or join a room.');
+    },
+    openOnlineConnectFour() {
+      if (typeof window.closeGame === 'function') window.closeGame();
+      openHub('connect4');
       if (!validConfig()) setStatus('Online play is not connected yet. Solo and same-device modes remain available.');
       else if (!client) setStatus('The account library did not load. Reload and try again.', 'error');
       else if (!user) setStatus('Sign in or create an account to create or join a room.');
