@@ -10,16 +10,17 @@ Profiles contain only a pseudonymous username, avatar key, and match counts. The
 
 ## Before activating public accounts
 
-Because this is a young person's project, have a parent/guardian review and handle any provider account setup as appropriate. Review provider terms, privacy, age requirements, authentication/email settings, and data retention before opening registration. Test with private accounts first and collect only the data the game needs.
+Because this is a young person's project, a parent/guardian should review and manage the Supabase project and provider account setup. The provider's Terms require the account holder to have authority to accept the agreement. Review the current terms, privacy policy, applicable age requirements, authentication/email settings, and data retention before enabling registration. Test privately first and collect only the data the game needs.
 
 ## Configure Supabase
 
 1. Create a Supabase project with parent/guardian help as appropriate, then open its SQL Editor.
-2. Review and run supabase/migrations/001_multiplayer_universe.sql.
+2. Review and run supabase/migrations/001_multiplayer_universe.sql. It explicitly revokes broad defaults and grants only the table permissions the client needs. Supabase is changing its default Data API exposure on October 30, 2026, so explicit grants matter for new projects and existing projects after that date.
 3. Configure email/password authentication and confirmation. Add the GitHub Pages URL to allowed site/redirect URLs: https://crewliambackup1-star.github.io/pixellab/ (use the exact project-page URL shown in your browser).
-4. In backend-config.js, set url to your project URL and publishableKey to the project's publishable browser key. These are public client values. Never use a secret/service-role key.
-5. In Realtime settings, make sure the rooms table is available for Postgres Changes. Keep room reads protected by the migration's RLS policy.
-6. Test signup, confirmation, sign-in, sign-out, password reset, create/join, turns, two-player results, reconnects, and leaving a room in two separate browser profiles. Do not announce online play as ready until tests pass.
+4. In the Supabase Dashboard, confirm the public schema is exposed to the Data API so the explicitly granted tables and RPC functions can be reached. The migration does not grant broad table access: profiles are readable to signed-in users, room rows are readable only to their two participants, and room writes go through validated RPC functions.
+5. In backend-config.js, set url to your project URL and publishableKey to the project's publishable browser key. These are public client values. Never use a secret/service-role key.
+6. In Realtime settings, make sure the rooms table is available for Postgres Changes. Keep room reads protected by the migration's RLS policy.
+7. Test signup, confirmation, sign-in, sign-out, password reset, create/join, turns, two-player results, reload/reconnect, and leaving a room in two separate browser profiles. Do not announce online play as ready until tests pass.
 
 ## Security notes
 
