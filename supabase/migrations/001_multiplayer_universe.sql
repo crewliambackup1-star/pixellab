@@ -41,7 +41,7 @@ create table if not exists public.rooms (
   host_user_id uuid not null references auth.users(id) on delete cascade,
   guest_user_id uuid references auth.users(id) on delete set null,
   status text not null default 'waiting' check (status in ('waiting','playing','finished')),
-  board jsonb not null default '["","","","","","","",""]'::jsonb
+  board jsonb not null default '["","","","","","","","",""]'::jsonb
     check (jsonb_typeof(board) = 'array' and ((game_id = 'tictactoe' and jsonb_array_length(board) = 9) or (game_id = 'connect4' and jsonb_array_length(board) = 42))),
   turn_user_id uuid references auth.users(id) on delete set null,
   winner_user_id uuid references auth.users(id) on delete set null,
@@ -187,7 +187,7 @@ $$;
 
 create or replace function public.make_connect4_move(p_room_id uuid, p_column integer)
 returns jsonb language plpgsql security definer set search_path = ''
-as $
+as $pl$
 declare
   v_uid uuid := auth.uid();
   v_room public.rooms%rowtype;
@@ -268,7 +268,7 @@ begin
   end if;
   return to_jsonb(v_room);
 end;
-$;
+$pl$;
 
 create or replace function public.leave_private_room(p_room_id uuid)
 returns boolean language plpgsql security definer set search_path = ''
