@@ -125,7 +125,16 @@ assert.match(multiplayer, /join_private_room/, 'The room join flow is missing');
 assert.match(multiplayer, /make_ttt_move/, 'The online move flow is missing');
 assert.match(multiplayerSql, /enable row level security/i, 'Database RLS must be enabled');
 assert.match(multiplayerSql, /make_ttt_move/, 'Server-side Tic-Tac-Toe validation is missing');
+assert.match(multiplayer, /mpNewPasswordForm/, 'Password recovery UI is missing');
+assert.match(multiplayer, /mpResumeRoom/, 'Active room resume UI is missing');
+assert.match(multiplayer, /gt\('expires_at'/, 'Expired rooms must not be restored or polled as live');
+assert.match(multiplayerSql, /revoke all on public\.profiles from public, anon, authenticated/i, 'Profile table defaults must be revoked before least-privilege grants');
+assert.match(multiplayerSql, /revoke all on public\.rooms from public, anon, authenticated/i, 'Room table defaults must be revoked before least-privilege grants');
+assert.match(multiplayerSql, /expires_at <= now\(\)/i, 'Expired rooms must reject server-side moves');
 assert.doesNotMatch(multiplayerSql, /grant\s+(?:all|insert|update|delete)\s+on\s+public\.rooms\s+to\s+authenticated/i, 'Clients must not get direct room mutation rights');
+const cdnPosition = html.indexOf('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+const multiplayerPosition = html.indexOf('src="multiplayer.js"');
+assert.ok(cdnPosition >= 0 && multiplayerPosition > cdnPosition, 'Supabase client must load before the multiplayer app');
 
 console.log('PixelLab validation passed.');
 console.log(`Catalog: ${coreIds.length} engines × ${themeIds.length} themes + ${originalIds.length} originals = 195 entries.`);
