@@ -25,7 +25,7 @@
   function validConfig() {
     const url = String(config.url || '').trim();
     const key = String(config.publishableKey || '').trim();
-    const allowedKey = key.startsWith('sb_publishable_') || (key.startsWith('eyJ') && !key.includes('service_role'));
+    const allowedKey = key.startsWith('sb_publishable_');
     return config.provider === 'supabase'
       && /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(url)
       && allowedKey
@@ -109,7 +109,7 @@
 
     if (!state.user || state.user.id !== playerId) return;
     renderHub();
-    if (state.room) watchRoom(state.room);
+    if (state.room) showRoom(state.room);
   }
 
   function backendCard() {
@@ -346,7 +346,7 @@
     });
 
     const resume = $('mpResumeRoom');
-    if (resume && state.room) resume.addEventListener('click', () => watchRoom(state.room));
+    if (resume && state.room) resume.addEventListener('click', () => showRoom(state.room));
 
     const create = $('mpCreateRoom');
     if (create) create.addEventListener('click', createRoom);
