@@ -35,6 +35,6 @@ The public site is deployed from `main`. The `backup/v7-stable-2026-10-27` branc
 
 ## Multiplayer note
 
-The first multiplayer phase adds **AI or same-device play** to Tic-Tac-Toe, Connect Four, and Neon Pong. The mode picker shows online rooms as coming soon rather than pretending they work. Neon Pong and more games can be adapted in later phases.
+V9 is a clean restart from the published V8 baseline. Stage 1 adds account/profile UI, private room codes, and database-validated online Tic-Tac-Toe. Online play stays inactive until an adult-managed Supabase project is configured, the migration is applied, and two-browser tests pass. Connect Four and Neon Pong remain local/AI until later V9 stages.
 
-GitHub Pages hosts only the static frontend; it cannot keep live game rooms synchronized between separate devices by itself. Online room codes, invitations, reconnect handling, and shared game state require a realtime backend or multiplayer service. Choose and configure that service before enabling online-room buttons.
+The SQL migration applies row-level security and least-privilege grants to profiles, rooms, and participant-only match history. Client roles cannot directly write room state; database functions validate room access, turn order, legal moves, and results. Never add a secret/service-role key to browser code. Read V9_SETUP.md and V9_ROADMAP.md before backend setup or release.
