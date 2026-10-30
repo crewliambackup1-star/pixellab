@@ -100,6 +100,7 @@ begin
   if p_cell < 0 or p_cell > 8 then raise exception 'Invalid board position.'; end if;
   select * into v_room from public.rooms where id = p_room_id for update;
   if not found then raise exception 'This room no longer exists.'; end if;
+  if v_room.expires_at <= now() then raise exception 'This room has expired.'; end if;
   if v_room.status <> 'playing' or v_room.guest_user_id is null then raise exception 'Waiting for a second player.'; end if;
   if v_uid not in (v_room.host_user_id, v_room.guest_user_id) then raise exception 'You are not a player in this room.'; end if;
   if v_room.turn_user_id <> v_uid then raise exception 'It is the other player''s turn.'; end if;
