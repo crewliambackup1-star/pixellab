@@ -57,6 +57,28 @@ grant select on public.rooms to authenticated;
 drop policy if exists "Room participants can read their rooms" on public.rooms;
 create policy "Room participants can read their rooms" on public.rooms for select to authenticated using ((select auth.uid()) = host_user_id or (select auth.uid()) = guest_user_id);
 
+create table if not exists public.match_history (
+  id uuid primary key default gen_random_uuid(),
+  room_id uuid not null unique,
+  game_id text not null check (game_id = 'tictactoe'),
+  player_x uuid not null references public.profiles(id) on delete cascade,
+  player_o uuid not null references public.profiles(id) on delete cascade,
+  winner_user_id uuid references public.profiles(id) on delete set null,
+  is_draw boolean not null default false,
+  created_at timestamptz not null default now(),
+  check (player_x <> player_o),
+  check ((is_draw and winner_user_id is null) or (not is_draw and winner_user_id in (player_x, player_o)))
+);
+create index if not exists match_history_player_x_idx on public.match_history (player_x, created_at desc);
+create index if not exists match_history_player_o_idx on public.match_history (player_o, created_at desc);
+alter table public.match_history enable row level security;
+revoke all on public.match_history from public, anon, authenticated;
+grant select on public.match_history to authenticated;
+drop policy if exists "Players can read only their own match history" on public.match_history;
+create policy "Players can read only their own match history" on public.match_history
+  for select to authenticated
+  using ((select auth.uid()) = player_x or (select auth.uid()) = player_o);
+
 create or replace function public.create_private_room(p_game_id text default 'tictactoe')
 returns jsonb language plpgsql security definer set search_path = ''
 as $$
@@ -124,9 +146,13 @@ begin
     update public.rooms set board = v_board, status = 'finished', winner_user_id = v_uid, is_draw = false, updated_at = now() where id = p_room_id returning * into v_room;
     update public.profiles set wins = wins + 1, updated_at = now() where id = v_uid;
     update public.profiles set losses = losses + 1, updated_at = now() where id = case when v_uid = v_room.host_user_id then v_room.guest_user_id else v_room.host_user_id end;
+    insert into public.match_history (room_id, game_id, player_x, player_o, winner_user_id, is_draw)
+      values (p_room_id, v_room.game_id, v_room.host_user_id, v_room.guest_user_id, v_uid, false);
   elsif v_draw then
     update public.rooms set board = v_board, status = 'finished', winner_user_id = null, is_draw = true, updated_at = now() where id = p_room_id returning * into v_room;
     update public.profiles set draws = draws + 1, updated_at = now() where id in (v_room.host_user_id, v_room.guest_user_id);
+    insert into public.match_history (room_id, game_id, player_x, player_o, winner_user_id, is_draw)
+      values (p_room_id, v_room.game_id, v_room.host_user_id, v_room.guest_user_id, null, true);
   else
     update public.rooms set board = v_board, turn_user_id = case when v_uid = host_user_id then guest_user_id else host_user_id end, updated_at = now() where id = p_room_id returning * into v_room;
   end if;
