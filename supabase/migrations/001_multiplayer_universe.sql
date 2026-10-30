@@ -50,7 +50,7 @@ create table if not exists public.rooms (
 create index if not exists rooms_code_status_idx on public.rooms (code, status);
 create index if not exists rooms_host_created_idx on public.rooms (host_user_id, created_at desc);
 alter table public.rooms enable row level security;
-revoke all on public.rooms from anon;
+revoke all on public.rooms from public, anon, authenticated;
 grant select on public.rooms to authenticated;
 drop policy if exists "Room participants can read their rooms" on public.rooms;
 create policy "Room participants can read their rooms" on public.rooms for select to authenticated using ((select auth.uid()) = host_user_id or (select auth.uid()) = guest_user_id);
