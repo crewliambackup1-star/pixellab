@@ -13,10 +13,13 @@ function gameConnect4(g){
   const choices=document.createElement('div');choices.className='mp-mode-picker';
   choices.append(modeButton('🤖 Play vs AI','Try to connect four before the computer.','ai'));
   choices.append(modeButton('👥 2 Players · Same Device','Red and yellow take turns on this screen.','local'));
-  choices.append(modeButton('🌐 Online room','Invite someone on another device — coming soon.','online',true));
+  choices.append(modeButton('🌐 Online room','Sign in and invite someone to play Connect Four across devices.','online',false));
   b.append(choices);
  }
- function startRound(nextMode=mode){clearTimeout(aiTimer);mode=nextMode;board=Array.from({length:42},()=>0);over=false;thinking=false;renderGame()}
+ function startRound(nextMode=mode){
+  if(nextMode==='online'){if(typeof window.PixelLabMultiplayer?.openOnlineConnectFour==='function')window.PixelLabMultiplayer.openOnlineConnectFour();else if(typeof flash==='function')flash('Online room services are not connected yet.');return;}
+  clearTimeout(aiTimer);mode=nextMode;board=Array.from({length:42},()=>0);over=false;thinking=false;renderGame();
+ }
  function renderGame(){
   b.innerHTML='';const msg=document.createElement('div');msg.className='big-number mp-title';msg.style.fontSize='28px';b.append(msg);
   const grid=document.createElement('div');grid.style.display='grid';grid.style.gridTemplateColumns='repeat(7,minmax(25px,44px))';grid.style.gap='5px';grid.style.padding='10px';grid.style.background='#202847';grid.style.borderRadius='16px';grid.style.width='max-content';grid.style.maxWidth='100%';grid.style.margin='0 auto';b.append(grid);
