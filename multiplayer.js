@@ -9,6 +9,8 @@
   let client = null;
   let user = null;
   let profile = null;
+  let resumableRoom = null;
+  let recoveryMode = false;
   let currentRoom = null;
   let roomChannel = null;
   let roomPoller = null;
@@ -34,17 +36,31 @@
     if (roomPoller) window.clearInterval(roomPoller);
     roomPoller = null;
   }
-  function loadProfile() {
-    if (!client || !user) { profile = null; renderHub(); return; }
-    client.from('profiles').select('id,username,avatar_key,wins,losses,draws,created_at')
-      .eq('id', user.id).single()
-      .then(({ data, error }) => {
-        profile = error ? null : data;
-        renderHub();
-        if (currentRoom) renderRoom(currentRoom);
-      });
+  async function loadProfile() {
+    if (!client || !user) { profile = null; resumableRoom = null; renderHub(); return; }
+    const userId = user.id;
+    const { data, error } = await client.from('profiles')
+      .select('id,username,avatar_key,wins,losses,draws,created_at')
+      .eq('id', userId).single();
+    if (!user || user.id !== userId) return;
+    profile = error ? null : data;
+    resumableRoom = null;
+    if (profile) {
+      const { data: room } = await client.from('rooms').select('*')
+        .or('host_user_id.eq.' + userId + ',guest_user_id.eq.' + userId)
+        .in('status', ['waiting', 'playing'])
+        .gt('expires_at', new Date().toISOString())
+        .order('updated_at', { ascending: false }).limit(1).maybeSingle();
+      if (user && user.id === userId) resumableRoom = room || null;
+    }
+    renderHub();
+    if (currentRoom) renderRoom(currentRoom);
   }
   function authCard() {
+    if (recoveryMode) {
+      return '<div class="mp-auth-card"><span class="mp-kicker">ACCOUNT RECOVERY</span><h3>Choose a new password</h3>' +
+        '<form id="mpNewPasswordForm" class="mp-form"><label>New password<input type="password" name="password" autocomplete="new-password" minlength="10" maxlength="128" required></label><button class="primary" type="submit">Update password</button></form></div>';
+    }
     if (!validConfig()) {
       return '<div class="mp-setup-card"><div class="mp-big-icon">🔐</div>' +
         '<span class="mp-kicker">ACCOUNT SYSTEM</span><h3>Online play is nearly ready.</h3>' +
@@ -84,6 +100,7 @@
     if (!user || !profile) return '';
     return '<div class="mp-lobby-card"><span class="mp-kicker">PRIVATE MATCHMAKING</span><h3>Play with a friend</h3>' +
       '<p>Create a room and share its six-character code, or enter a friend’s code. Both players must sign in.</p>' +
+      (resumableRoom ? '<div class="mp-resume-row"><span>Active room · <b>' + esc(resumableRoom.code) + '</b></span><button type="button" id="mpResumeRoom" class="secondary">Resume match</button></div>' : '') +
       '<label>Game<select id="mpGameSelect"><option value="tictactoe">Tic-Tac-Toe · Online beta</option><option disabled>Connect Four · Online coming next</option><option disabled>Neon Pong · Online coming next</option></select></label>' +
       '<button type="button" id="mpCreateRoom" class="primary">＋ Create private room</button>' +
       '<form id="mpJoinRoomForm" class="mp-join-form"><label>Room code<input id="mpJoinCode" name="code" autocomplete="off" maxlength="6" minlength="6" pattern="[A-HJ-NP-Z2-9]{6}" placeholder="ABC234" required></label><button class="secondary" type="submit">Join room</button></form>' +
@@ -108,6 +125,15 @@
     bindHubForms();
   }
   function bindHubForms() {
+    const recoveryForm = $('mpNewPasswordForm');
+    if (recoveryForm) recoveryForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const password = String(new FormData(recoveryForm).get('password') || '');
+      if (password.length < 10) { setStatus('Use at least 10 characters for your new password.', 'error'); return; }
+      const { error } = await client.auth.updateUser({ password });
+      if (error) setStatus(error.message || 'Password could not be updated.', 'error');
+      else { recoveryMode = false; renderHub(); setStatus('Password updated. You can now play online.', 'success'); }
+    });
     const tabButtons = document.querySelectorAll('[data-auth-tab]');
     tabButtons.forEach(button => button.addEventListener('click', () => {
       const signup = button.dataset.authTab === 'signup';
@@ -165,6 +191,8 @@
       setStatus(error ? (error.message || 'Profile could not be saved.') : 'Profile saved.', error ? 'error' : 'success');
       if (!error) loadProfile();
     });
+    const resume = $('mpResumeRoom');
+    if (resume && resumableRoom) resume.addEventListener('click', () => showRoom(resumableRoom));
     const create = $('mpCreateRoom');
     if (create) create.addEventListener('click', createRoom);
     const join = $('mpJoinRoomForm');
@@ -276,13 +304,11 @@
       client = window.supabase.createClient(config.url.replace(/\/$/, ''), config.publishableKey);
       const { data } = await client.auth.getSession();
       user = data?.session?.user || null;
-      if (user) await new Promise(resolve => {
-        client.from('profiles').select('id,username,avatar_key,wins,losses,draws,created_at').eq('id', user.id).single()
-          .then(({ data: row, error }) => { profile = error ? null : row; resolve(); });
-      });
+      if (user) await loadProfile();
       client.auth.onAuthStateChange((event, session) => {
         user = session?.user || null;
-        if (!user) { profile = null; stopRoomWatch(); currentRoom = null; }
+        if (event === 'PASSWORD_RECOVERY') recoveryMode = true;
+        if (!user) { profile = null; resumableRoom = null; recoveryMode = false; stopRoomWatch(); currentRoom = null; }
         else { window.setTimeout(loadProfile, 0); }
         renderHub();
       });
