@@ -241,7 +241,7 @@
   }
   async function refreshRoom() {
     if (!client || !currentRoom) return;
-    const { data, error } = await client.from('rooms').select('*').eq('id', currentRoom.id).maybeSingle();
+    const { data, error } = await client.from('rooms').select('*').eq('id', currentRoom.id).gt('expires_at', new Date().toISOString()).maybeSingle();
     if (error) return;
     if (!data) {
       stopRoomWatch(); currentRoom = null;
@@ -291,6 +291,7 @@
       stopRoomWatch();
       const { error } = await client.rpc('leave_private_room', { p_room_id: id });
       currentRoom = null;
+      resumableRoom = null;
       if (error) setStatus(error.message || 'Could not leave room.', 'error');
       live.innerHTML = '';
       renderHub();
@@ -302,16 +303,17 @@
   async function init() {
     if (validConfig() && window.supabase && typeof window.supabase.createClient === 'function') {
       client = window.supabase.createClient(config.url.replace(/\/$/, ''), config.publishableKey);
+      client.auth.onAuthStateChange((event, session) => {
+        if (event === 'INITIAL_SESSION') return;
+        user = session?.user || null;
+        if (event === 'PASSWORD_RECOVERY') recoveryMode = true;
+        if (!user) { profile = null; resumableRoom = null; recoveryMode = false; stopRoomWatch(); currentRoom = null; if ($('mpRoomLive')) $('mpRoomLive').innerHTML = ''; }
+        else { window.setTimeout(() => loadProfile().catch(() => setStatus('Could not load your profile. Refresh and try again.', 'error')), 0); }
+        renderHub();
+      });
       const { data } = await client.auth.getSession();
       user = data?.session?.user || null;
       if (user) await loadProfile();
-      client.auth.onAuthStateChange((event, session) => {
-        user = session?.user || null;
-        if (event === 'PASSWORD_RECOVERY') recoveryMode = true;
-        if (!user) { profile = null; resumableRoom = null; recoveryMode = false; stopRoomWatch(); currentRoom = null; }
-        else { window.setTimeout(loadProfile, 0); }
-        renderHub();
-      });
     }
     renderHub();
     if (!validConfig()) setStatus('Online rooms are not connected yet. Solo and same-device play remain available.', 'warning');
