@@ -1201,9 +1201,17 @@
   const originalRenderChips = global.renderChips;
   global.renderChips = function () {
     originalRenderChips();
-    const chip = makeElement('button', 'chip' + (activeFilter === '3D Games' ? ' active' : ''), '🧊 3D Games · ' + games.filter(function (game) { return game.is3D; }).length);
-    chip.dataset.filter = '3D Games';
-    $('chips').appendChild(chip);
+    const entries = [
+      ['3D Games', '🧊 3D Games · ' + games.filter(function (game) { return game.is3D; }).length],
+      ['Racing', '🏎️ Racing'],
+      ['Adventure', '🌿 Adventure'],
+      ['Simulation', '🎡 Simulation']
+    ];
+    entries.forEach(function (entry) {
+      const chip = makeElement('button', 'chip' + (activeFilter === entry[0] ? ' active' : ''), entry[1]);
+      chip.dataset.filter = entry[0];
+      $('chips').appendChild(chip);
+    });
   };
 
   const originalSetFilter = global.setFilter;
@@ -1226,11 +1234,19 @@
 
   function add3DNavigation() {
     const sidebar = document.querySelector('.sidebar');
-    if (sidebar && !sidebar.querySelector('[data-filter="3D Games"]')) {
-      const button = makeElement('button', 'navbtn', '🧊 3D Games');
-      button.dataset.filter = '3D Games';
+    if (!sidebar) return;
+    const entries = [
+      ['3D Games', '🧊 3D Games'],
+      ['Racing', '🏎️ Racing'],
+      ['Adventure', '🌿 Adventure'],
+      ['Simulation', '🎡 Simulation']
+    ];
+    entries.forEach(function (entry) {
+      if (sidebar.querySelector('[data-filter="' + entry[0] + '"]')) return;
+      const button = makeElement('button', 'navbtn', entry[1]);
+      button.dataset.filter = entry[0];
       sidebar.insertBefore(button, sidebar.querySelector('.side-note'));
-    }
+    });
   }
 
   function addShowcase() {
@@ -1271,6 +1287,12 @@
     if (search) search.placeholder = 'Search 200 games…';
     const topPill = document.querySelector('.top-pill');
     if (topPill) topPill.textContent = '✦ 3D worlds · No downloads · No account';
+    if (activeFilter === '3D Games') {
+      const sectionTitle = document.getElementById('sectionTitle');
+      const sectionSub = document.getElementById('sectionSub');
+      if (sectionTitle) sectionTitle.textContent = 'Explore 3D games';
+      if (sectionSub) sectionSub.textContent = 'Five original real-time 3D experiences. Pick a world and jump in.';
+    }
   };
 
   add3DNavigation();
