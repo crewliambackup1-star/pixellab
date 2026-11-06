@@ -24,7 +24,7 @@ const v10ThreeEngines = [
   {
     id: 'velocity-x',
     name: 'Velocity X',
-    category: 'Sports',
+    category: 'Racing',
     emoji: '🏎️',
     desc: 'Master an arcade circuit, hold clean racing lines, manage your boost, and finish three laps against the clock.',
     instructions: 'W or Up to accelerate, S or Down to brake, A/D or Left/Right to steer, and Shift to boost. Complete three laps. If you leave the track, slow down and guide your car back onto the asphalt.',
