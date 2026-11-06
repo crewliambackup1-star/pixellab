@@ -86,7 +86,7 @@ assert.match(catalog, /Array\.from\(\{length:192\}/, 'The 192 legacy catalog ent
 assert.match(catalog, /games\.push\(\.\.\.originalEngines\.map/, 'Original games must be appended to the base catalog');
 assert.equal(192 + originalIds.length, 195, 'Expected 192 legacy variants plus three base originals');
 
-const v10Ids = [...v10Catalog.matchAll(/^\s*id:\s*'([^']+)'/gm)].map((m) => m[1]);
+const v10Ids = [...v10Catalog.matchAll(/^ {4}id:\s*'([^']+)'/gm)].map((m) => m[1]);
 assert.equal(v10Ids.length, 5, 'V10 must introduce exactly five original 3D games in the first release');
 assert.equal(new Set(v10Ids).size, v10Ids.length, 'V10 3D game IDs must be unique');
 assert.match(v10Catalog, /engines\.push\(\.\.\.v10ThreeEngines\)/, 'V10 engines must be registered before the app initializes');
