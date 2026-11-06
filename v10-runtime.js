@@ -207,16 +207,15 @@
           const down = function (event) {
             event.preventDefault();
             if (key) session.keys.add(key);
-            if (action) session.actions.add(action);
           };
           const up = function () {
             if (key) session.keys.delete(key);
-            if (action) session.actions.delete(action);
           };
           listen(button, 'pointerdown', down);
           listen(button, 'pointerup', up);
           listen(button, 'pointercancel', up);
           listen(button, 'pointerleave', up);
+          if (action) listen(button, 'click', function () { session.actions.add(action); });
           return button;
         },
         addLights: function (ambientColor, pointColor) {
@@ -234,7 +233,12 @@
         cameraResize: function () {
           const width = Math.max(1, stage.clientWidth);
           const height = Math.max(1, stage.clientHeight);
-          camera.aspect = width / height;
+          if (camera.isOrthographicCamera) {
+            const halfHeight = 19 / Math.max(0.75, width / height);
+            camera.left = -19; camera.right = 19; camera.top = halfHeight; camera.bottom = -halfHeight;
+          } else {
+            camera.aspect = width / height;
+          }
           camera.updateProjectionMatrix();
           renderer.setSize(width, height, false);
         }
@@ -382,6 +386,7 @@
         const center = new THREE.Vector2(0, 0);
         const camera = ctx.camera;
         let pointerLocked = false;
+        let lockRequested = false;
         let dragPoint = null;
         const canvas = ctx.renderer ? ctx.renderer.domElement : null;
 
@@ -399,7 +404,9 @@
           }
         });
         ctx.on(ctx.renderer.domElement, 'click', function () {
-          if (document.pointerLockElement !== ctx.renderer.domElement && ctx.renderer.domElement.requestPointerLock) {
+          if (document.pointerLockElement === ctx.renderer.domElement) { shoot(); return; }
+          if (ctx.renderer.domElement.requestPointerLock && !lockRequested) {
+            lockRequested = true;
             ctx.renderer.domElement.requestPointerLock();
             return;
           }
@@ -770,7 +777,7 @@
           if (boosting) state.boost = Math.max(0, state.boost - 30 * dt);
           else state.boost = Math.min(100, state.boost + 10 * dt);
           state.speed = Math.max(0, Math.min(boosting ? 32 : 25, state.speed));
-          state.heading -= steer * (0.35 + state.speed / 25 * 1.4) * dt;
+          state.heading += steer * (0.35 + state.speed / 25 * 1.4) * dt;
           state.x += Math.sin(state.heading) * state.speed * dt;
           state.z += Math.cos(state.heading) * state.speed * dt;
           const angle = Math.atan2(state.z / radiusZ, state.x / radiusX);
@@ -1077,7 +1084,7 @@
           group.traverse(function (object) { if (object.isMesh) object.castShadow = true; });
           scene.add(group);
           rides.push({ group: group, type: type, info: info, x: x, z: z });
-          cells.add(Math.round((x + 18) / 2) + ':' + Math.round((z + 18) / 2));
+          cells.add(Math.round((x + 16) / 4) + ':' + Math.round((z + 16) / 4));
           cash -= info.cost;
           return group;
         }
@@ -1100,10 +1107,10 @@
           raycaster.setFromCamera(pointer, ctx.camera);
           const hit = raycaster.intersectObjects(groundMeshes, false)[0];
           if (!hit) return;
-          const x = Math.round(hit.point.x / 2) * 2;
-          const z = Math.round(hit.point.z / 2) * 2;
-          const key = Math.round((x + 18) / 2) + ':' + Math.round((z + 18) / 2);
-          if (Math.abs(x) > 17 || Math.abs(z) > 17 || Math.abs(z) < 2.1 || cells.has(key)) {
+          const x = Math.round(hit.point.x / 4) * 4;
+          const z = Math.round(hit.point.z / 4) * 4;
+          const key = Math.round((x + 16) / 4) + ':' + Math.round((z + 16) / 4);
+          if (Math.abs(x) > 16 || Math.abs(z) > 16 || Math.abs(z) < 2.1 || cells.has(key)) {
             ctx.setHelp('That tile is reserved for paths or already has a ride. Choose another grass tile.');
             return;
           }
