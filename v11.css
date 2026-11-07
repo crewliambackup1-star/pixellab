@@ -1,0 +1,23 @@
+/* V11 — expanded 3D universe */
+.v11-universe-note{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  margin:14px 0 4px;padding:11px 14px;border:1px solid #2b5265;border-radius:13px;
+  background:linear-gradient(105deg,#142a3c,#19253c 60%,#29213f);
+  color:#c6dce9;font-size:11px;line-height:1.55
+}
+.v11-universe-note strong{color:#8fe8ef;letter-spacing:.06em;text-transform:uppercase;font-size:10px}
+.v11-universe-note span{color:#9fb4c8}
+.v11-genre-chip{border-color:#416a82!important;background:#18384c!important;color:#c6f3f7!important}
+.v11-genre-chip.active{background:#276074!important;border-color:#83e5ee!important;color:#fff!important}
+.v11-game-tag{display:inline-flex;align-items:center;gap:4px;border:1px solid #417a87;border-radius:999px;padding:3px 7px;color:#a8f0ef;background:#123443;font-size:8px;font-weight:900;letter-spacing:.06em}
+.v11-mode-label{display:inline-flex;align-items:center;gap:6px;color:#9debf0}
+.v11-objective{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:9px 12px;border:1px solid #31536e;border-radius:10px;background:#102238;color:#bdd1e2;font-size:10px}
+.v11-objective strong{color:#e2fbff}
+.v11-world-card{border:1px solid #355974;border-radius:12px;background:#12243a;padding:11px}
+.v11-world-card h3{margin:0 0 5px;color:#edfbff;font-size:13px}
+.v11-world-card p{margin:0;color:#9eb7ce;font-size:10px;line-height:1.55}
+.three-tool{touch-action:manipulation}
+.three-touch-control{touch-action:manipulation;user-select:none}
+@media(max-width:620px){
+  .v11-universe-note{margin:10px 0;padding:10px}
+}
