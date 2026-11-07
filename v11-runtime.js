@@ -313,7 +313,7 @@
           rivals.forEach(function(r,i){const a=i*2.1;r.position.set(Math.sin(a)*rx,.15,Math.cos(a)*rz);});
           car.position.set(0,.15,rz-2);yaw=0;speed=0;lap=0;
         }
-        for(let i=0;i<2;i++)rivals.push(makeCar(T,i?'#76c9ff':'#ffc45e',false));
+        for(let i=0;i<2;i++)rivals.push(makeCar(T,scene,i?'#76c9ff':'#ffc45e',false));
         const trackTool=ctx.addTool('Track: Coastal Loop',function(){track=(track+1)%trackDefs.length;trackTool.textContent='Track: '+trackDefs[track].name;buildTrack();});
         ctx.addControl('↑','w');ctx.addControl('↓','s');ctx.addControl('←','a');ctx.addControl('→','d');ctx.addControl('BOOST','shift');
         ctx.setHud('primary','LAP','0 / 3');ctx.setHud('secondary','SPEED','0');ctx.setHud('tertiary','BOOST','100%');
@@ -368,9 +368,10 @@
         ];
         let biome=0,score=0,relics=0,discoveries=0;
         const ground=addPlane(T,scene,120,120,biomes[0].ground);
+        const biomeGroup=new T.Group();scene.add(biomeGroup);
         const player=makeAvatar(T,scene,'#f4d36c');
         player.position.set(0,0,28);
-        const relicsGroup=new T.Group();scene.add(relicsGroup);
+        const relicsGroup=new T.Group();biomeGroup.add(relicsGroup);
         const wildlife=[];
         const landmarks=[];
         const beacon=new T.Group();scene.add(beacon);beacon.position.set(0,1,-48);
@@ -379,13 +380,13 @@
         function clearGroup(group){while(group.children.length){const child=group.children.pop();group.remove(child);}}
         function buildBiome(){
           ground.material.color.set(biomes[biome].ground);scene.background=new T.Color(biomes[biome].sky);
-          clearGroup(relicsGroup);wildlife.forEach(function(w){scene.remove(w.root);});wildlife.length=0;landmarks.length=0;
+          clearGroup(biomeGroup);clearGroup(relicsGroup);biomeGroup.add(relicsGroup);wildlife.length=0;landmarks.length=0;
           const treeMat=material(T,biome===1?'#806342':biome===2?'#d5e8ee':'#315c47',.9);
           for(let i=0;i<26;i++){
             const x=(Math.random()-.5)*90,z=(Math.random()-.5)*90;
             const trunk=boxMesh(T,.55,2.8,.55,material(T,'#76533e',.9),x,1.4,z);
-            const crown=new T.Mesh(new T.ConeGeometry(2.1,4.6,7),treeMat);crown.position.set(x,4.8,z);crown.castShadow=true;scene.add(crown);
-            scene.add(trunk);
+            const crown=new T.Mesh(new T.ConeGeometry(2.1,4.6,7),treeMat);crown.position.set(x,4.8,z);crown.castShadow=true;biomeGroup.add(crown);
+            biomeGroup.add(trunk);
           }
           for(let i=0;i<5;i++){
             const x=(i-2)*11+(biome-1)*3,z=-7-i*8;
@@ -396,17 +397,24 @@
           for(let i=0;i<3;i++){
             const root=new T.Group();
             const creature=addSphere(T,root,.72,['#a8c5b2','#d9b28a','#b7d7ef'][biome],(i-1)*13,0,0);
-            const ear=addSphere(T,root,.25,'#e9f1e8',0,.65,0);root.position.set((i-1)*14,0,-14-i*9);scene.add(root);
+            const ear=addSphere(T,root,.25,'#e9f1e8',0,.65,0);root.position.set((i-1)*14,0,-14-i*9);biomeGroup.add(root);
             wildlife.push({root:root,phase:i*2,speed:.45+i*.14});
           }
           for(let i=0;i<3;i++){
-            const marker=addPillar(T,scene, (i-1)*24,-26-biome*4,biomes[biome].accent,2.5);
-            landmarks.push({mesh:marker,found:false});
+            const marker=boxMesh(T,1.1,2.5,1.1,material(T,biomes[biome].accent,.42,.2,biomes[biome].accent),(i-1)*24,1.25,-26);
+            biomeGroup.add(marker);landmarks.push({mesh:marker,found:false});
           }
           relics=0;discoveries=0;score=0;
           ctx.setHud('primary','RELICS','0 / 5');ctx.setHud('tertiary','DISCOVERIES','0 / 3');
         }
-        const biomeTool=ctx.addTool('Biome: Pine Coast',function(){biome=(biome+1)%3;biomeTool.textContent='Biome: '+biomes[biome].name;buildBiome();});
+        const completedBiomes=[false,false,false];let expeditionScore=0;
+        const biomeTool=ctx.addTool('Next biome',function(){
+          if(relics<5||discoveries<3){ctx.setHelp('Finish this region first: find all five relics and three landmark pillars.');return;}
+          completedBiomes[biome]=true;expeditionScore+=score;
+          if(completedBiomes.every(Boolean)){beacon.visible=true;biomeTool.textContent='All biomes found';ctx.setHelp('All three biomes are complete. Return to the glowing beacon at the southern edge of the island to finish the expedition.');return;}
+          do{biome=(biome+1)%3;}while(completedBiomes[biome]);
+          biomeTool.textContent='Biome: '+biomes[biome].name;buildBiome();player.position.set(0,0,28);
+        });
         addTouchMove(ctx);
         ctx.addControl('SPRINT','shift');
         ctx.setHelp('Walk the island and get close to the floating relics and landmark pillars. Wildlife moves around the world. Find all five relics in each region, then reach the beacon.');
@@ -428,9 +436,10 @@
           beaconRing.rotation.z+=dt*.8;
           ctx.camera.position.lerp(new T.Vector3(player.position.x,player.position.y+9,player.position.z+16),Math.min(1,dt*2.5));
           ctx.camera.lookAt(player.position.x,1,player.position.z-3);
-          if(relics===5&&discoveries===3&&player.position.distanceTo(beacon.position)<4){
-            ctx.finish(score+totalRelics*20,'Island explorer','You discovered all five relics and three landmarks in '+biomes[biome].name+'.');
+          if(completedBiomes.every(Boolean)&&beacon.visible&&player.position.distanceTo(beacon.position)<4){
+            ctx.finish(expeditionScore+score+totalRelics*20,'Island explorer','You explored all three biomes, found '+totalRelics+' relics and every landmark, then returned to the beacon.');
           }
+          if(relics===5&&discoveries===3&&!completedBiomes[biome])ctx.setHelp('Region complete! Use Next biome to continue the expedition.');
         });
       }
     });
@@ -641,7 +650,7 @@
           ['wood',5,'#c99a62'],['stone',4,'#9daebc'],['berries',3,'#e982aa']
         ];
         defs.forEach(function(def,group){
-          for(let i=0;i<def[1]+2;i++){
+          for(let i=0;i<def[1]+(group===0?3:group===1?0:1);i++){
             const x=(Math.random()-.5)*60,z=(Math.random()-.5)*58-5;
             let mesh;
             if(group===0){mesh=boxMesh(T,.75,1.5,.75,material(T,def[2],.8),x,.75,z);}
