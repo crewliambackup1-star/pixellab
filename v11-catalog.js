@@ -4,7 +4,7 @@
 const v11UpgradeCopy = {
   'neon-strike': {
     desc: 'Master three neon arenas, read changing target patterns, and build a precision streak in an upgraded 3D challenge.',
-    instructions: 'Aim with the mouse or touch and click/tap targets. WASD moves your view; 1/2/3 or the Arena button changes the arena. Build a streak before the 75-second round ends.'
+    instructions: 'Aim with the mouse or touch and click/tap targets. WASD moves your view; use the Arena button to change arenas. Build a streak before the 75-second round ends.'
   },
   'gravity-rush': {
     desc: 'Race through three floating worlds with moving platforms, checkpoints, double jumps, and hidden energy shards.',
@@ -16,11 +16,11 @@ const v11UpgradeCopy = {
   },
   'wildlands': {
     desc: 'Explore three distinct biomes, discover wildlife and landmarks, and complete a larger relic-hunting expedition.',
-    instructions: 'WASD or arrow keys to explore, Shift to sprint. Collect the relics in each biome, discover the landmarks, and reach the final beacon. Switch regions with the Biome button.'
+    instructions: 'WASD or arrow keys to explore, Shift to sprint. Collect the relics in each biome, discover the landmarks, and reach the final beacon. Use Next biome to continue between regions.'
   },
   'park-empire': {
-    desc: 'Grow a fuller 3D theme park with a wider ride collection, visitor paths, park rating, and a new management challenge.',
-    instructions: 'Choose a ride type, then click an empty grid tile to build. Paths connect the park, rides attract guests, and ticket income grows your budget. Reach the park goal to finish.'
+    desc: 'Grow a fuller 3D theme park with a wider ride collection, visitor growth, park rating, and a new management challenge.',
+    instructions: 'Choose a ride type, then click an empty grid tile to build. Rides attract guests, and ticket income grows your budget. Reach the park goal to finish.'
   }
 };
 v10ThreeEngines.forEach(function (engine) {
@@ -40,8 +40,8 @@ const v11ThreeEngines = [
     name: 'Mythic Realms',
     category: 'RPG & Fantasy',
     emoji: '🧙',
-    desc: 'Explore a floating fantasy valley, awaken ancient shrines, learn new magic, and complete a three-region quest.',
-    instructions: 'WASD or arrow keys to explore. Collect glowing runes and stand near each shrine to awaken it. Use the spell pulse to activate distant crystals. Restore all three shrines to open the sky gate.',
+    desc: 'Explore a floating fantasy valley, awaken ancient shrines, use a spell pulse, and complete a three-region quest.',
+    instructions: 'WASD or arrow keys to explore. Collect glowing runes and stand near each shrine to awaken it. Cast a spell pulse near each shrine to awaken it. Restore all three shrines to open the sky gate.',
     is3D: true,
     colors: ['#47366f', '#24616a']
   },
