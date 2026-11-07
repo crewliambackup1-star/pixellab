@@ -607,7 +607,7 @@
         ctx.setUpdate(function(dt,elapsed){
           time+=dt;const keys=ctx.keys;
           const accel=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
-          const steer=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0);
+          const steer=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
           const boosting=keys.has('shift')&&boost>0;
           speed+=accel*(boosting?17:12)*dt;speed*=Math.pow(.99,dt*60);speed=Math.max(-4,Math.min(boosting?22:16,speed));
           if(boosting)boost=Math.max(0,boost-27*dt);else boost=Math.min(100,boost+9*dt);
