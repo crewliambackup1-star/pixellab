@@ -78,7 +78,6 @@
     ctx.addControl('←', 'a');
     ctx.addControl('↓', 's');
     ctx.addControl('→', 'd');
-    ctx.addControl('JUMP', 'space');
   }
 
   function gameNeonStrike(game) {
@@ -289,7 +288,7 @@
         car.position.set(0,.15,rz-2);
         const trackDefs=[{name:'Coastal Loop',rx:34,rz:49,color:'#303e58'},{name:'Desert Run',rx:41,rz:43,color:'#55463a'},{name:'Skyline Circuit',rx:29,rz:56,color:'#3f3b58'}];
         function buildTrack(){
-          while(trackGroup.children.length){const o=trackGroup.children.pop();trackGroup.remove(o);}
+          while(trackGroup.children.length){trackGroup.remove(trackGroup.children[trackGroup.children.length-1]);}
           rx=trackDefs[track].rx;rz=trackDefs[track].rz;
           for(let i=0;i<64;i++){
             const a=i/64*Math.PI*2;
@@ -322,7 +321,7 @@
           const oldZ=car.position.z;
           const keys=ctx.keys;
           const accel=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
-          const steer=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0);
+          const steer=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
           const boosting=(keys.has('shift')&&boost>0);
           speed+=accel*(boosting?28:18)*dt;
           speed*=Math.pow(.985,dt*60);
@@ -524,7 +523,7 @@
       },
       setup:function(T,ctx){
         const scene=ctx.scene;
-        addPlane(T,scene,90,90,'#34465a');
+        addPlane(T,scene,120,150,'#34465a');
         const skyIslands=[];
         for(let i=0;i<5;i++){
           const island=new T.Mesh(new T.CylinderGeometry(8,5,2,8),material(T,['#52636d','#62516d','#496c66'][i%3],.95));
@@ -553,7 +552,7 @@
           const keys=ctx.keys,forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
           const side=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
           player.position.x+=side*6.5*dt;player.position.z-=forward*6.5*dt;
-          player.position.x=Math.max(-37,Math.min(37,player.position.x));player.position.z=Math.max(-40,Math.min(38,player.position.z));
+          player.position.x=Math.max(-37,Math.min(37,player.position.x));player.position.z=Math.max(-70,Math.min(38,player.position.z));
           runes.forEach(function(r){if(!r.visible)return;r.rotation.y+=dt*1.5;r.position.y=1.5+Math.sin(elapsed*2+r.position.z)*.22;
             if(player.position.distanceTo(r.position)<2.1){r.visible=false;collected++;score+=100;ctx.setHud('primary','RUNES',collected+' / 6');}
           });
