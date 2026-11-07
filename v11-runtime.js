@@ -209,9 +209,7 @@
         const portalRing=new T.Mesh(new T.TorusGeometry(2,0.2,12,40),material(T,'#9ffaff',.2,.15,'#28d8ff'));
         portalRing.rotation.y=Math.PI/2;portal.add(portalRing);scene.add(portal);
         function rebuild(){
-          while(courseGroup.children.length){
-            const o=courseGroup.children.pop();courseGroup.remove(o);
-          }
+          while(courseGroup.children.length){courseGroup.remove(courseGroup.children[courseGroup.children.length-1]);}
           platforms.length=0;pickups.length=0;score=0;shards=0;vy=0;jumps=0;grounded=false;runTime=0;complete=false;
           const data=palettes[course];scene.background=new T.Color(course===0?'#0c1b30':course===1?'#1c1730':'#0d2829');
           for(let i=0;i<11;i++){
@@ -377,7 +375,7 @@
         const beacon=new T.Group();scene.add(beacon);beacon.position.set(0,1,-48);
         const beaconRing=new T.Mesh(new T.TorusGeometry(2.3,.18,10,36),material(T,'#e8ffff',.2,.1,'#ffffff'));
         beaconRing.rotation.x=Math.PI/2;beacon.add(beaconRing);
-        function clearGroup(group){while(group.children.length){const child=group.children.pop();group.remove(child);}}
+        function clearGroup(group){while(group.children.length){group.remove(group.children[group.children.length-1]);}}
         function buildBiome(){
           ground.material.color.set(biomes[biome].ground);scene.background=new T.Color(biomes[biome].sky);
           clearGroup(biomeGroup);clearGroup(relicsGroup);biomeGroup.add(relicsGroup);wildlife.length=0;landmarks.length=0;
