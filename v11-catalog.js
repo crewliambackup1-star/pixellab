@@ -51,7 +51,7 @@ const v11ThreeEngines = [
     category: 'Vehicle Simulation',
     emoji: '🚚',
     desc: 'Build a delivery career across a scenic 3D route, collect cargo, navigate checkpoints, and make every drop on time.',
-    instructions: 'W/Up accelerates, S/Down brakes, A/D or Left/Right steers, and Shift gives a short boost. Drive through the glowing route gates in order, collect each parcel, and deliver it to the depot.',
+    instructions: 'W/Up accelerates, S/Down brakes, A/D or Left/Right steers, and Shift gives a short boost. Drive through the glowing route gates in order and make all six delivery stops.',
     is3D: true,
     colors: ['#3b586f', '#677043']
   },
