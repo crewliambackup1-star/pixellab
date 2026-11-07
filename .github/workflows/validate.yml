@@ -2,9 +2,9 @@ name: PixelLab validation
 
 on:
   push:
-    branches: ["main", "development"]
+    branches: ["main", "development", "massive/v11-3d-universe"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "massive/v10-3d-redesign"]
   workflow_dispatch:
 
 permissions:
