@@ -103,9 +103,9 @@ assert.match(v10Catalog, /is3D:\s*true/, 'V10 games must be tagged for the 3D sh
 assert.match(v10Catalog, /games\.push\(\.\.\.v10ThreeEngines\.map/, 'V10 games must be appended to the public catalog');
 
 const v11Start = v11Catalog.indexOf('const v11ThreeEngines = [');
-const v11End = v11Catalog.indexOf('\\n];', v11Start);
+const v11End = v11Catalog.indexOf('\n];', v11Start);
 assert.ok(v11Start >= 0 && v11End > v11Start, 'Could not locate the V11 game definitions');
-const v11Ids = [...v11Catalog.slice(v11Start, v11End).matchAll(/\\bid:\\s*'([^']+)'/g)].map((m) => m[1]);
+const v11Ids = [...v11Catalog.slice(v11Start, v11End).matchAll(/\bid:\s*'([^']+)'/g)].map((m) => m[1]);
 assert.equal(v11Ids.length, 3, 'V11 should introduce exactly three new 3D games in the first expansion');
 assert.equal(new Set(v11Ids).size, v11Ids.length, 'V11 3D game IDs must be unique');
 assert.match(v11Catalog, /engines\.push\(\.\.\.v11ThreeEngines\)/, 'V11 engines must be registered before the app initializes');
