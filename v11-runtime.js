@@ -781,6 +781,12 @@
   global.render=function(){
     previousRender();
     addV11Navigation();
+    const showcaseCopy=document.querySelector('.v10-showcase-head p');
+    if(showcaseCopy)showcaseCopy.textContent='Eight original 3D worlds across action, racing, exploration, fantasy, vehicle careers, and survival crafting.';
+    const showcaseTitle=document.querySelector('.v10-showcase-head h2');
+    if(showcaseTitle)showcaseTitle.textContent='Explore the PixelLab 3D universe.';
+    const showcaseButton=document.querySelector('.v10-see-all');
+    if(showcaseButton)showcaseButton.textContent='Explore all 3D worlds ↗';
     const note=document.getElementById('v11UniverseNote');
     if(!note){
       const showcase=document.getElementById('threeDShowcase');
