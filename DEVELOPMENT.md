@@ -53,6 +53,8 @@ The current Chromium suite checks that the homepage renders all 195 catalog entr
 
 GitHub Actions runs these browser tests automatically on pushes to `main` or `development`, pull requests targeting `main`, and manual workflow dispatches. The HTML report and test artifacts are retained in the Actions run for 14 days. Local Node installation is optional: the GitHub-hosted workflow runs the tests without requiring Node on your Mac.
 
+Dependabot checks the npm development dependency and GitHub Actions versions weekly and can open update pull requests for review.
+
 These are smoke tests, not a guarantee that every game mechanic is bug-free. Each game still needs hands-on playtesting, and Chromium testing does not replace checks on Safari, Firefox, or real phones.
 
 ## Runtime dependency rule
