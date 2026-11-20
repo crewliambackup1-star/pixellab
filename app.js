@@ -91,6 +91,21 @@ function drawCanvasBackground(ctx,w,h){ctx.fillStyle='#0c0e18';ctx.fillRect(0,0,
 function installKeys(fn){keyHandler=e=>{if(!currentGame)return;const keys=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','w','a','s','d','W','A','S','D','x','X','Shift'];if(keys.includes(e.key)&&!['INPUT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();fn(e)}};window.addEventListener('keydown',keyHandler)}
 function runGame(g){cleanup();cleanup=()=>{};if(keyHandler)window.removeEventListener('keydown',keyHandler);keyHandler=null;switch(g.engine){case'rift-runner':return gameRiftRunner(g);case'circuit-crafter':return gameCircuitCrafter(g);case'star-courier':return gameStarCourier(g);case'reaction':return gameReaction(g);case'memory':return gameMemory(g);case'aim':return gameAim(g);case'whack':return gameWhack(g);case'tap':return gameTap(g);case'typing':return gameTyping(g);case'tictactoe':return gameTTT(g);case'merge':return gameMerge(g);case'snake':return gameSnake(g);case'pong':return gamePong(g);case'breakout':return gameBreakout(g);case'dodge':return gameDodge(g);case'mines':return gameMines(g);case'simon':return gameSimon(g);case'scramble':return gameScramble(g);case'clicker':return gameClicker(g);case'flappy':return gameFlappy(g);case'math':return gameMath(g);case'connect4':return gameConnect4(g);case'platform':return gamePlatform(g);case'trivia':return gameTrivia(g);case'color':return gameColor(g);case'lights':return gameLights(g);case'maze':return gameMaze(g)}}
 
+function setupDaily(){
+ if(!games.length)return;
+ const date=localDay();
+ let hash=2166136261;
+ for(let i=0;i<date.length;i++){
+  hash^=date.charCodeAt(i);
+  hash=Math.imul(hash,16777619)>>>0;
+ }
+ const game=games[hash%games.length];
+ $('dailyGameTitle').textContent=game.name;
+ $('dailyGameDesc').textContent=game.desc;
+ $('dailyEmoji').textContent=game.emoji;
+ $('dailyPlay').addEventListener('click',()=>openGame(game.id));
+}
+
 setupDaily();
 renderProgress();
 render();
