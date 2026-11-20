@@ -9,9 +9,12 @@ test('homepage renders the complete catalog without JavaScript errors', async ({
   await page.goto('/');
 
   await expect(page).toHaveTitle(/PixelLab/i);
+  expect(pageErrors).toEqual([]);
   await expect(page.locator('#allCount')).toHaveText('195');
   await expect(page.locator('#gameGrid .game-card')).toHaveCount(195);
-  expect(pageErrors).toEqual([]);
+  await expect(page.locator('#dailyGameTitle')).not.toHaveText("Today's arcade pick");
+  await expect(page.locator('#dailyGameDesc')).not.toBeEmpty();
+  await expect(page.locator('#dailyEmoji')).not.toBeEmpty();
 });
 
 test('search filters the catalog to matching games', async ({ page }) => {
@@ -45,4 +48,15 @@ test('Tic Tac Toe supports same-device turns and keeps online rooms disabled', a
 
   await expect(cells.nth(0)).toHaveText('X');
   await expect(cells.nth(4)).toHaveText('O');
+});
+
+
+test('Daily Drop button launches the featured game', async ({ page }) => {
+  await page.goto('/');
+
+  const dailyTitle = await page.locator('#dailyGameTitle').textContent();
+  await page.locator('#dailyPlay').click();
+
+  await expect(page.locator('#modal')).toHaveClass(/open/);
+  await expect(page.locator('#modalTitle')).toHaveText(dailyTitle);
 });
