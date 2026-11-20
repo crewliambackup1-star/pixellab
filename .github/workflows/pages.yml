@@ -30,7 +30,7 @@ jobs:
       - name: Validate PixelLab source and game launchers
         run: node scripts/validate-site.cjs
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
         with:
           enablement: true
       - name: Upload site files
