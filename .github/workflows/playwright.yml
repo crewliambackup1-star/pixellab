@@ -1,4 +1,4 @@
-name: PixelLab Tests
+name: PixelLab Checks
 
 on:
   push:
@@ -14,18 +14,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: npm install
-
       - name: Verify PixelLab files
         run: |
           test -f index.html
           test -f app.js
           test -f catalog.js
           test -f styles.css
-          echo "PixelLab files verified successfully!"
+          echo "All core PixelLab files verified!"
+
+      - name: Verify JavaScript syntax
+        run: |
+          node --check app.js
+          node --check catalog.js
