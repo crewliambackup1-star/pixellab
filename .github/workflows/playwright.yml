@@ -18,6 +18,9 @@ jobs:
   browser-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --user 1001
 
     steps:
       - name: Check out repository
@@ -31,8 +34,8 @@ jobs:
       - name: Install development dependencies
         run: npm install --no-package-lock --no-audit --no-fund
 
-      - name: Install Chromium and system dependencies
-        run: npx playwright install --with-deps chromium
+      - name: Confirm Playwright installation
+        run: npx playwright --version
 
       - name: Run browser smoke tests
         run: npm run test:e2e
