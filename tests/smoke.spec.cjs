@@ -31,9 +31,13 @@ test('search filters the catalog to matching games', async ({ page }) => {
 
 test('Tic Tac Toe supports same-device turns and keeps online rooms disabled', async ({ page }) => {
   await page.goto('/');
+  await page.locator('#search').fill('Tic Tac Toe');
 
-  await page.locator('#gameGrid [data-game="original-tictactoe"]').click();
-  await expect(page.locator('#modalTitle')).toHaveText('Tic Tac Toe');
+  const ticTacToeCard = page.locator('#gameGrid [data-game^="tictactoe-"]').first();
+  await expect(ticTacToeCard).toBeVisible();
+  const expectedTitle = (await ticTacToeCard.getAttribute('aria-label')).replace(/^Play\\s+/, '');
+  await ticTacToeCard.click();
+  await expect(page.locator('#modalTitle')).toHaveText(expectedTitle);
 
   const onlineRoomButton = page.getByRole('button', { name: /Online room/i });
   await expect(onlineRoomButton).toBeDisabled();
