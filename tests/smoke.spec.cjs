@@ -35,7 +35,7 @@ test('Tic Tac Toe supports same-device turns and keeps online rooms disabled', a
 
   const ticTacToeCard = page.locator('#gameGrid [data-game^="tictactoe-"]').first();
   await expect(ticTacToeCard).toBeVisible();
-  const expectedTitle = (await ticTacToeCard.getAttribute('aria-label')).replace(/^Play\\s+/, '');
+  const expectedTitle = (await ticTacToeCard.getAttribute('aria-label')).replace(/^Play\s+/, '');
   await ticTacToeCard.click();
   await expect(page.locator('#modalTitle')).toHaveText(expectedTitle);
 
