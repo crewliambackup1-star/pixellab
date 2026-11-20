@@ -49,7 +49,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The current Chromium suite checks that the homepage renders all 195 catalog entries without page-level JavaScript errors, search filters the catalog, and Tic-Tac-Toe supports two players on one device while the unfinished online-room button remains disabled.
+The current Chromium suite checks that the homepage renders all 195 catalog entries without page-level JavaScript errors, the Daily Drop is initialized and launches its selected game, search filters the catalog, and Tic-Tac-Toe supports two players on one device while the unfinished online-room button remains disabled.
 
 GitHub Actions runs these browser tests automatically on pushes to `main` or `development`, pull requests targeting `main`, and manual workflow dispatches. The HTML report and test artifacts are retained in the Actions run for 14 days. Local Node installation is optional: the GitHub-hosted workflow runs the tests without requiring Node on your Mac.
 
