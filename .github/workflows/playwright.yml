@@ -1,28 +1,52 @@
-name: PixelLab Checks
+name: PixelLab browser tests
 
 on:
   push:
-    branches: [main]
+    branches: ["main", "development"]
   pull_request:
-    branches: [main]
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "playwright-${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
 
 jobs:
-  test:
+  browser-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --user 1001
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v6
 
-      - name: Verify PixelLab files
-        run: |
-          test -f index.html
-          test -f app.js
-          test -f catalog.js
-          test -f styles.css
-          echo "All core PixelLab files verified!"
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
 
-      - name: Verify JavaScript syntax
-        run: |
-          node --check app.js
-          node --check catalog.js
+      - name: Install development dependencies
+        run: npm install --no-package-lock --no-audit --no-fund
+
+      - name: Confirm Playwright installation
+        run: npx playwright --version
+
+      - name: Run browser smoke tests
+        run: npm run test:e2e
+
+      - name: Upload browser test report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: pixellab-playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14

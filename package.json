@@ -1,0 +1,11 @@
+{
+  "name": "pixellab-quality-checks",
+  "private": true,
+  "description": "Development-only browser tests for the PixelLab static site.",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1"
+  }
+}
