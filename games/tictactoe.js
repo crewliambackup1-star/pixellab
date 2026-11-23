@@ -28,16 +28,16 @@ function gameTTT(g){
  function renderBoard(){
   b.innerHTML='';const title=document.createElement('div');title.className='big-number mp-title';b.append(title);
   const grid=document.createElement('div');grid.className='ttt-grid';const cells=[];
-  let undoButton=null;
+  let undoButton=null,finishActions=null;
   function draw(){
    title.textContent=over?title.textContent:mode==='ai'?(turn==='X'?'Your turn — X':'Computer thinking… · '+aiDifficulty):(turn==='X'?'Player 1’s turn — X':'Player 2’s turn — O');
    cells.forEach((c,i)=>{c.textContent=board[i];c.className='ttt-cell'+(board[i]==='O'?' o':'');c.disabled=!!board[i]||over||(mode==='ai'&&turn==='O');});
-   if(undoButton)undoButton.disabled=undoUsed||history.length===0||over;
+   if(undoButton)undoButton.disabled=undoUsed||history.length===0;
   }
   function finish(msg){
    over=true;title.textContent=msg;draw();
    if(mode==='ai'){const score=msg.includes('You win')?1:msg.includes('Draw')?2:3;setBest(g,score);}
-   const actions=document.createElement('div');actions.className='mp-actions';
+   const actions=document.createElement('div');actions.className='mp-actions';finishActions=actions;
    actions.append(button('Play again',()=>startRound(mode==='ai'?'ai-'+aiDifficulty:mode),true),button('Change mode',showModePicker));b.append(actions);
   }
   function minimax(next,depth){
@@ -59,8 +59,9 @@ function gameTTT(g){
    if(move>=0)applyMove(move,'O');
   }
   function undoTurn(){
-   if(undoUsed||over||!history.length)return;
+   if(undoUsed||!history.length)return;
    clearTimeout(aiTimer);
+   if(finishActions){finishActions.remove();finishActions=null;}
    const count=mode==='ai'&&history.length>=2?2:1;
    for(let n=0;n<count;n++){const move=history.pop();board[move]='';}
    undoUsed=true;over=false;turn=mode==='ai'?'X':(board.filter(Boolean).length%2===0?'X':'O');

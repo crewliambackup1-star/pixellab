@@ -18,8 +18,8 @@ function gameBreakout(g){
   drops.forEach(d=>{ctx.fillStyle=d.type==='wide'?'#5fe3d0':d.type==='slow'?'#b6a4ff':'#ffc66d';ctx.beginPath();ctx.arc(d.x,d.y,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#171525';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText(d.type==='wide'?'W':d.type==='slow'?'S':'+',d.x,d.y+4);ctx.textAlign='left';});
   ctx.fillStyle='#e7e1ff';ctx.fillRect(paddle,315,paddleWidth,10);ctx.fillStyle='#5fe3d0';ctx.beginPath();ctx.arc(ball.x,ball.y,7,0,Math.PI*2);ctx.fill();
  }
- function finish(){clearInterval(iv);started=false;setBest(g,-points);b.insertAdjacentHTML('beforeend','<div class="message">'+(wave===3&&score===90?'All three waves cleared!':'Run ended at wave '+wave)+ ' · '+score+' bricks cleared.</div>');b.appendChild(button('Play again',()=>runGame(g),true));}
- function updateStatus(){const cleared=score-(wave-1)*30;status.innerHTML='<span>Bricks: <strong>'+Math.max(0,Math.min(30,cleared))+' / 30</strong></span><span>Wave: <strong>'+wave+' / 3</strong></span><span>Lives: <strong>'+lives+'</strong></span>';}
+ function finish(){clearInterval(iv);started=false;setBest(g,-points);b.insertAdjacentHTML('beforeend','<div class="message">'+(wave===3&&score===90?'All three waves cleared!':'Run ended at wave '+wave)+ ' · '+score+' bricks cleared · '+points+' points · best chain '+bestCombo+'x.</div>');b.appendChild(button('Play again',()=>runGame(g),true));}
+ function updateStatus(){const cleared=score-(wave-1)*30;status.innerHTML='<span>Bricks: <strong>'+Math.max(0,Math.min(30,cleared))+' / 30</strong></span><span>Wave: <strong>'+wave+' / 3</strong></span><span>Lives: <strong>'+lives+'</strong></span><span>Points: <strong>'+points+'</strong></span><span>Chain: <strong>'+combo+'x</strong></span>';}
  function tick(){
   const now=Date.now();paddleWidth=now<wideUntil?145:100;const slow=now<slowUntil;
   ball.x+=ball.vx*(slow?.68:1);ball.y+=ball.vy*(slow?.68:1);

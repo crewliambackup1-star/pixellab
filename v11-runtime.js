@@ -365,7 +365,7 @@
           const throttle=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
           const steer=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
           const boosting=keys.has('shift')&&boost>0&&speed>2;
-          const drifting=keys.has('space')&&Math.abs(steer)>0&&Math.abs(speed)>8;
+          const drifting=(keys.has('space')||ctx.actions.delete('drift'))&&Math.abs(steer)>0&&Math.abs(speed)>8;
           if(drifting)driftCharge=Math.min(100,driftCharge+dt*54);
           else if(driftCharge>=30){bestDrift=Math.max(bestDrift,Math.round(driftCharge));speed=Math.min(35,speed+1.8);boost=Math.min(100,boost+driftCharge*.35);ctx.setHelp('Clean drift! Your cornering charge converted into speed and boost.');driftCharge=0;}
           speed+=throttle*(boosting?28:19)*dt;
