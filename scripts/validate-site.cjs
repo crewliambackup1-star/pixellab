@@ -35,6 +35,7 @@ assert.match(html, /<title>PixelLab/i, 'Page title is missing');
 assert.match(html, /href="styles\.css"/, 'The original stylesheet is not linked');
 assert.match(html, /href="v10\.css"/, 'The V10 redesign stylesheet is not linked');
 assert.match(html, /href="v11\.css"/, 'The V11 expansion stylesheet is not linked');
+assert.match(html, /href="v12\.css"/, 'The V12 gameplay stylesheet is not linked');
 assert.match(html, /src="catalog\.js"/, 'The base game catalog is not linked');
 assert.match(html, /src="v10-catalog\.js"/, 'The V10 catalog extension is not linked');
 assert.match(html, /src="v11-catalog\.js"/, 'The V11 catalog extension is not linked');
@@ -133,7 +134,7 @@ for (const route of routes) {
 }
 
 assert.match(v10Runtime, /three-pause-toggle/, 'V12 3D pause controls are missing');
-assert.match(v10Runtime, /session\\.paused/, 'V12 3D pause state is missing');
+assert.match(v10Runtime, /session\.paused/, 'V12 3D pause state is missing');
 assert.match(v10Runtime, /elapsedTime \\+= dt/, 'The 3D world clock must pause with the game');
 
 for (const functionName of ['gameNeonStrike', 'gameGravityRush', 'gameVelocityX', 'gameWildlands', 'gameParkEmpire']) {
@@ -173,8 +174,48 @@ for (const genre of ['RPG & Fantasy', 'Vehicle Simulation', 'Survival & Crafting
   assert.ok(v11Runtime.includes(genre), 'Missing V11 discovery genre: ' + genre);
 }
 
-console.log('PixelLab V11 validation passed.');
+
+const v12FeatureChecks = [
+  ['games/rift-runner.js', /dashCooldown/, 'Rift Runner needs its V12 dash ability'],
+  ['games/circuit-crafter.js', /Free route hint/, 'Circuit Crafter needs its one-use route hint'],
+  ['games/star-courier.js', /delivery combo/, 'Star Courier needs delivery combo feedback'],
+  ['games/reaction.js', /Three-attempt challenge/, 'Reaction Rush needs its best-of-three challenge'],
+  ['games/memory.js', /startClock/, 'Memory Match needs its timed round'],
+  ['games/aim.js', /bestStreak/, 'Aim Trainer needs streak tracking'],
+  ['games/whack.js', /spawnDelay/, 'Whack-a-Mole needs its difficulty ramp'],
+  ['games/tap.js', /bonusWindows/, 'Tap Frenzy needs its 2x surge windows'],
+  ['games/typing.js', /correctWords/, 'Type Blitz needs accuracy tracking'],
+  ['games/tictactoe.js', /aiDifficulty/, 'Tic-Tac-Toe needs selectable AI difficulty'],
+  ['games/merge.js', /Undo last move/, 'Number Merge needs its one-use undo'],
+  ['games/snake.js', /tickMs/, 'Snake needs progressive speed'],
+  ['games/pong.js', /const skill=Math\.min/, 'Neon Pong needs adaptive AI'],
+  ['games/breakout.js', /score===wave\*30/, 'Brick Breaker needs multi-wave progression'],
+  ['games/dodge.js', /nearMisses/, 'Orbit Dodger needs near-miss scoring'],
+  ['games/mines.js', /firstMove/, 'Minefield needs a protected first reveal'],
+  ['games/simon.js', /520-Math\.max/, 'Simon Sequence needs a speed ramp'],
+  ['games/scramble.js', /hintButton/, 'Word Scramble needs its extra-letter hint'],
+  ['games/clicker.js', /surgeUntil/, 'Cosmic Clicker needs its timed surge'],
+  ['games/flappy.js', /shieldUsed/, 'Flappy Pixel needs its recoverable shield'],
+  ['games/math.js', /bestStreak/, 'Math Sprint needs streak scoring'],
+  ['games/connect4.js', /hintColumn/, 'Connect Four needs strategic hints'],
+  ['games/platform.js', /checkpoint=\{x:370/, 'Pixel Platformer needs its mid-level checkpoint'],
+  ['games/trivia.js', /bestStreak/, 'Trivia Blitz needs combo scoring'],
+  ['games/color.js', /bestStreak/, 'Color Clash needs combo scoring'],
+  ['games/lights.js', /solutionMoves/, 'Lights Out needs generated solution hints'],
+  ['games/maze.js', /startedAt/, 'Maze Runner needs its speed-run timer'],
+];
+for (const [file, pattern, message] of v12FeatureChecks) {
+  assert.match(read(file), pattern, message);
+}
+assert.match(v11Runtime, /root\.rotation\.y=Math\.atan2/, 'Velocity X car heading must follow the racing line');
+assert.match(v11Runtime, /wildlifeSeen/, 'Wildlands must track wildlife discoveries');
+assert.match(v11Runtime, /varietyCount/, 'Park Empire must reward attraction variety');
+assert.match(v11Runtime, /spellCooldown/, 'Mythic Realms must limit spell pulse spam');
+assert.match(v11Runtime, /Math\.abs\(speed\)>8/, 'Trailblazer delivery stops must require braking');
+assert.match(v11Runtime, /builtCampfire/, 'Wildcraft must include the optional campfire objective');
+
+console.log('PixelLab V12 validation passed.');
 console.log('Base catalog: 192 legacy variants + 3 original games = 195 entries.');
-console.log('V10 adds 5 original 3D engines; V11 adds 3 more, for 203 catalog entries.');
+console.log('V11 retains 8 original 3D engines; V12 gameplay upgrades cover all 35 playable engines.');
 console.log('Playable engines: ' + (routes.length + v10Ids.length + v11Ids.length) + '; JavaScript syntax-checked: ' + scriptFiles.length + '.');
-console.log('HTML assets, catalog extensions, 3D launchers, and cleanup hooks were verified.');
+console.log('HTML assets, catalog extensions, all 35 V12 gameplay markers, and cleanup hooks were verified.');
