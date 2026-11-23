@@ -1,3 +1,24 @@
 'use strict';
 
-function gameReaction(g){const b=baseBox();b.innerHTML='<div class="big-number">Ready?</div><div class="subtext">Test your reaction time. Wait for green.</div>';let state='idle',timer=null,start=0,done=false;const btn=button('Start round',()=>{if(state==='idle'){state='wait';btn.textContent='Wait for green…';btn.classList.remove('hot');b.querySelector('.big-number').textContent='Wait…';b.querySelector('.subtext').textContent='Do not click yet.';timer=setTimeout(()=>{state='go';start=performance.now();btn.textContent='CLICK NOW!';btn.classList.add('hot');b.querySelector('.big-number').textContent='GO!';b.querySelector('.subtext').textContent='Tap the button as fast as you can.'},850+Math.random()*2000)}else if(state==='wait'){clearTimeout(timer);state='idle';btn.textContent='Too soon — try again';b.querySelector('.big-number').textContent='False start';b.querySelector('.subtext').textContent='Wait until the panel turns green.';setTimeout(()=>{if(state==='idle')btn.textContent='Try again'},750)}else if(state==='go'){const ms=Math.round(performance.now()-start);state='done';setBest(g,ms);b.querySelector('.big-number').textContent=ms+' ms';b.querySelector('.subtext').textContent=ms<220?'Insanely quick!':ms<300?'Great reflexes.':'Nice — try to beat that time.';btn.textContent='Play again';btn.classList.remove('hot')}else{state='idle';b.querySelector('.big-number').textContent='Ready?';b.querySelector('.subtext').textContent='Wait for green, then click fast.';btn.textContent='Start round'}});b.appendChild(btn);cleanup=()=>clearTimeout(timer)}
+function gameReaction(g){
+ const b=baseBox();
+ const title=document.createElement('div');title.className='big-number';title.textContent='Ready?';b.appendChild(title);
+ const sub=document.createElement('div');sub.className='subtext';sub.textContent='Best of three. Wait for green, then react fast.';b.appendChild(sub);
+ const status=scoreLine([['Attempt','0 / 3'],['Average','—'],['False starts','0']]);b.appendChild(status);
+ let state='idle',timer=null,start=0,round=0,total=0,best=Infinity,falseStarts=0;
+ const btn=button('Start challenge',beginSeries,true);b.appendChild(btn);
+ function update(){status.innerHTML='<span>Attempt: <strong>'+round+' / 3</strong></span><span>Average: <strong>'+(round?Math.round(total/round)+' ms':'—')+'</strong></span><span>False starts: <strong>'+falseStarts+'</strong></span>';}
+ function beginSeries(){clearTimeout(timer);round=0;total=0;best=Infinity;falseStarts=0;state='between';title.textContent='Three-attempt challenge';sub.textContent='Your average reaction time is the final score.';update();startAttempt();}
+ function startAttempt(){clearTimeout(timer);state='wait';btn.textContent='Wait for green…';btn.classList.remove('hot');title.textContent='Wait…';sub.textContent='Do not click early.';update();timer=setTimeout(()=>{state='go';start=performance.now();btn.textContent='CLICK NOW!';btn.classList.add('hot');title.textContent='GO!';sub.textContent='Attempt '+(round+1)+' of 3 — tap as quickly as you can.'},850+Math.random()*2000);}
+ btn.onclick=function(){
+  if(state==='idle'||state==='done'){beginSeries();return;}
+  if(state==='between'){startAttempt();return;}
+  if(state==='wait'){clearTimeout(timer);falseStarts++;state='between';btn.textContent='Try again';btn.classList.remove('hot');title.textContent='False start';sub.textContent='Wait until the panel turns green. This attempt does not count.';update();return;}
+  if(state==='go'){
+   const ms=Math.round(performance.now()-start);round++;total+=ms;best=Math.min(best,ms);state='between';btn.classList.remove('hot');update();
+   if(round===3){state='done';const average=Math.round(total/3);setBest(g,average);title.textContent=average+' ms average';sub.textContent='Best: '+best+' ms · Three attempts complete. '+(average<260?'Elite reactions!':average<330?'Nice reflexes.':'Run it back and beat your average.');btn.textContent='Play again';}
+   else{title.textContent=ms+' ms';sub.textContent='Attempt recorded. '+(3-round)+' more to go.';btn.textContent='Next attempt';}
+  }
+ };
+ cleanup=()=>clearTimeout(timer);
+}
