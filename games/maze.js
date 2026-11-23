@@ -1,7 +1,7 @@
 'use strict';
 
 function gameMaze(g){
-  const b=baseBox();let maze=[],px=1,py=1,steps=0,won=false,gems=new Set(),collected=0,startedAt=0;const W=11,H=9;
+  const b=baseBox();let maze=[],px=1,py=1,steps=0,won=false,gems=new Set(),collected=0,gemStreak=0,gemScore=0,startedAt=0;const W=11,H=9;
   const status=scoreLine([['Steps','0'],['Gems','0 / 3'],['Time','0.0s'],['Goal','Find the exit']]);b.appendChild(status);
   const board=document.createElement('div');board.style.display='grid';board.style.gridTemplateColumns='repeat(11,minmax(17px,30px))';board.style.gap='2px';board.style.padding='6px';board.style.background='#10121d';board.style.borderRadius='12px';b.appendChild(board);const cells=[];
   function generateMaze(){
@@ -22,12 +22,12 @@ function gameMaze(g){
   }
   function move(dx,dy){
     if(won)return;const nx=px+dx,ny=py+dy;if(!maze[ny]||maze[ny][nx]==='#')return;px=nx;py=ny;steps++;
-    const idx=ny*W+nx;if(gems.has(idx)){gems.delete(idx);collected++;flash('Gem collected! ⭐');}
-    if(maze[ny][nx]==='E'){won=true;const seconds=(performance.now()-startedAt)/1000;setBest(g,Math.round(seconds*10));b.insertAdjacentHTML('beforeend','<div class="message">Maze solved in '+steps+' moves and '+seconds.toFixed(1)+' seconds! You found '+collected+' / 3 gems.</div>');b.appendChild(button('Run another maze',()=>runGame(g),true));}
+    const idx=ny*W+nx;if(gems.has(idx)){gems.delete(idx);collected++;gemStreak++;gemScore+=100+gemStreak*25;flash('Gem chain x'+gemStreak+' · '+gemScore+' bonus points!');}
+    if(maze[ny][nx]==='E'){won=true;const seconds=(performance.now()-startedAt)/1000;setBest(g,Math.round(seconds*10));b.insertAdjacentHTML('beforeend','<div class="message">Maze solved in '+steps+' moves and '+seconds.toFixed(1)+' seconds! You found '+collected+' / 3 gems for '+gemScore+' bonus points.</div>');b.appendChild(button('Run another maze',()=>runGame(g),true));}
     draw();
   }
   for(let i=0;i<W*H;i++){const el=document.createElement('div');cells.push(el);board.appendChild(el);}
-  function reset(){px=1;py=1;steps=0;won=false;collected=0;generateMaze();startedAt=performance.now();draw();}
+  function reset(){px=1;py=1;steps=0;won=false;collected=0;gemStreak=0;gemScore=0;generateMaze();startedAt=performance.now();draw();}
   installKeys(e=>{const dirs={'ArrowUp':[0,-1],'w':[0,-1],'W':[0,-1],'ArrowDown':[0,1],'s':[0,1],'S':[0,1],'ArrowLeft':[-1,0],'a':[-1,0],'A':[-1,0],'ArrowRight':[1,0],'d':[1,0],'D':[1,0]};if(dirs[e.key])move(dirs[e.key][0],dirs[e.key][1]);});
   const controls=document.createElement('div');controls.className='mobile-controls';[['↑',0,-1],['←',-1,0],['↓',0,1],['→',1,0]].forEach(v=>controls.appendChild(button(v[0],()=>move(v[1],v[2]))));
   b.appendChild(controls);b.appendChild(button('New random maze',reset));reset();

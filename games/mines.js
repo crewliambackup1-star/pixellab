@@ -38,7 +38,8 @@ function gameMines(g){
   if(!ended&&revealed.size===54)finish(true);
  }
  function reveal(i){
-  if(ended||flags.has(i)||revealed.has(i))return;
+  if(ended||flags.has(i))return;
+  if(revealed.has(i)){chord(i);return;}
   if(firstMove)plantMines(i);
   if(board[i].mine){revealed.add(i);finish(false);return;}
   const todo=[i];
@@ -48,6 +49,7 @@ function gameMines(g){
   }
   update();
  }
+ function chord(i){const needed=countNear(i);if(!needed)return;const x=i%size,y=Math.floor(i/size),neighbors=[];let flagCount=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const nx=x+dx,ny=y+dy;if(nx<0||nx>=size||ny<0||ny>=size)continue;const j=ny*size+nx;if(flags.has(j))flagCount++;else if(!revealed.has(j))neighbors.push(j);}if(flagCount===needed){neighbors.forEach(reveal);flash('Neighbor tiles cleared from your flag pattern.');}}
  function toggleFlag(i){if(ended||revealed.has(i))return;if(flags.has(i))flags.delete(i);else if(flags.size<mineCount)flags.add(i);update();}
  function init(){
   board=Array.from({length:64},()=>({mine:false}));revealed=new Set();flags=new Set();ended=false;firstMove=true;flagMode=false;

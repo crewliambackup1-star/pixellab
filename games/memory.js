@@ -23,7 +23,7 @@ function gameMemory(g){
     moves++;locked=true;upd();const first=open[0],second=open[1];
     if(deck[first]===deck[second]){
       [first,second].forEach(function(ix){grid.children[ix].classList.add('matched');grid.children[ix].disabled=true;});
-      open=[];matched++;combo++;locked=false;upd();if(matched===8)finish(true);
+      open=[];matched++;combo++;seconds=Math.min(75,seconds+2);flash('Pair found! +2 seconds · combo '+combo+'x.');locked=false;upd();if(matched===8)finish(true);
     }else{
       combo=0;upd();flipTimer=setTimeout(function(){[first,second].forEach(function(ix){grid.children[ix].textContent='✦';grid.children[ix].classList.remove('flipped');});open=[];locked=false;},650);
     }
