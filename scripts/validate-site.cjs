@@ -135,7 +135,7 @@ for (const route of routes) {
 
 assert.match(v10Runtime, /three-pause-toggle/, 'V12 3D pause controls are missing');
 assert.match(v10Runtime, /session\.paused/, 'V12 3D pause state is missing');
-assert.match(v10Runtime, /elapsedTime \\+= dt/, 'The 3D world clock must pause with the game');
+assert.match(v10Runtime, /elapsedTime \\+\= dt/, 'The 3D world clock must pause with the game');
 
 for (const functionName of ['gameNeonStrike', 'gameGravityRush', 'gameVelocityX', 'gameWildlands', 'gameParkEmpire']) {
   assert.match(v10Runtime, new RegExp('function\\s+' + functionName + '\\s*\\('), 'Missing V10 3D game: ' + functionName);
@@ -215,7 +215,7 @@ assert.match(v11Runtime, /Math\.abs\(speed\)>8/, 'Trailblazer delivery stops mus
 assert.match(v11Runtime, /builtCampfire/, 'Wildcraft must include the optional campfire objective');
 
 console.log('PixelLab V12 validation passed.');
-console.log('Base catalog: 192 legacy variants + 3 original games = 195 entries.');
+console.log('Catalog: 195 legacy/base entries plus 8 original 3D games = 203 entries.');
 console.log('V11 retains 8 original 3D engines; V12 gameplay upgrades cover all 35 playable engines.');
 console.log('Playable engines: ' + (routes.length + v10Ids.length + v11Ids.length) + '; JavaScript syntax-checked: ' + scriptFiles.length + '.');
 console.log('HTML assets, catalog extensions, all 35 V12 gameplay markers, and cleanup hooks were verified.');
