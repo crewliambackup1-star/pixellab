@@ -19,7 +19,7 @@ function gameBreakout(g){
   ctx.fillStyle='#e7e1ff';ctx.fillRect(paddle,315,paddleWidth,10);ctx.fillStyle='#5fe3d0';ctx.beginPath();ctx.arc(ball.x,ball.y,7,0,Math.PI*2);ctx.fill();
  }
  function finish(){clearInterval(iv);started=false;setBest(g,-score);b.insertAdjacentHTML('beforeend','<div class="message">'+(wave===3&&score===90?'All three waves cleared!':'Run ended at wave '+wave)+ ' · '+score+' bricks cleared.</div>');b.appendChild(button('Play again',()=>runGame(g),true));}
- function updateStatus(){status.innerHTML='<span>Bricks: <strong>'+(score%30||((score>0&&score%30===0)?30:0))+' / 30</strong></span><span>Wave: <strong>'+wave+' / 3</strong></span><span>Lives: <strong>'+lives+'</strong></span>';}
+ function updateStatus(){const cleared=score-(wave-1)*30;status.innerHTML='<span>Bricks: <strong>'+Math.max(0,Math.min(30,cleared))+' / 30</strong></span><span>Wave: <strong>'+wave+' / 3</strong></span><span>Lives: <strong>'+lives+'</strong></span>';}
  function tick(){
   const now=Date.now();paddleWidth=now<wideUntil?145:100;const slow=now<slowUntil;
   ball.x+=ball.vx*(slow?.68:1);ball.y+=ball.vy*(slow?.68:1);
@@ -39,8 +39,7 @@ function gameBreakout(g){
    if(lives>0)ball={x:paddle+paddleWidth/2,y:292,vx:(Math.random()-.5)*3.4,vy:-4};
    else{updateStatus();finish();return;}
   }
-  const waveProgress=score%30;
-  if(waveProgress===0&&score>0){
+  if(score===wave*30){
    if(wave<3){wave++;makeWave();lives=Math.min(5,lives+1);ball.vx*=1.12;ball.vy*=1.12;flash('Wave '+wave+' · Bricks are faster and a bonus life was added!');}
    else{updateStatus();draw();finish();return;}
   }
