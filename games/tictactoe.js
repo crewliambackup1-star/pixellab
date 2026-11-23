@@ -14,7 +14,7 @@ function gameTTT(g){
   const title=document.createElement('div');title.className='big-number mp-title';title.textContent='Choose your game mode';b.append(title);
   const choices=document.createElement('div');choices.className='mp-mode-picker';
   choices.append(modeButton('🤖 Easy AI','A relaxed opponent that makes occasional mistakes.','ai-easy'));
-  choices.append(modeButton('🧠 Balanced AI','A fair challenge with smart moves and room to win.','ai-balanced'));
+  choices.append(modeButton('🤖 Play vs AI · Balanced','A fair challenge with smart moves and room to win.','ai-balanced'));
   choices.append(modeButton('🔥 Expert AI','The original unbeatable minimax opponent.','ai-expert'));
   choices.append(modeButton('👥 2 Players · Same Device','Take turns on this screen. X goes first.','local'));
   choices.append(modeButton('🌐 Online room','Invite someone on another device — coming soon.','online',true));
