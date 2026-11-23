@@ -2,7 +2,7 @@
 
 function gameBreakout(g){
  const {box,c,ctx}=startCanvas(600,340);
- let paddle=250,paddleWidth=100,ball={x:300,y:270,vx:3,vy:-4},bricks=[],drops=[],score=0,lives=3,iv=null,wideUntil=0,slowUntil=0,started=false,wave=1;
+ let paddle=250,paddleWidth=100,ball={x:300,y:270,vx:3,vy:-4},bricks=[],drops=[],score=0,points=0,combo=0,bestCombo=0,lives=3,iv=null,wideUntil=0,slowUntil=0,started=false,wave=1;
  const status=scoreLine([['Bricks','0 / 30'],['Wave','1 / 3'],['Lives','3']]);box.appendChild(status);
  function makeWave(){
   const palette=['#9e83ff','#5fe3d0','#ff76b5','#f0b46f','#79a6ff'];
@@ -11,21 +11,21 @@ function gameBreakout(g){
    bricks.push({x:22+col*94,y:28+r*24,w:82,h:15,on:true,color:palette[(r+wave-1)%palette.length]});
   }
  }
- function reset(){drops=[];score=0;lives=3;wave=1;paddle=250;paddleWidth=100;wideUntil=0;slowUntil=0;ball={x:300,y:270,vx:3,vy:-4};makeWave();}
+ function reset(){drops=[];score=0;points=0;combo=0;bestCombo=0;lives=3;wave=1;paddle=250;paddleWidth=100;wideUntil=0;slowUntil=0;ball={x:300,y:270,vx:3,vy:-4};makeWave();}
  function draw(){
   drawCanvasBackground(ctx,600,340);
   bricks.forEach(br=>{if(br.on){ctx.fillStyle=br.color;ctx.beginPath();ctx.roundRect(br.x,br.y,br.w,br.h,4);ctx.fill();}});
   drops.forEach(d=>{ctx.fillStyle=d.type==='wide'?'#5fe3d0':d.type==='slow'?'#b6a4ff':'#ffc66d';ctx.beginPath();ctx.arc(d.x,d.y,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#171525';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText(d.type==='wide'?'W':d.type==='slow'?'S':'+',d.x,d.y+4);ctx.textAlign='left';});
   ctx.fillStyle='#e7e1ff';ctx.fillRect(paddle,315,paddleWidth,10);ctx.fillStyle='#5fe3d0';ctx.beginPath();ctx.arc(ball.x,ball.y,7,0,Math.PI*2);ctx.fill();
  }
- function finish(){clearInterval(iv);started=false;setBest(g,-score);b.insertAdjacentHTML('beforeend','<div class="message">'+(wave===3&&score===90?'All three waves cleared!':'Run ended at wave '+wave)+ ' · '+score+' bricks cleared.</div>');b.appendChild(button('Play again',()=>runGame(g),true));}
+ function finish(){clearInterval(iv);started=false;setBest(g,-points);b.insertAdjacentHTML('beforeend','<div class="message">'+(wave===3&&score===90?'All three waves cleared!':'Run ended at wave '+wave)+ ' · '+score+' bricks cleared.</div>');b.appendChild(button('Play again',()=>runGame(g),true));}
  function updateStatus(){const cleared=score-(wave-1)*30;status.innerHTML='<span>Bricks: <strong>'+Math.max(0,Math.min(30,cleared))+' / 30</strong></span><span>Wave: <strong>'+wave+' / 3</strong></span><span>Lives: <strong>'+lives+'</strong></span>';}
  function tick(){
   const now=Date.now();paddleWidth=now<wideUntil?145:100;const slow=now<slowUntil;
   ball.x+=ball.vx*(slow?.68:1);ball.y+=ball.vy*(slow?.68:1);
   if(ball.x<7||ball.x>593)ball.vx*=-1;if(ball.y<7)ball.vy*=-1;
   if(ball.y>307&&ball.y<330&&ball.x>paddle&&ball.x<paddle+paddleWidth){ball.vy=-Math.abs(ball.vy);ball.vx+=(ball.x-(paddle+paddleWidth/2))*.035;}
-  bricks.forEach(br=>{if(br.on&&ball.x>br.x&&ball.x<br.x+br.w&&ball.y>br.y&&ball.y<br.y+br.h){br.on=false;ball.vy*=-1;score++;if(Math.random()<.22)drops.push({x:br.x+br.w/2,y:br.y+br.h,type:['wide','slow','life'][Math.floor(Math.random()*3)]});}});
+  bricks.forEach(br=>{if(br.on&&ball.x>br.x&&ball.x<br.x+br.w&&ball.y>br.y&&ball.y<br.y+br.h){br.on=false;ball.vy*=-1;score++;combo++;bestCombo=Math.max(bestCombo,combo);points+=10+Math.min(30,(combo-1)*2);if(Math.random()<.22)drops.push({x:br.x+br.w/2,y:br.y+br.h,type:['wide','slow','life'][Math.floor(Math.random()*3)]});}});
   drops.forEach(d=>d.y+=2.25);
   drops=drops.filter(d=>{
    if(d.y>340)return false;
@@ -35,7 +35,7 @@ function gameBreakout(g){
    return true;
   });
   if(ball.y>350){
-   lives--;
+   combo=0;lives--;
    if(lives>0)ball={x:paddle+paddleWidth/2,y:292,vx:(Math.random()-.5)*3.4,vy:-4};
    else{updateStatus();finish();return;}
   }

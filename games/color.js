@@ -12,7 +12,7 @@ function gameColor(g){
     target=Math.floor(Math.random()*4);const word=Math.floor(Math.random()*4);label.textContent=names[word];label.style.color=colors[target];options.innerHTML='';
     names.forEach((name,i)=>{const c=button(name,()=>{
       if(!started)return;rounds++;
-      if(i===target){streak++;bestStreak=Math.max(bestStreak,streak);score+=1+Math.floor(streak/4);}
+      if(i===target){streak++;bestStreak=Math.max(bestStreak,streak);const focusBonus=streak%8===0?5:0;score+=1+Math.floor(streak/4)+focusBonus;if(focusBonus)prompt.textContent='Focus burst! +5 bonus points for an eight-answer streak.';}
       else{streak=0;score=Math.max(0,score-1);prompt.textContent='Wrong ink color — streak reset. Read the color, not the word.';}
       update();next();
     });c.style.color=colors[i];options.appendChild(c);});
