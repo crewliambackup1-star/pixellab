@@ -18,7 +18,7 @@ test('homepage renders the complete catalog without JavaScript errors', async ({
 });
 
 
-test('V11 adds three searchable 3D worlds to the eight-game showcase', async ({ page }) => {
+test('V12 preserves the three V11 worlds and the eight-game 3D showcase', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.locator('#threeDFeatured .game-card')).toHaveCount(8);
@@ -96,6 +96,29 @@ const threeDGameNames = [
   'Park Empire', 'Mythic Realms', 'Trailblazer Sim', 'Wildcraft',
 ];
 
+
+test('V12 Minefield protects the first reveal and Reaction Rush starts a three-attempt round', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.goto('/');
+
+  await page.locator('#search').fill('Minefield');
+  await page.locator('#gameGrid [data-game]').first().click();
+  await expect(page.locator('#modalTitle')).toContainText('Minefield');
+  await page.locator('#gameBox .mine-cell').first().click();
+  await expect(page.locator('#gameBox .mine-cell.mine-hit')).toHaveCount(0);
+  await page.locator('#closeModal').click();
+
+  await page.locator('#search').fill('Reaction Rush');
+  await page.locator('#gameGrid [data-game]').first().click();
+  await expect(page.locator('#modalTitle')).toContainText('Reaction Rush');
+  await page.getByRole('button', { name: 'Start challenge' }).click();
+  await expect(page.locator('#gameBox .big-number')).toHaveText('Wait…');
+  await page.getByRole('button', { name: /Wait for green/ }).click();
+  await expect(page.locator('#gameBox .big-number')).toHaveText('False start');
+  expect(pageErrors).toEqual([]);
+});
+
 test('all 27 non-3D engines open and cleanly close without page errors', async ({ page }) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
@@ -111,7 +134,7 @@ test('all 27 non-3D engines open and cleanly close without page errors', async (
     await card.locator('[data-game]').first().click();
     await expect(modal).toHaveClass(/open/);
     await expect(page.locator('#modalTitle')).toHaveText(expectedTitle);
-    await expect(page.locator('#gameBox').locator(':scope > *').first()).toBeVisible();
+    await expect(page.locator('#gameBox > *').first()).toBeVisible();
     await page.locator('#closeModal').click();
     await expect(modal).not.toHaveClass(/open/);
   }
@@ -134,14 +157,11 @@ test('all eight 3D worlds start the shared runtime and expose pause or a gracefu
     await expect(modal).toHaveClass(/open/);
     await expect(page.locator('#modalTitle')).toHaveText(expectedTitle);
     await expect(page.locator('.three-stage')).toBeVisible();
-    await expect.poll(async () => {
-      const pauseControls = await page.locator('.three-pause-toggle').count();
-      const loadErrors = await page.locator('.three-load-error').count();
-      return pauseControls + loadErrors;
-    }, { timeout: 20000 }).toBeGreaterThan(0);
+    await expect(page.locator('.three-canvas, .three-load-error')).toBeVisible({ timeout: 20000 });
 
     const pauseButton = page.locator('.three-pause-toggle');
-    if (await pauseButton.isVisible()) {
+    if (await page.locator('.three-canvas').isVisible()) {
+      await expect(pauseButton).toBeVisible();
       await pauseButton.click();
       await expect(page.locator('.three-pause-banner')).toBeVisible();
       await pauseButton.click();
