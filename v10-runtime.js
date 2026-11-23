@@ -46,6 +46,28 @@
     const controls = shell.querySelector('.three-controls');
     const help = shell.querySelector('.three-help');
     const hudTitle = shell.querySelector('.three-game-name');
+    const pauseButton = makeElement('button', 'three-pause-toggle', 'Ⅱ Pause');
+    pauseButton.type = 'button';
+    pauseButton.setAttribute('aria-pressed', 'false');
+    hudTitle.parentElement.appendChild(pauseButton);
+    const pauseBanner = makeElement('div', 'three-pause-banner', 'Paused · Press P or choose Resume to continue');
+    pauseBanner.hidden = true;
+    let helpBeforePause = '';
+    function setPaused(value) {
+      if (!session.active || session.completed) return;
+      session.paused = Boolean(value);
+      pauseButton.textContent = session.paused ? '▶ Resume' : 'Ⅱ Pause';
+      pauseButton.setAttribute('aria-pressed', String(session.paused));
+      pauseBanner.hidden = !session.paused;
+      if (session.paused) {
+        helpBeforePause = help.textContent;
+        help.textContent = 'Paused. Your run is safe; press P or Resume when ready.';
+      } else if (helpBeforePause) {
+        help.textContent = helpBeforePause;
+        helpBeforePause = '';
+      }
+    }
+    pauseButton.addEventListener('click', function () { setPaused(!session.paused); });
     const session = {
       active: true,
       keys: new Set(),
@@ -56,6 +78,7 @@
       camera: null,
       frame: 0,
       completed: false,
+      paused: false,
       startedAt: 0
     };
     let ctx = null;
@@ -77,6 +100,10 @@
     function finish(score, heading, detail) {
       if (session.completed) return;
       session.completed = true;
+      session.paused = false;
+      pauseBanner.hidden = true;
+      pauseButton.disabled = true;
+      pauseButton.textContent = '✓ Complete';
       const oldBest = scores[game.id];
       const record = oldBest === undefined || score > oldBest;
       if (record) {
@@ -158,6 +185,7 @@
       renderer.domElement.className = 'three-canvas';
       renderer.domElement.setAttribute('aria-label', game.name + ' 3D game area');
       stage.appendChild(renderer.domElement);
+      stage.appendChild(pauseBanner);
 
       session.scene = scene;
       session.camera = camera;
@@ -175,6 +203,7 @@
       scene.add(fillLight);
 
       let clock = new THREE.Clock();
+      let elapsedTime = 0;
       let update = function () {};
       let afterRender = function () {};
       ctx = {
@@ -228,7 +257,8 @@
         },
         setUpdate: function (fn) { update = fn; },
         setAfterRender: function (fn) { afterRender = fn; },
-        elapsed: function () { return clock.elapsedTime; },
+        elapsed: function () { return elapsedTime; },
+        setPaused: setPaused,
         delta: function () { return clock.getDelta(); },
         cameraResize: function () {
           const width = Math.max(1, stage.clientWidth);
@@ -244,9 +274,14 @@
         }
       };
 
-      const keyNames = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'shift', 'enter'];
+      const keyNames = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'shift', 'enter', 'p'];
       listen(global, 'keydown', function (event) {
         const key = event.key.toLowerCase();
+        if (key === 'p' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) {
+          event.preventDefault();
+          setPaused(!session.paused);
+          return;
+        }
         if (keyNames.includes(key) && !['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) {
           session.keys.add(key === ' ' ? 'space' : key);
           if (key !== 'enter') event.preventDefault();
@@ -279,8 +314,11 @@
         const dt = Math.min(clock.getDelta(), 0.045);
         if (document.hidden) return;
         try {
-          update(dt, clock.elapsedTime);
-          afterRender(dt, clock.elapsedTime);
+          if (!session.paused && !session.completed) {
+            elapsedTime += dt;
+            update(dt, elapsedTime);
+            afterRender(dt, elapsedTime);
+          }
           renderer.render(scene, camera);
         } catch (error) {
           console.error('PixelLab 3D game runtime error:', error);
