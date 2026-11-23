@@ -65,7 +65,7 @@ function gameTTT(g){
    const count=mode==='ai'&&history.length>=2?2:1;
    for(let n=0;n<count;n++){const move=history.pop();board[move]='';}
    undoUsed=true;over=false;turn=mode==='ai'?'X':(board.filter(Boolean).length%2===0?'X':'O');
-   title.textContent='Last turn rewound';draw();
+   draw();title.textContent='Last turn rewound';
   }
   function applyMove(i,p){
    history.push(i);board[i]=p;draw();
