@@ -423,6 +423,7 @@
         const relicsGroup=new T.Group();biomeGroup.add(relicsGroup);
         const wildlife=[];
         const landmarks=[];
+        let wildlifeSeen=new Set();
         const beacon=new T.Group();scene.add(beacon);beacon.position.set(0,1,-48);
         const beaconRing=new T.Mesh(new T.TorusGeometry(2.3,.18,10,36),material(T,'#e8ffff',.2,.1,'#ffffff'));
         beaconRing.rotation.x=Math.PI/2;beacon.add(beaconRing);
@@ -453,8 +454,8 @@
             const marker=boxMesh(T,1.1,2.5,1.1,material(T,biomes[biome].accent,.42,.2,biomes[biome].accent),(i-1)*24,1.25,-26);
             biomeGroup.add(marker);landmarks.push({mesh:marker,found:false});
           }
-          relics=0;discoveries=0;score=0;
-          ctx.setHud('primary','RELICS','0 / 5');ctx.setHud('tertiary','DISCOVERIES','0 / 3');
+          relics=0;discoveries=0;score=0;wildlifeSeen=new Set();
+          ctx.setHud('primary','RELICS','0 / 5');ctx.setHud('tertiary','WILDLIFE','0 / 3');
         }
         const completedBiomes=[false,false,false];let expeditionScore=0;
         const biomeTool=ctx.addTool('Next biome',function(){
@@ -481,7 +482,16 @@
             if(player.position.distanceTo(relic.position)<2.2){relic.userData.collected=true;relic.visible=false;relics++;totalRelics++;score+=120;ctx.setHud('primary','RELICS',relics+' / 5');}
           });
           landmarks.forEach(function(item){if(!item.found&&player.position.distanceTo(item.mesh.position)<4){item.found=true;item.mesh.material.emissive.set('#ffffff');discoveries++;score+=80;ctx.setHud('tertiary','DISCOVERIES',discoveries+' / 3');}});
-          wildlife.forEach(function(w){w.root.position.x+=Math.sin(elapsed*w.speed+w.phase)*dt*1.5;w.root.position.z+=Math.cos(elapsed*.55+w.phase)*dt*1.1;});
+          wildlife.forEach(function(w,i){
+            const distance=player.position.distanceTo(w.root.position);
+            if(distance<8&&!wildlifeSeen.has(i)){
+              wildlifeSeen.add(i);score+=70;ctx.setHud('tertiary','WILDLIFE',wildlifeSeen.size+' / 3');
+              ctx.setHelp('Wildlife spotted! '+wildlifeSeen.size+' of 3 creatures observed in this biome.');
+            }
+            const flee=distance<5?1.8:1;
+            w.root.position.x+=Math.sin(elapsed*w.speed+w.phase)*dt*1.5*flee;
+            w.root.position.z+=Math.cos(elapsed*.55+w.phase)*dt*1.1*flee;
+          });
           beaconRing.rotation.z+=dt*.8;
           ctx.camera.position.lerp(new T.Vector3(player.position.x,player.position.y+9,player.position.z+16),Math.min(1,dt*2.5));
           ctx.camera.lookAt(player.position.x,1,player.position.z-3);
@@ -516,7 +526,72 @@
           const guest=addSphere(T,scene,.22,['#f1c47c','#8bd4e4','#e9a3ce'][i%3],(Math.random()-.5)*26,.35,(Math.random()-.5)*20);
           guests.push(guest);
         }
-        function hud(){ctx.setHud('primary','CASH','$'+Math.floor(cash));ctx.setHud('secondary','GUESTS',visitors);ctx.setHud('tertiary','RIDES',rides.length+'/10');}
+        function varietyCount(){return new Set(rides.map(function(ride){return ride.info.name;})).size;}
+        function hud(){ctx.setHud('primary','CASH','
+        rideTypes.forEach(function(type,index){
+          ctx.addTool(type.name+' $'+type.cost,function(){selected=index;ctx.setHelp('Selected '+type.name+'. Tap or click an empty grid tile to build it.');});
+        });
+        ctx.setHelp('Build at least three different attraction types, bring in visitors, and reach ten attractions with $1,800 cash. Variety boosts your visitor growth and income.');
+        const ray=new T.Raycaster(),mouse=new T.Vector2();
+        const floorPlane=new T.Plane(new T.Vector3(0,1,0),0),point=new T.Vector3();
+        ctx.on(ctx.stage,'pointerdown',function(event){
+          const rect=ctx.stage.getBoundingClientRect();mouse.x=((event.clientX-rect.left)/rect.width)*2-1;mouse.y=-((event.clientY-rect.top)/rect.height)*2+1;
+          ray.setFromCamera(mouse,ctx.camera);
+          if(!ray.ray.intersectPlane(floorPlane,point))return;
+          const x=Math.round(point.x/3)*3,z=Math.round(point.z/3)*3;
+          if(Math.abs(x)>15||Math.abs(z)>10){ctx.setHelp('Choose a clear tile inside the park boundary.');return;}
+          if(rides.some(function(r){return r.x===x&&r.z===z;})){ctx.setHelp('That tile is occupied. Choose another space.');return;}
+          const type=rideTypes[selected];if(cash<type.cost){ctx.setHelp('Not enough cash for '+type.name+'. Wait for ticket income or choose a smaller attraction.');return;}
+          cash-=type.cost;rating=Math.min(5,rating+.18);
+          const root=new T.Group();root.position.set(x,0,z);
+          const base=boxMesh(T,2.5,.35,2.5,material(T,'#d6e5ed',.8),0,.18,0);root.add(base);
+          if(selected===0){
+            for(let n=0;n<8;n++){const a=n/8*Math.PI*2;const seat=boxMesh(T,.38,.55,.38,material(T,type.color,.45),Math.cos(a)*.8,1.0,Math.sin(a)*.8);seat.rotation.y=-a;root.add(seat);}
+            const pole=boxMesh(T,.25,2,.25,material(T,'#e9eef5',.4),0,1,0);root.add(pole);
+          }else if(selected===1){
+            const wheel=new T.Mesh(new T.TorusGeometry(1.15,.11,8,30),material(T,type.color,.3,.18));wheel.position.y=3;root.add(wheel);
+            const beam=boxMesh(T,.22,5,.22,material(T,'#e8f2fa',.5),0,2.4,0);root.add(beam);
+          }else if(selected===2){
+            const track=new T.Mesh(new T.TorusGeometry(1.1,.17,8,24),material(T,type.color,.4,.2));track.rotation.x=Math.PI/2;track.position.y=1.7;root.add(track);
+            const support=boxMesh(T,.25,3,.25,material(T,'#8b9bab',.6),0,1.5,0);root.add(support);
+          }else{
+            const tree=new T.Mesh(new T.ConeGeometry(1.1,2.6,7),material(T,type.color,.9));tree.position.y=1.5;root.add(tree);
+          }
+          rideGroup.add(root);rides.push({x:x,z:z,info:type});
+          score+=type.cost;hud();
+        });
+        function updateHud(){hud();}
+        hud();
+        ctx.setUpdate(function(dt,elapsed){
+          incomeClock+=dt;
+          if(incomeClock>=4){
+            incomeClock=0;visitors=Math.min(999,visitors+rides.length*2+varietyCount());
+            const income=rides.reduce(function(sum,r){return sum+r.info.income;},0);
+            const varietyBonus=varietyCount()*12;
+            cash+=income+varietyBonus+Math.floor(visitors*.12);rating=Math.min(5,1+rides.length*.25+varietyCount()*.2);
+            updateHud();
+            if(rides.length>=10&&cash>=1800&&visitors>=50&&varietyCount()>=3&&!ctx.completed){
+              ctx.finish(Math.round(cash+visitors*5+rating*100),'Theme park sensation','You built ten attractions, welcomed '+visitors+' guests, and grew the park to $'+Math.floor(cash)+'.');
+            }
+          }
+          guests.forEach(function(g,i){
+            if(rides.length){
+              const destination=rides[i%rides.length];
+              const dx=destination.x-g.position.x,dz=destination.z-g.position.z,dist=Math.hypot(dx,dz)||1;
+              const pace=Math.min(.55,dist*.12);
+              g.position.x+=dx/dist*pace*dt;
+              g.position.z+=dz/dist*pace*dt;
+              if(dist<1.6){g.position.x+=Math.sin(elapsed+i)*dt*.25;g.position.z+=Math.cos(elapsed*.8+i)*dt*.25;}
+            }else{
+              g.position.x+=Math.sin(elapsed*.3+i)*dt*.45;
+              g.position.z+=Math.cos(elapsed*.27+i)*dt*.35;
+            }
+          });
+        });
+      }
+    });
+  }
++Math.floor(cash));ctx.setHud('secondary','GUESTS',visitors);ctx.setHud('tertiary','RATING',rating.toFixed(1)+'★ · '+rides.length+'/10');}
         rideTypes.forEach(function(type,index){
           ctx.addTool(type.name+' $'+type.cost,function(){selected=index;ctx.setHelp('Selected '+type.name+'. Tap or click an empty grid tile to build it.');});
         });
