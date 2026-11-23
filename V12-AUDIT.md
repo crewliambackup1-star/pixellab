@@ -93,5 +93,6 @@ Changes include new difficulty settings, score streaks, hints, combo rewards, pr
 - Source implementation: in progress / ready for automated verification.
 - Static validator now checks every V12 engine marker, the V12 stylesheet link, the shared 3D pause clock, and the game-specific 3D changes.
 - Playwright now exercises all 27 non-3D launch/close routes and all eight 3D startup/pause or graceful-load-error paths.
-- Tests have not yet been confirmed passing on the V12 branch.
-- Manual gameplay feel, all control combinations, mobile touch, WebGL behavior, and real-device performance remain to be checked after automated CI.
+- V12 static validator: **passed** on commit `967a1b6b3ee3dbdeae4be064180a574bb4c8e0b0`.
+- Chromium Playwright suite: **passed** on the same commit. It covered homepage/catalog, Daily Drop, search, same-device Tic-Tac-Toe, 27 non-3D launch/close routes, and eight 3D startup plus pause/resume or graceful-load-failure paths.
+- Manual gameplay feel, all control combinations, mobile touch, camera behavior, WebGL on actual devices, and real-device performance remain to be checked before release.
