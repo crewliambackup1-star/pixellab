@@ -96,3 +96,27 @@ Changes include new difficulty settings, score streaks, hints, combo rewards, pr
 - V12 static validator: **passed** on commit `967a1b6b3ee3dbdeae4be064180a574bb4c8e0b0`.
 - Chromium Playwright suite: **passed** on the same commit. It covered homepage/catalog, Daily Drop, search, same-device Tic-Tac-Toe, 27 non-3D launch/close routes, and eight 3D startup plus pause/resume or graceful-load-failure paths.
 - Manual gameplay feel, all control combinations, mobile touch, camera behavior, WebGL on actual devices, and real-device performance remain to be checked before release.
+
+
+## V12.1 implementation progress — Gameplay Fun Pass
+
+Working branch: `gameplay/v12-1-fun-pass`, based on the V12 gameplay branch. The live `main` branch is unchanged.
+
+### Priority allocation
+
+- **75% — eight 3D games:** Neon Strike precision rewards; Gravity Rush dash; Velocity X drift charge; Wildlands deliberate observation; Park Empire attraction-variety chains; Mythic Realms dash; Trailblazer precision parking; Wildcraft one-use shelter rest.
+- **25% — 27 other engines:** every non-3D game receives a game-specific second-pass change, including skill bonuses, mastery chains, comeback assists, score grades, improved hints, and replay incentives.
+
+### Scope preserved
+
+- Catalog remains at 203 entries and the engine count remains 35.
+- No new game engine routes, sign-in system, or online multiplayer service was introduced.
+- V12 work remains preserved in its separate branch and draft PR; V12.1 is developed independently.
+- V12.1 is not deployed. GitHub Pages continues to serve V11 from `main`.
+
+### V12.1 verification
+
+- Static validator expanded to check the new 3D and 27 arcade feature markers.
+- Browser regression tests expanded for Tic-Tac-Toe's one-use undo and Trivia Blitz's 50/50 lifeline.
+- Automated validation status: pending the V12.1 draft pull request checks.
+- Hands-on gameplay feel, keyboard/touch control combinations, mobile behavior, camera behavior, WebGL compatibility, and real-device performance still need manual QA before release.

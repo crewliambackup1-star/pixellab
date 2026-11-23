@@ -1,4 +1,6 @@
-# PixelLab V12 — The Gameplay Evolution
+# PixelLab V12 + V12.1 — The Gameplay Evolution
+
+V12.1 is a follow-up fun pass built on the V12 branch. It keeps V12's 203-entry catalog and 35 engines intact while adding a second round of game-specific replay and mastery mechanics.
 
 PixelLab is a responsive browser arcade. V12 is a gameplay-first overhaul built on the V11 release: make the existing games more enjoyable through deeper mechanics, clearer feedback, stronger controls, and visual polish. It improves the existing catalog rather than adding games just to increase the count.
 
@@ -64,9 +66,9 @@ Automated checks are not a substitute for hands-on gameplay. WebGL compatibility
 - `v11-catalog.js`: upgraded descriptions plus three new 3D entries.
 - `app.js`: catalog UI, local progress, shared utilities, and game-launch routing.
 - `v10-runtime.js`: on-demand Three.js loader, shared 3D scene lifecycle, and V12 pause/resume system.
-- `v11-runtime.js`: eight 3D worlds and V12 game-specific 3D upgrades.
-- `games/*.js`: the 27 non-3D game engines with V12 gameplay changes.
-- `V12-AUDIT.md`: V12 source audit and release gates.
+- `v11-runtime.js`: eight 3D worlds with V12 foundations and V12.1 game-specific gameplay upgrades.
+- `games/*.js`: the 27 non-3D game engines with V12 and V12.1 gameplay changes.
+- `V12-AUDIT.md`: V12 and V12.1 source audits and release gates.
 - `scripts/validate-site.cjs`: dependency-free repository checks.
 - `tests/smoke.spec.cjs`: Chromium browser regression tests.
 - `.github/workflows/validate.yml`, `.github/workflows/playwright.yml`, and `.github/workflows/pages.yml`: validation, browser testing, and GitHub Pages deployment.
@@ -85,7 +87,7 @@ npm run test:e2e
 
 ## Deployment
 
-GitHub Pages deploys the repository root using `.github/workflows/pages.yml` on pushes to `main`. V12 is not live until its release branch is reviewed, its checks pass, and it is merged into `main`.
+GitHub Pages deploys the repository root using `.github/workflows/pages.yml` on pushes to `main`. V12 and V12.1 are not live until their respective branches are reviewed, their checks pass, and they are approved and merged into `main`.
 
 Public site: https://crewliambackup1-star.github.io/pixellab/
 

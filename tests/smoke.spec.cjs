@@ -173,3 +173,34 @@ test('all eight 3D worlds start the shared runtime and expose pause or a gracefu
   }
   expect(pageErrors).toEqual([]);
 });
+
+
+test('V12.1 undo can recover from a finished Tic Tac Toe round and Trivia 50/50 is one-use', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.goto('/');
+
+  await page.locator('#search').fill('Tic Tac Toe');
+  await page.locator('#gameGrid [data-game^="tictactoe-"]').first().click();
+  await page.getByRole('button', { name: /2 Players · Same Device/ }).click();
+  const cells = page.locator('#gameBox .ttt-cell');
+  for (const index of [0, 3, 1, 4, 2]) await cells.nth(index).click();
+  await expect(page.locator('#gameBox .mp-title')).toHaveText('Player 1 wins!');
+  const undo = page.getByRole('button', { name: 'Undo last turn' });
+  await expect(undo).toBeEnabled();
+  await undo.click();
+  await expect(page.locator('#gameBox .mp-title')).toHaveText('Last turn rewound');
+  await expect(cells.nth(2)).toHaveText('');
+  await expect(cells.nth(4)).toHaveText('');
+  await expect(undo).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Play again' })).toHaveCount(0);
+
+  await page.locator('#closeModal').click();
+  await page.locator('#search').fill('Trivia Blitz');
+  await page.locator('#gameGrid [data-game]').first().click();
+  const lifeline = page.getByRole('button', { name: '50/50 lifeline' });
+  await lifeline.click();
+  await expect(page.getByRole('button', { name: '50/50 used' })).toBeDisabled();
+  await expect(page.locator('#gameBox button:disabled')).toHaveCount(3);
+  expect(pageErrors).toEqual([]);
+});

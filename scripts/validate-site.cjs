@@ -207,6 +207,49 @@ const v12FeatureChecks = [
 for (const [file, pattern, message] of v12FeatureChecks) {
   assert.match(read(file), pattern, message);
 }
+const v12_1FeatureChecks = [
+  ['games/aim.js', /golden bullseye/i, 'Aim Trainer needs its golden target bonus'],
+  ['games/breakout.js', /bestCombo/, 'Brick Breaker needs chain scoring'],
+  ['games/circuit-crafter.js', /parMoves/, 'Circuit Crafter needs score grades based on move par'],
+  ['games/clicker.js', /criticals/, 'Cosmic Clicker needs critical taps'],
+  ['games/color.js', /focusBonus/, 'Color Clash needs its focus burst'],
+  ['games/connect4.js', /ffc66d/, 'Connect Four needs a visible strategic hint'],
+  ['games/dodge.js', /pickupChain/, 'Orbit Dodger needs pickup chains'],
+  ['games/flappy.js', /starStreak/, 'Flappy Pixel needs star chains'],
+  ['games/lights.js', /Perfect solve/, 'Lights Out needs solve grades'],
+  ['games/math.js', /Five-answer streak/, 'Math Sprint needs streak time rewards'],
+  ['games/maze.js', /gemScore/, 'Maze Runner needs gem-chain scoring'],
+  ['games/memory.js', /seconds=Math.min\(75,seconds\+2\)/, 'Memory Match needs pair time rewards'],
+  ['games/merge.js', /mergeCount/, 'Number Merge needs merge-chain scoring'],
+  ['games/mines.js', /function chord/, 'Minefield needs clue-based chord clearing'],
+  ['games/pong.js', /bestRally/, 'Neon Pong needs rally mastery tracking'],
+  ['games/platform.js', /triggerDash/, 'Pixel Platformer needs a rechargeable air dash'],
+  ['games/reaction.js', /lightning/, 'Reaction Rush needs elite reaction tracking'],
+  ['games/rift-runner.js', /phaseBonus/, 'Rift Runner needs phase-aligned shard rewards'],
+  ['games/scramble.js', /speedBonus/, 'Word Scramble needs quick-solve rewards'],
+  ['games/simon.js', /echoUsed/, 'Simon Sequence needs its one-time comeback save'],
+  ['games/snake.js', /foodStreak/, 'Snake needs food-chain scoring'],
+  ['games/star-courier.js', /perfectDeliveries/, 'Star Courier needs clean pilot bonuses'],
+  ['games/tap.js', /tapCombo/, 'Tap Frenzy needs rapid-tap chains'],
+  ['games/tictactoe.js', /undoTurn/, 'Tic Tac Toe needs its one-use undo'],
+  ['games/trivia.js', /lifelineUsed/, 'Trivia Blitz needs its 50/50 lifeline'],
+  ['games/typing.js', /sec=Math.min\(36,sec\+2\)/, 'Type Blitz needs streak time rewards'],
+  ['games/whack.js', /golden/, 'Whack-a-Mole needs golden bonus targets'],
+];
+for (const [file, pattern, message] of v12_1FeatureChecks) {
+  assert.match(read(file), pattern, message);
+}
+for (const [pattern, message] of [
+  [/precision\?120/, 'Neon Strike precision hits must pay a bonus'],
+  [/dashCooldown/, 'Gravity Rush must have a dash cooldown'],
+  [/ctx\.actions\.delete\('drift'\)/, 'Velocity X touch drift must be wired'],
+  [/observeTime/, 'Wildlands must reward deliberate observation'],
+  [/buildStreak/, 'Park Empire must reward attraction variety'],
+  [/dashTime/, 'Mythic Realms must have an arcane dash'],
+  [/perfectStops/, 'Trailblazer must reward precise parking'],
+  [/rested/, 'Wildcraft must have a one-use camp rest'],
+]) assert.match(v11Runtime, pattern, message);
+
 assert.match(v11Runtime, /root\.rotation\.y=Math\.atan2/, 'Velocity X car heading must follow the racing line');
 assert.match(v11Runtime, /wildlifeSeen/, 'Wildlands must track wildlife discoveries');
 assert.match(v11Runtime, /varietyCount/, 'Park Empire must reward attraction variety');
@@ -214,8 +257,8 @@ assert.match(v11Runtime, /spellCooldown/, 'Mythic Realms must limit spell pulse 
 assert.match(v11Runtime, /Math\.abs\(speed\)>8/, 'Trailblazer delivery stops must require braking');
 assert.match(v11Runtime, /builtCampfire/, 'Wildcraft must include the optional campfire objective');
 
-console.log('PixelLab V12 validation passed.');
+console.log('PixelLab V12.1 validation passed.');
 console.log('Catalog: 195 legacy/base entries plus 8 original 3D games = 203 entries.');
-console.log('V11 retains 8 original 3D engines; V12 gameplay upgrades cover all 35 playable engines.');
+console.log('V12.1 adds a second gameplay pass to all 35 playable engines using the 75/25 priority split.');
 console.log('Playable engines: ' + (routes.length + v10Ids.length + v11Ids.length) + '; JavaScript syntax-checked: ' + scriptFiles.length + '.');
-console.log('HTML assets, catalog extensions, all 35 V12 gameplay markers, and cleanup hooks were verified.');
+console.log('HTML assets, catalog extensions, V12 and V12.1 gameplay markers, and cleanup hooks were verified.');
