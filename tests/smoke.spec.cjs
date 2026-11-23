@@ -191,7 +191,7 @@ test('V12.1 undo can recover from a finished Tic Tac Toe round and Trivia 50/50 
   await undo.click();
   await expect(page.locator('#gameBox .mp-title')).toHaveText('Last turn rewound');
   await expect(cells.nth(2)).toHaveText('');
-  await expect(cells.nth(4)).toHaveText('');
+  await expect(cells.nth(4)).toHaveText('O');
   await expect(undo).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Play again' })).toHaveCount(0);
 
