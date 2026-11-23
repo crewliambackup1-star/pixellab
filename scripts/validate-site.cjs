@@ -135,7 +135,7 @@ for (const route of routes) {
 
 assert.match(v10Runtime, /three-pause-toggle/, 'V12 3D pause controls are missing');
 assert.match(v10Runtime, /session\.paused/, 'V12 3D pause state is missing');
-assert.match(v10Runtime, /elapsedTime \\+\= dt/, 'The 3D world clock must pause with the game');
+assert.match(v10Runtime, /elapsedTime \+= dt/, 'The 3D world clock must pause with the game');
 
 for (const functionName of ['gameNeonStrike', 'gameGravityRush', 'gameVelocityX', 'gameWildlands', 'gameParkEmpire']) {
   assert.match(v10Runtime, new RegExp('function\\s+' + functionName + '\\s*\\('), 'Missing V10 3D game: ' + functionName);
