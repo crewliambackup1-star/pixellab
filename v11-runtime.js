@@ -111,7 +111,8 @@
           const radius = 3.5+Math.random()*8;
           target.root.position.set(Math.cos(angle)*radius, 1.1+Math.random()*5, Math.sin(angle)*radius-2);
           target.phase = Math.random()*6;
-          target.speed = 0.8+Math.random()*0.8;
+          target.speed = Math.min(2.2,0.8+Math.random()*0.8+score*0.0008);
+          target.value = index%3===0?250:index%3===1?160:100;
           target.root.visible = true;
           target.cooldown = 0;
           target.core.material.color.set(palettes[arena].colors[index%3]);
@@ -134,7 +135,7 @@
           streak=0; ctx.setHud('tertiary','STREAK','0');
         });
         ctx.setHud('primary','SCORE','0');ctx.setHud('secondary','TIME','75');ctx.setHud('tertiary','STREAK','0');
-        ctx.setHelp('Click or tap moving targets. Use the Arena button to switch between three visual arenas. Clean hits build a score multiplier.');
+        ctx.setHelp('Click or tap moving targets. Cyan targets are worth 100, violet targets 160, and premium targets 250. Consecutive hits build a multiplier; missed shots reset it.');
         function shoot(event) {
           if(ctx.completed)return;
           const rect=ctx.stage.getBoundingClientRect();
@@ -150,7 +151,7 @@
             const target=live.find(function(t){return t.core===hit.object||t.ring===hit.object;});
             if(target){
               streak++;bestStreak=Math.max(bestStreak,streak);
-              score+=100+Math.min(400,streak*20);
+              score+=target.value+Math.min(500,streak*25);
               target.root.visible=false;target.cooldown=0.65+Math.random()*0.35;
               ctx.setHud('primary','SCORE',score);ctx.setHud('tertiary','STREAK',streak);
             }
@@ -167,7 +168,7 @@
             const live=targets.filter(function(t){return t.root.visible;});
             const meshes=[];live.forEach(function(t){meshes.push(t.core,t.ring);});
             const hit=raycaster.intersectObjects(meshes,false)[0];
-            if(hit){const target=live.find(function(t){return t.core===hit.object||t.ring===hit.object;});if(target){streak++;bestStreak=Math.max(bestStreak,streak);score+=100+Math.min(400,streak*20);target.root.visible=false;target.cooldown=0.7;ctx.setHud('primary','SCORE',score);ctx.setHud('tertiary','STREAK',streak);}}
+            if(hit){const target=live.find(function(t){return t.core===hit.object||t.ring===hit.object;});if(target){streak++;bestStreak=Math.max(bestStreak,streak);score+=target.value+Math.min(500,streak*25);target.root.visible=false;target.cooldown=0.7;ctx.setHud('primary','SCORE',score);ctx.setHud('tertiary','STREAK',streak);}}
             else{streak=0;ctx.setHud('tertiary','STREAK','0');}
           }
           targets.forEach(function(t,i){
@@ -261,7 +262,10 @@
             if(player.position.distanceTo(p.mesh.position)<1.8){p.taken=true;p.mesh.visible=false;shards++;score+=100;ctx.setHud('primary','SHARDS',shards);}
           });
           if(player.position.y<-8){player.position.set(checkpoint.x,1,checkpoint.z);vy=0;jumps=0;}
-          if(player.position.distanceTo(portal.position)<2.7){complete=true;ctx.finish(score+Math.max(0,Math.round(500-runTime*4)),'Skyway cleared','You collected '+shards+' shards and completed Course '+(course+1)+' in '+Math.round(runTime)+' seconds.');}
+          if(player.position.distanceTo(portal.position)<2.7){
+            if(shards<3){ctx.setHelp('The portal is unstable. Collect at least three of the five energy shards before entering.');}
+            else{complete=true;ctx.finish(score+Math.max(0,Math.round(500-runTime*4))+(shards===5?250:0),'Skyway cleared','You collected '+shards+' of 5 shards and completed Course '+(course+1)+' in '+Math.round(runTime)+' seconds.');}
+          }
           ring.rotation.z+=dt*1.8;
           ctx.camera.position.lerp(new T.Vector3(player.position.x,player.position.y+7,player.position.z+13),Math.min(1,dt*3));
           ctx.camera.lookAt(player.position.x,player.position.y+1,player.position.z-4);
@@ -280,72 +284,120 @@
       setup:function(T,ctx){
         const scene=ctx.scene;
         addPlane(T,scene,150,150,'#234236');
-        let track=0,lap=0,score=0,time=0,speed=0,yaw=0,boost=100;
+        let track=0,time=0,speed=0,boost=100,progress=0,lane=0,bumpCooldown=0,offRoadCooldown=0;
         let rx=34,rz=49;
         const trackGroup=new T.Group();scene.add(trackGroup);
-        const rivals=[];
         const car=makeCar(T,scene,'#ff6f8d',false);
-        car.position.set(0,.15,rz-2);
-        const trackDefs=[{name:'Coastal Loop',rx:34,rz:49,color:'#303e58'},{name:'Desert Run',rx:41,rz:43,color:'#55463a'},{name:'Skyline Circuit',rx:29,rz:56,color:'#3f3b58'}];
+        const trackDefs=[
+          {name:'Coastal Loop',rx:34,rz:49,color:'#303e58'},
+          {name:'Desert Run',rx:41,rz:43,color:'#55463a'},
+          {name:'Skyline Circuit',rx:29,rz:56,color:'#3f3b58'}
+        ];
+        const rivals=[
+          {root:makeCar(T,scene,'#76c9ff',false),progress:.32,lane:-2.1,pace:19.5},
+          {root:makeCar(T,scene,'#ffc45e',false),progress:.78,lane:2.2,pace:21}
+        ];
+        function placeCar(root,angle,radialOffset,headingOffset){
+          const x=Math.sin(angle)*(rx+radialOffset),z=Math.cos(angle)*(rz+radialOffset);
+          root.position.set(x,.15,z);
+          root.rotation.y=-Math.atan2(rx*Math.cos(angle),rz*Math.sin(angle))+ (headingOffset||0);
+        }
         function buildTrack(){
-          while(trackGroup.children.length){trackGroup.remove(trackGroup.children[trackGroup.children.length-1]);}
+          while(trackGroup.children.length){
+            const child=trackGroup.children[trackGroup.children.length-1];
+            trackGroup.remove(child);
+            child.traverse(function(object){
+              if(object.geometry&&object.geometry.dispose)object.geometry.dispose();
+              if(object.material){const list=Array.isArray(object.material)?object.material:[object.material];list.forEach(function(m){if(m.dispose)m.dispose();});}
+            });
+          }
           rx=trackDefs[track].rx;rz=trackDefs[track].rz;
-          for(let i=0;i<64;i++){
-            const a=i/64*Math.PI*2;
+          for(let i=0;i<80;i++){
+            const a=i/80*Math.PI*2;
             const x=Math.sin(a)*rx,z=Math.cos(a)*rz;
-            const next=(i+1)/64*Math.PI*2;
+            const next=(i+1)/80*Math.PI*2;
             const nx=Math.sin(next)*rx,nz=Math.cos(next)*rz;
             const angle=Math.atan2(nx-x,nz-z);
-            const road=boxMesh(T,13,.26,5.2,material(T,trackDefs[track].color,.87),x,.12,z);
+            const road=boxMesh(T,13,.28,4.4,material(T,trackDefs[track].color,.87),x,.12,z);
             road.rotation.y=angle;trackGroup.add(road);
-            const stripe=boxMesh(T,.18,.04,3.4,material(T,'#e8e5d8',.7),x,.28,z);
+            const stripe=boxMesh(T,.18,.04,3.1,material(T,'#e8e5d8',.7),x,.29,z);
             stripe.rotation.y=angle;trackGroup.add(stripe);
+            if(i%8===0){
+              const marker=boxMesh(T,.45,1.7,.45,material(T,'#e2e9ef',.58,.12),Math.sin(a)*(rx+8),.85,Math.cos(a)*(rz+8));
+              trackGroup.add(marker);
+            }
           }
-          const startLine=boxMesh(T,12,.12,1.2,material(T,'#f4f3e9',.6),0,.35,rz-1);trackGroup.add(startLine);
-          for(let i=0;i<10;i++){
-            const a=i/10*Math.PI*2;
-            const tree=boxMesh(T,1,5,1,material(T,'#426b55',.9),Math.sin(a)*(rx+13),2.5,Math.cos(a)*(rz+13));
+          const startLine=boxMesh(T,12,.12,1.25,material(T,'#f4f3e9',.6),0,.35,rz);trackGroup.add(startLine);
+          for(let i=0;i<12;i++){
+            const a=i/12*Math.PI*2;
+            const tree=boxMesh(T,1,5,1,material(T,track===1?'#8c7047':'#426b55',.9),Math.sin(a)*(rx+16),2.5,Math.cos(a)*(rz+16));
             trackGroup.add(tree);
           }
-          rivals.forEach(function(r,i){const a=i*2.1;r.position.set(Math.sin(a)*rx,.15,Math.cos(a)*rz);});
-          car.position.set(0,.15,rz-2);yaw=0;speed=0;lap=0;
+          progress=0;lane=0;speed=0;time=0;boost=100;
+          placeCar(car,0,0,0);
+          rivals[0].progress=.34;rivals[0].lane=-2.1;
+          rivals[1].progress=.8;rivals[1].lane=2.2;
+          rivals.forEach(function(r){placeCar(r.root,r.progress,r.lane,0);});
+          hud();
         }
-        for(let i=0;i<2;i++)rivals.push(makeCar(T,scene,i?'#76c9ff':'#ffc45e',false));
-        const trackTool=ctx.addTool('Track: Coastal Loop',function(){track=(track+1)%trackDefs.length;trackTool.textContent='Track: '+trackDefs[track].name;buildTrack();});
+        function lapNumber(value){return Math.min(3,Math.floor(value/(Math.PI*2))+1);}
+        function placeRank(){
+          const playerProgress=progress;
+          return 1+rivals.filter(function(r){return r.progress>playerProgress;}).length;
+        }
+        function hud(){
+          ctx.setHud('primary','LAP',Math.min(3,Math.floor(progress/(Math.PI*2)))+' / 3');
+          ctx.setHud('secondary','SPEED',Math.round(Math.abs(speed)*7));
+          ctx.setHud('tertiary','PLACE',placeRank()+' / 3 · '+Math.round(boost)+'% BOOST');
+        }
+        const trackTool=ctx.addTool('Track: Coastal Loop',function(){
+          track=(track+1)%trackDefs.length;trackTool.textContent='Track: '+trackDefs[track].name;
+          buildTrack();ctx.setHelp('New circuit loaded. Hold W to accelerate, use A/D to choose your racing line, and Shift to boost past the two rivals.');
+        });
         ctx.addControl('↑','w');ctx.addControl('↓','s');ctx.addControl('←','a');ctx.addControl('→','d');ctx.addControl('BOOST','shift');
-        ctx.setHud('primary','LAP','0 / 3');ctx.setHud('secondary','SPEED','0');ctx.setHud('tertiary','BOOST','100%');
-        ctx.setHelp('Race three laps on one of three circuits. Ease into turns, use boost on the straights, and keep your wheels on the track for maximum pace.');
+        ctx.setHelp('Race three laps against two rival drivers. W/↑ accelerates, S/↓ brakes, A/D changes your racing line, and Shift boosts. Draft past rivals and avoid contact.');
         buildTrack();
         ctx.setUpdate(function(dt,elapsed){
-          time+=dt;
-          const oldZ=car.position.z;
+          time+=dt;bumpCooldown=Math.max(0,bumpCooldown-dt);offRoadCooldown=Math.max(0,offRoadCooldown-dt);
           const keys=ctx.keys;
-          const accel=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
+          const throttle=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
           const steer=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
-          const boosting=(keys.has('shift')&&boost>0);
-          speed+=accel*(boosting?28:18)*dt;
-          speed*=Math.pow(.985,dt*60);
-          speed=Math.max(-6,Math.min(boosting?34:25,speed));
-          if(boosting){boost=Math.max(0,boost-35*dt);}else{boost=Math.min(100,boost+13*dt);}
-          yaw+=steer*dt*(1.1+Math.abs(speed)*.055)*(speed<0?-1:1);
-          car.position.x+=Math.sin(yaw)*speed*dt;
-          car.position.z-=Math.cos(yaw)*speed*dt;
-          car.rotation.y=yaw;
-          const normalized=Math.sqrt((car.position.x*car.position.x)/(rx*rx)+(car.position.z*car.position.z)/(rz*rz));
-          if(Math.abs(normalized-1)>.16)speed*=Math.pow(.9,dt*60);
-          if(oldZ<rz-2&&car.position.z>=rz-2&&Math.abs(car.position.x)<9&&speed>3){
-            lap++;ctx.setHud('primary','LAP',Math.min(lap,3)+' / 3');
-            if(lap>=3){const result=Math.max(100,Math.round(5000-time*12+boost*5));ctx.finish(result,'Circuit champion','You completed '+trackDefs[track].name+' in '+Math.round(time)+' seconds.');}
+          const boosting=keys.has('shift')&&boost>0&&speed>2;
+          speed+=throttle*(boosting?28:19)*dt;
+          speed*=Math.pow(.988,dt*60);
+          speed=Math.max(-5,Math.min(boosting?35:26,speed));
+          if(boosting)boost=Math.max(0,boost-33*dt);else boost=Math.min(100,boost+14*dt);
+          lane=Math.max(-6.2,Math.min(6.2,lane+steer*(5.2+Math.abs(speed)*.12)*dt));
+          if(Math.abs(lane)>5.3){
+            speed*=Math.pow(.86,dt*60);
+            if(offRoadCooldown<=0){ctx.setHelp('You are outside the racing line. Ease back toward the asphalt to keep your speed.');offRoadCooldown=2;}
+          }
+          progress+=speed*dt/108;
+          const angle=progress%(Math.PI*2);
+          placeCar(car,angle,lane,0);
+          const laps=Math.floor(progress/(Math.PI*2));
+          if(laps>=3){
+            ctx.setHud('primary','LAP','3 / 3');
+            const place=placeRank();
+            const result=Math.max(100,Math.round(5200-time*15+boost*5+(place===1?900:place===2?350:0)));
+            ctx.finish(result,place===1?'Circuit champion':'Race complete',place===1?'You beat both rivals in '+Math.round(time)+' seconds.':'You finished in position '+place+' after '+Math.round(time)+' seconds.');
+            return;
           }
           rivals.forEach(function(r,i){
-            const a=elapsed*(.16+i*.025)+i*2.5;
-            r.position.set(Math.sin(a)*rx,.15,Math.cos(a)*rz);
-            r.rotation.y=Math.atan2(Math.cos(a)*rx,-Math.sin(a)*rz);
+            r.progress+=r.pace*dt/108;
+            const rivalAngle=r.progress%(Math.PI*2);
+            placeCar(r.root,rivalAngle,r.lane,0);
+            if(bumpCooldown<=0){
+              const delta=Math.atan2(Math.sin(rivalAngle-angle),Math.cos(rivalAngle-angle));
+              if(Math.abs(delta)<.045&&Math.abs(r.lane-lane)<1.8){
+                speed=Math.max(4,speed*.72);boost=Math.max(0,boost-8);bumpCooldown=1.1;
+                ctx.setHelp('Rival contact! Hold your line and time your boost to overtake cleanly.');
+              }
+            }
           });
-          ctx.camera.position.lerp(new T.Vector3(car.position.x-Math.sin(yaw)*10,car.position.y+16,car.position.z+Math.cos(yaw)*17),Math.min(1,dt*2.6));
+          ctx.camera.position.lerp(new T.Vector3(car.position.x-Math.sin(car.rotation.y)*11,car.position.y+17,car.position.z+Math.cos(car.rotation.y)*18),Math.min(1,dt*2.6));
           ctx.camera.lookAt(car.position.x,0,car.position.z);
-          ctx.setHud('secondary','SPEED',Math.round(Math.abs(speed)*7));
-          ctx.setHud('tertiary','BOOST',Math.round(boost)+'%');
+          hud();
         });
       }
     });
@@ -542,8 +594,8 @@
         });
         const gate=new T.Group();gate.position.set(0,1,-62);scene.add(gate);
         const ring=new T.Mesh(new T.TorusGeometry(2.5,.18,10,38),material(T,'#b6f9ff',.18,.2,'#62edff'));gate.add(ring);
-        let collected=0,active=0,score=0,pulse=0;
-        const spell=ctx.addTool('Cast pulse ✧',function(){pulse=.45;});
+        let collected=0,active=0,score=0,pulse=0,spellCooldown=0;
+        const spell=ctx.addTool('Cast pulse ✧',function(){if(spellCooldown<=0){pulse=.45;spellCooldown=1.25;}});
         ctx.addControl('SPELL','enter','spell');
         addTouchMove(ctx);
         ctx.setHud('primary','RUNES','0 / 6');ctx.setHud('secondary','SHRINES','0 / 3');ctx.setHud('tertiary','LEVEL','1');
@@ -556,13 +608,14 @@
           runes.forEach(function(r){if(!r.visible)return;r.rotation.y+=dt*1.5;r.position.y=1.5+Math.sin(elapsed*2+r.position.z)*.22;
             if(player.position.distanceTo(r.position)<2.1){r.visible=false;collected++;score+=100;ctx.setHud('primary','RUNES',collected+' / 6');}
           });
-          if(ctx.actions.delete('spell'))pulse=.45;
+          spellCooldown=Math.max(0,spellCooldown-dt);
+          if(ctx.actions.delete('spell')&&spellCooldown<=0){pulse=.45;spellCooldown=1.25;}
           if(pulse>0){
             pulse-=dt;
             const target=shrines.find(function(s){return !s.active&&player.position.distanceTo(s.root.position)<5;});
             if(target&&pulse>.25&&collected>=2){
               target.active=true;target.crystal.material.color.set('#9ffff0');target.crystal.material.emissive.set('#65f0d0');
-              active++;score+=300;ctx.setHud('secondary','SHRINES',active+' / 3');
+              active++;score+=300;ctx.setHud('secondary','SHRINES',active+' / 3');ctx.setHelp('Shrine awakened! '+active+' of 3 restored. Keep exploring for the remaining runes.');
             }
           }
           shrines.forEach(function(s){s.crystal.rotation.y+=dt*.7;if(s.active)s.crystal.position.y=2+Math.sin(elapsed*2)*.2;});
@@ -603,7 +656,7 @@
         const routeTool=ctx.addTool('Route: Scenic County',function(){ctx.setHelp('Scenic County delivery route: pass the glowing gates in order and make all six stops.');});
         ctx.addControl('↑','w');ctx.addControl('↓','s');ctx.addControl('←','a');ctx.addControl('→','d');ctx.addControl('BOOST','shift');
         ctx.setHud('primary','DELIVERIES','0 / 6');ctx.setHud('secondary','SPEED','0');ctx.setHud('tertiary','BOOST','100%');
-        ctx.setHelp('Drive the delivery truck through the glowing gates in order. Make six stops, keep the truck on the route, and use boost for the long stretches.');
+        ctx.setHelp('Drive to each glowing gate in order, then brake below 8 to complete the delivery stop. W/↑ accelerates, S/↓ brakes, A/D steers, and Shift boosts between stops.');
         ctx.setUpdate(function(dt,elapsed){
           time+=dt;const keys=ctx.keys;
           const accel=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
@@ -616,7 +669,8 @@
           gates.forEach(function(g){
             g.ring.rotation.z+=dt*.5;
             if(!g.passed&&truck.position.distanceTo(g.root.position)<4.2&&checkpoint===g.index){
-              g.passed=true;checkpoint++;deliveries++;ctx.setHud('primary','DELIVERIES',deliveries+' / 6');speed+=2;
+              if(Math.abs(speed)>8){ctx.setHelp('Delivery stop ahead: brake with S/↓ and slow below 8 to complete this drop-off.');}
+              else{g.passed=true;checkpoint++;deliveries++;ctx.setHud('primary','DELIVERIES',deliveries+' / 6');speed+=1.2;ctx.setHelp('Delivery '+deliveries+' of 6 complete. Follow the next glowing gate.');}
             }
           });
           ctx.camera.position.lerp(new T.Vector3(truck.position.x-Math.sin(yaw)*9,truck.position.y+18,truck.position.z+Math.cos(yaw)*15),Math.min(1,dt*2.2));
@@ -660,7 +714,8 @@
         const shelter=new T.Group();shelter.visible=false;scene.add(shelter);
         const beacon=new T.Group();beacon.visible=false;beacon.position.set(0,0,-28);scene.add(beacon);
         const beaconCore=new T.Mesh(new T.OctahedronGeometry(1.1),material(T,'#a7f6ff',.2,.2,'#72eaff'));beaconCore.position.y=3;beacon.add(beaconCore);
-        let time=180,builtShelter=false,builtBeacon=false;
+        let time=180,builtShelter=false,builtBeacon=false,builtCampfire=false;
+        const campfire=new T.Group();campfire.visible=false;campfire.position.set(0,0,-13);scene.add(campfire);
         function hud(){ctx.setHud('primary','SUPPLIES',counts.wood+'W '+counts.stone+'S '+counts.berries+'B');ctx.setHud('secondary','TIME',Math.ceil(time));ctx.setHud('tertiary','CAMP',builtBeacon?'READY':builtShelter?'SHELTER':'NOT BUILT');}
         const craft=ctx.addTool('Craft shelter',function(){
           if(builtShelter)return;
@@ -678,6 +733,15 @@
           if(counts.wood<3||counts.berries<2){ctx.setHelp('The beacon needs 3 wood and 2 berries. Explore the forest for more supplies.');return;}
           counts.wood-=3;counts.berries-=2;builtBeacon=true;beacon.visible=true;hud();
         });
+        ctx.addTool('Craft campfire',function(){
+          if(!builtBeacon){ctx.setHelp('Build the beacon first, then use the remaining stone and berries to craft a campfire for a bonus.');return;}
+          if(builtCampfire)return;
+          if(counts.stone<2||counts.berries<2){ctx.setHelp('The campfire needs 2 stone and 2 berries. Gather the remaining supplies.');return;}
+          counts.stone-=2;counts.berries-=2;builtCampfire=true;campfire.visible=true;
+          const ring=new T.Mesh(new T.TorusGeometry(1.15,.16,8,24),material(T,'#b4a18b',.9));ring.rotation.x=Math.PI/2;ring.position.y=.18;campfire.add(ring);
+          const flame=new T.Mesh(new T.ConeGeometry(.62,1.55,7),material(T,'#ff9e55',.3,.1,'#ff6d38'));flame.position.y=.95;campfire.add(flame);
+          ctx.setHelp('Campfire built! Your camp is fully equipped. Return to the beacon to finish with a bonus.');hud();
+        });
         addTouchMove(ctx);
         ctx.setHud('primary','SUPPLIES','0W 0S 0B');ctx.setHud('secondary','TIME','180');ctx.setHud('tertiary','CAMP','NOT BUILT');
         ctx.setHelp('Gather glowing wood, stone, and berries by walking close to them. Craft a shelter with 5 wood and 2 stone, then build the beacon with 3 wood and 2 berries before time runs out.');
@@ -693,7 +757,7 @@
           beaconCore.rotation.y+=dt;beaconCore.position.y=3+Math.sin(elapsed*2)*.18;
           ctx.camera.position.lerp(new T.Vector3(player.position.x,player.position.y+9,player.position.z+16),Math.min(1,dt*2.4));
           ctx.camera.lookAt(player.position.x,1,player.position.z-3);
-          if(builtBeacon&&player.position.distanceTo(beacon.position)<4){ctx.finish(counts.wood*20+counts.stone*25+counts.berries*15+Math.round(time*8),'Camp established','You crafted a shelter and powered the wilderness beacon with '+Math.ceil(time)+' seconds remaining.');}
+          if(builtBeacon&&player.position.distanceTo(beacon.position)<4){ctx.finish(counts.wood*20+counts.stone*25+counts.berries*15+Math.round(time*8)+(builtCampfire?500:0),'Camp established',builtCampfire?'You built the shelter, powered the beacon, and crafted an optional campfire with '+Math.ceil(time)+' seconds remaining.':'You crafted a shelter and powered the wilderness beacon with '+Math.ceil(time)+' seconds remaining. Add a campfire on your next run for a bonus.');}
           if(time<=0&&!builtBeacon){ctx.finish(0,'The day is over','You gathered supplies, but the beacon was not ready before nightfall.');}
         });
       }
