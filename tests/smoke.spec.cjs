@@ -10,11 +10,27 @@ test('homepage renders the complete catalog without JavaScript errors', async ({
 
   await expect(page).toHaveTitle(/PixelLab/i);
   expect(pageErrors).toEqual([]);
-  await expect(page.locator('#allCount')).toHaveText('195');
-  await expect(page.locator('#gameGrid .game-card')).toHaveCount(195);
+  await expect(page.locator('#allCount')).toHaveText('203');
+  await expect(page.locator('#gameGrid .game-card')).toHaveCount(203);
   await expect(page.locator('#dailyGameTitle')).not.toHaveText("Today's arcade pick");
   await expect(page.locator('#dailyGameDesc')).not.toBeEmpty();
   await expect(page.locator('#dailyEmoji')).not.toBeEmpty();
+});
+
+
+test('V11 adds three searchable 3D worlds to the eight-game showcase', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.locator('#threeDFeatured .game-card')).toHaveCount(8);
+  const search = page.locator('#search');
+  const titles = ['Mythic Realms', 'Trailblazer Sim', 'Wildcraft'];
+
+  for (const title of titles) {
+    await search.fill(title);
+    const cards = page.locator('#gameGrid .game-card');
+    await expect(cards).toHaveCount(1);
+    await expect(cards.locator('.card-title')).toHaveText([title]);
+  }
 });
 
 test('search filters the catalog to matching games', async ({ page }) => {
