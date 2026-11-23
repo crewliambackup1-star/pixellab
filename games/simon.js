@@ -16,7 +16,7 @@ function gameSimon(g){
   function update(){status.innerHTML='<span>Round: <strong>'+seq.length+'</strong></span><span>Best this run: <strong>'+best+'</strong></span><span>Mistakes: <strong>'+mistakes+'</strong></span>';}
   function playSequence(){
     playing=true;step=0;label.textContent='Watch closely';
-    const delayStart=420,gap=Math.max(260,520+Math.max(0,1-seq.length)*-18),flashMs=Math.max(150,gap*.52);
+    const delayStart=420,gap=Math.max(260,520-Math.max(0,seq.length-1)*18),flashMs=Math.max(150,gap*.52);
     seq.forEach((v,n)=>{later(()=>light(v,true),delayStart+n*gap);later(()=>light(v,false),delayStart+n*gap+flashMs);});
     later(()=>{playing=false;label.textContent='Your turn!';sub.textContent='Repeat all '+seq.length+' colors in order.';},delayStart+seq.length*gap);
   }
