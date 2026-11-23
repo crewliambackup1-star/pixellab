@@ -13,7 +13,7 @@ function gameScramble(g){
     word=remain[Math.floor(Math.random()*remain.length)];used.push(word);
     let mixed=word.split('');
     for(let i=mixed.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[mixed[i],mixed[j]]=[mixed[j],mixed[i]];}
-    if(mixed.join('')===word&&mixed.length>1)mixed.push(mixed.shift());
+    if(mixed.join('')===word&&mixed.length>1){const first=mixed.shift();mixed.push(first);}
     label.textContent=mixed.join('  ').toUpperCase();
     hint.textContent='First letter: '+word[0].toUpperCase()+' · '+word.length+' letters';
     hintUsed=false;hintButton.disabled=false;
