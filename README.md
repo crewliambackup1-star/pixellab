@@ -1,58 +1,70 @@
-# PixelLab V8 — Local Multiplayer Update
+# PixelLab V10 — The 3D Evolution
 
-PixelLab is a responsive, no-account browser arcade. It's built as a static site with no build step or third-party JavaScript dependencies.
+PixelLab is a responsive browser arcade. V10 adds a complete visual refresh and the first five original, single-player 3D experiences while preserving the existing 2D catalog and player progress.
 
-## What is included
+## V10 first release
 
-- **195 catalog entries** across **27 playable game engines**: the existing 192 themed catalog variants plus 3 original games.
-- Classic modes: Snake Sprint, Neon Pong, Brick Breaker, Reaction Rush, Memory Match, Number Merge, Tic Tac Toe, Type Blitz, Whack-a-Mole, Aim Trainer, Orbit Dodger, and Tap Frenzy.
-- Update 4 adds: **Minefield, Simon Sequence, Word Scramble, Cosmic Clicker, Flappy Pixel, Math Sprint, Connect Four, Pixel Platformer, Trivia Blitz, Color Clash, Lights Out, and Maze Runner**.
-- Update 4 arcade styling, upgraded game cards, clearer catalog discovery, and a **Daily Drop** pick.
-- **V5 Arcade Passport:** browser-local XP, levels, five rank tiers, achievements, and three daily quests with bonus XP.
-- Finished runs reward XP; personal records, run milestones, and trying different game engines help unlock achievements.
-- Fixed Orbit Dodger's displayed survival timer so it tracks elapsed gameplay time correctly.
-- **V6 Gameplay Overhaul:** Snake bonus fruit, Brick Breaker power-ups and extra lives, Orbit Dodger shields and ramping challenge, and Flappy Pixel bonus stars with tighter gates.
-- Maze Runner now generates a fresh maze each run with optional gems to collect.
-- Connect Four's CPU evaluates winning threats and developing lines instead of relying mostly on center-column preference.
-- **V7 Original Games:** Rift Runner (phase-shifting platformer), Circuit Crafter (rotating circuit-routing puzzle), and Star Courier (cargo delivery through moving patrol drones).
-- The three original games appear in both the **Recommended** and **Popular** filters, alongside curated existing favorites.
-- **V8 Multiplayer (first phase):** Tic-Tac-Toe, Connect Four, and Neon Pong now offer AI matches or two-player local play on the same device. Online-room choices are clearly marked as coming soon while a realtime backend is still unconfigured.
-- Existing catalog IDs remain stable so browser-local favorites, recent-play history, and per-game records for the original catalog are preserved.
-- Search, category filters, sorting, random play, favorites, recently played, and local game records.
-- Responsive desktop/mobile layout, keyboard controls where supported, and browser-local saved favorites/history/records.
-- Single-player and same-device play need no account or backend. Online multiplayer is not active yet and will require a realtime service.
+- **200 catalog entries**: 192 themed legacy entries, 3 original V7 games, and 5 original V10 3D games.
+- **32 playable game engines**: 24 classic engines, 3 original 2D engines, and 5 new 3D engines.
+- **Five original 3D games**:
+  - **Neon Strike** — first-person neon arena target challenge.
+  - **Gravity Rush** — third-person floating-platform course.
+  - **Velocity X** — third-person arcade circuit racer.
+  - **Wildlands** — first-person island exploration.
+  - **Park Empire** — isometric 3D amusement-park builder.
+- The five new 3D games are single-player. Existing local two-player modes in the classic Tic-Tac-Toe, Connect Four, and Neon Pong games are retained; no online multiplayer service is introduced by V10.
+- Full visual redesign for the home page, discovery navigation, 3D spotlight, game cards, modal, and responsive game controls.
+- The 3D graphics engine is loaded only when a 3D game opens. Three.js is pinned to version 0.164.1 and loaded from jsDelivr, with an unpkg fallback. A WebGL/connection error is shown if neither source can load.
+- Keyboard controls are provided for desktop, with touch controls for supported actions. 3D rendering is capped at a moderate pixel ratio to reduce GPU load.
+- 3D games release graphics resources and input listeners when closed, so switching between games should not leave old render loops running.
 
-**Catalog note:** the first 192 entries are theme/visual variants across the original 24 engines; the 3 V7 originals are separately implemented games.
+## Quality-over-quantity release rule
+
+The 3D first release is intentionally limited to five games. A game should not be added just to increase the count. Each one should have a complete objective or activity loop, readable controls, a restart path, responsive behavior, and performance that is reasonable on supported devices. The five-game target is a starting scope, not permission to ship unfinished work.
+
+No software can be honestly guaranteed bug-free. The repository validator checks syntax, required assets, catalog integrity, game routing, the on-demand 3D runtime, and basic cleanup hooks. A manual browser pass is still needed for gameplay balance, WebGL compatibility, keyboard behavior, touch controls, and performance on real devices before the release is considered ready.
+
+## Existing arcade features retained
+
+- Browser-local favorites, recent games, records, XP, ranks, achievements, and daily quests.
+- Search, category filters, sorting, random play, and responsive desktop/mobile layout.
+- Classic modes including Snake Sprint, Neon Pong, Brick Breaker, Reaction Rush, Memory Match, Number Merge, Tic-Tac-Toe, Type Blitz, Whack-a-Mole, Aim Trainer, Orbit Dodger, Tap Frenzy, Minefield, Simon Sequence, Word Scramble, Cosmic Clicker, Flappy Pixel, Math Sprint, Connect Four, Pixel Platformer, Trivia Blitz, Color Clash, Lights Out, and Maze Runner.
+- Original V7 games: Rift Runner, Circuit Crafter, and Star Courier.
+- Existing V8 AI and same-device modes for Tic-Tac-Toe, Connect Four, and Neon Pong remain local-only.
 
 ## Development workflow
 
-- `main` is the live publishing branch.
-- `development` is the work-in-progress branch for changes and experiments.
-- `backup/v7-stable-2026-10-27` preserves the V7 site as a recovery point.
-- The automated validation workflow checks JavaScript syntax, required files, unique catalog IDs, the 195-entry catalog, and that every playable engine has a matching launch route. Ten visual theme presets are defined; the published legacy catalog remains capped at 192 themed entries.
-- Keep changes on `development`, wait for validation to pass, then merge a reviewed pull request into `main` to publish.
+- main is the live publishing branch.
+- development remains the prior work-in-progress branch.
+- massive/v10-3d-redesign contains the V10 implementation and is intentionally separate from the older V9 multiplayer pull request.
+- Validate with node scripts/validate-site.cjs.
+- The GitHub Actions validation workflow checks JavaScript syntax, required local assets, unique catalog IDs, the 195-entry base catalog, V10's five 3D entries, and every original game launch route.
+- Keep the live branch unchanged until review and validation pass. Merge a reviewed pull request into main to publish through GitHub Pages.
 
 ## Project structure
 
-- `index.html`: page structure and the ordered script/style references.
-- `styles.css`: all site styling.
-- `catalog.js`: base engines, visual themes, and generated catalog entries.
-- `app.js`: catalog UI, local progress, shared utilities, and game-launch routing.
-- `games/*.js`: one file per playable game engine.
-- `scripts/validate-site.cjs`: dependency-free repository checks.
-- `.github/workflows/validate.yml`: runs validation on pushes to `main` / `development` and pull requests into `main`.
-- `.github/workflows/pages.yml`: validates and deploys `main` to GitHub Pages.
+- index.html: page structure and ordered script/style references.
+- styles.css: original arcade styling.
+- v10.css: V10 redesign and responsive 3D game UI.
+- catalog.js: base engines, themes, and the legacy catalog.
+- v10-catalog.js: five original 3D engines and their catalog entries.
+- app.js: catalog UI, local progress, shared utilities, and original 2D game-launch routing.
+- v10-runtime.js: on-demand Three.js loader, shared 3D scene lifecycle, five 3D games, and V10 discovery UI.
+- games/*.js: the original 27 2D game engines.
+- scripts/validate-site.cjs: dependency-free repository checks.
+- .github/workflows/validate.yml: repository validation.
+- .github/workflows/pages.yml: GitHub Pages deployment.
 
 ## Run locally
 
-Keep the project files together, then open `index.html` in a modern browser. The site has no build step and no third-party browser libraries.
+Keep the project files together and open index.html in a modern browser. The site has no build step. The 2D games do not depend on the 3D module; opening a V10 3D game requires an internet connection to load the pinned Three.js module and a browser/device with WebGL support.
 
 ## Deployment
 
-GitHub Pages deploys the repository root using `.github/workflows/pages.yml` on pushes to `main`. Changes on `development` do not publish to the public site.
+GitHub Pages deploys the repository root using .github/workflows/pages.yml on pushes to main. Changes on development branches do not publish the public site.
 
 Public site: https://crewliambackup1-star.github.io/pixellab/
 
 ## Privacy
 
-Favorites, recently played games, and records are stored locally in your current browser/device. They do not sync between devices.
+Favorites, recently played games, records, and Arcade Passport progress are stored locally in the current browser/device. They do not sync between devices.

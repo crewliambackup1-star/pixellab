@@ -3,24 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#10111b">
-<meta name="description" content="PixelLab is a free browser arcade packed with quick games, puzzles, sports, racing and more. No account needed.">
-<title>PixelLab — Your Browser Arcade</title>
+<meta name="theme-color" content="#0b1321">
+<meta name="description" content="PixelLab is a free browser arcade with original 3D adventures, racing, action, simulation, puzzles, and quick games. No account needed.">
+<title>PixelLab — Play Beyond the Screen</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
-
+<link rel="stylesheet" href="v10.css">
 </head>
 <body>
 <div class="app">
 <header class="topbar">
 <a href="#" class="brand" aria-label="PixelLab home"><span class="logo">✳</span><span>Pixel<em>Lab</em></span></a>
-<div class="search-wrap"><span>⌕</span><input id="search" class="search" type="search" placeholder="Search 195 games..." aria-label="Search games"><span class="search-hint">⌘ K</span></div>
-<div class="top-pill">✦ No downloads · No account</div>
+<div class="search-wrap"><span>⌕</span><input id="search" class="search" type="search" placeholder="Search 200 games…" aria-label="Search games"><span class="search-hint">⌘ K</span></div>
+<div class="top-pill">✦ 3D worlds · No downloads · No account</div>
 </header>
 <div class="layout">
 <aside class="sidebar" aria-label="Game navigation">
 <div class="side-label">Discover</div>
-<button class="navbtn active" data-filter="All"><span class="ico">✦</span> All games <span class="count" id="allCount">195</span></button>
+<button class="navbtn active" data-filter="All"><span class="ico">✦</span> All games <span class="count" id="allCount">200</span></button>
 <button class="navbtn" data-filter="Recommended"><span class="ico">✨</span> Recommended</button>
 <button class="navbtn" data-filter="Popular"><span class="ico">🔥</span> Popular</button>
 <button class="navbtn" data-filter="Arcade"><span class="ico">🕹️</span> Arcade</button>
@@ -30,15 +30,15 @@
 <button class="navbtn" data-filter="Sports"><span class="ico">🏆</span> Sports</button>
 <button class="navbtn" data-filter="Favorites"><span class="ico">♥</span> Favorites</button>
 <button class="navbtn" data-filter="Recent"><span class="ico">◷</span> Recently played</button>
-<div class="side-note"><div class="spark">🌠</div><strong>A tiny break, a big vibe.</strong><p>Pick a game, chase a high score, and jump right into the next round. Your favorites stay on this device.</p></div>
+<div class="side-note"><div class="spark">🌠</div><strong>A tiny break, a big vibe.</strong><p>Pick a game, chase a high score, and jump right into the next world. Your favorites stay on this device.</p></div>
 </aside>
 <main class="main">
 <section class="hero">
-<div class="hero-copy"><div class="eyebrow"><span class="pulse"></span> V8 LOCAL MULTIPLAYER</div><h1>Your next favorite game.<br><span class="gradient">One click away.</span></h1><p>Fast rounds, clever puzzles, and chaotic little challenges. Pick a game and play instantly.</p><div class="hero-actions"><button class="primary" id="randomBtn">✦ Play something random</button><button class="secondary" id="browseBtn">Explore the arcade ↓</button></div></div>
+<div class="hero-copy"><div class="eyebrow"><span class="pulse"></span> V10 · THE 3D EVOLUTION</div><h1>Your next world.<br><span class="gradient">Ready to explore.</span></h1><p>A redesigned arcade with five original 3D games, classic favorites, and fresh challenges. Open a game and jump straight in.</p><div class="hero-actions"><button class="primary" id="randomBtn">✦ Play something random</button><button class="secondary" id="browseBtn">Explore the arcade ↓</button></div></div>
 <div class="hero-art" aria-hidden="true"><span class="art-star s1">✦</span><span class="art-star s2">✧</span><div class="art-orb">🎮</div></div>
 </section>
-<section class="daily-strip"><div class="daily-copy"><div class="daily-kicker"><span class="pulse"></span> THE DAILY DROP</div><h2 id="dailyGameTitle">Today&#39;s arcade pick</h2><p id="dailyGameDesc">A fresh challenge picked for your next break.</p><button id="dailyPlay" class="primary">Play today&#39;s pick ↗</button></div><div class="daily-art" aria-hidden="true"><span>✦</span><strong id="dailyEmoji">🎮</strong><i>✧</i></div></section>
-<div class="stats"><div class="stat"><strong id="statCount">195</strong> games to explore</div><div class="stat"><strong>27</strong> playable game engines</div><div class="stat"><strong>0</strong> accounts needed</div><div class="stat">↗ Runs in your browser</div></div>
+<section class="daily-strip"><div class="daily-copy"><div class="daily-kicker"><span class="pulse"></span> THE DAILY DROP</div><h2 id="dailyGameTitle">Today's arcade pick</h2><p id="dailyGameDesc">A fresh challenge picked for your next break.</p><button id="dailyPlay" class="primary">Play today's pick ↗</button></div><div class="daily-art" aria-hidden="true"><span>✦</span><strong id="dailyEmoji">🎮</strong><i>✧</i></div></section>
+<div class="stats"><div class="stat"><strong id="statCount">200</strong> games to explore</div><div class="stat"><strong>32</strong> playable game engines</div><div class="stat"><strong>5</strong> original 3D games</div><div class="stat">↗ Runs in your browser</div></div>
 <section class="quest-strip" aria-label="Arcade progress">
   <div class="quest-profile">
     <div class="quest-kicker">✦ YOUR ARCADE PASSPORT</div>
@@ -65,7 +65,9 @@
 </div>
 <div class="toast" id="toast"></div>
 <script src="catalog.js"></script>
+<script src="v10-catalog.js"></script>
 <script src="app.js"></script>
+<script src="v10-runtime.js"></script>
 <script src="games/rift-runner.js"></script>
 <script src="games/circuit-crafter.js"></script>
 <script src="games/star-courier.js"></script>
