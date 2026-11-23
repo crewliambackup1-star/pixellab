@@ -1,47 +1,56 @@
-# PixelLab V11 — The 3D Universe
+# PixelLab V12 — The Gameplay Evolution
 
-PixelLab is a responsive browser arcade. V11 expands the V10 3D foundation into a broader 3D-first discovery experience while retaining the classic 2D catalog, local profile, and local multiplayer modes.
+PixelLab is a responsive browser arcade. V12 is a gameplay-first overhaul built on the V11 release: make the existing games more enjoyable through deeper mechanics, clearer feedback, stronger controls, and visual polish. It improves the existing catalog rather than adding games just to increase the count.
 
-## V11 first expansion
+## V12 update scope
 
-- **203 catalog entries**: 192 themed legacy entries, 3 original V7 games, 5 V10 3D games, and 3 new V11 3D games.
-- **35 playable engines**: 27 original 2D engines and 8 original 3D engines.
-- **Eight original 3D games**:
-  - **Neon Strike** — three target arenas, moving targets, streak scoring, and aim controls.
-  - **Gravity Rush** — three floating courses, moving platforms, checkpoints, double jumps, and collectible shards.
-  - **Velocity X** — three circuits, rival drivers, boost management, and updated arcade handling.
-  - **Wildlands** — three biomes, wildlife, relics, landmarks, and a multi-region expedition.
-  - **Park Empire** — four attraction types, isometric placement, visitor growth, and park-income goals.
-  - **Mythic Realms** — a fantasy exploration RPG with runes, shrines, a spell ability, and a three-part quest.
-  - **Trailblazer Sim** — a 3D delivery-driving challenge with route gates, steering, acceleration, and boost management.
-  - **Wildcraft** — a peaceful survival-and-crafting loop built around gathering resources, making a shelter, and powering a beacon.
-- The new V11 genres are **RPG & Fantasy**, **Vehicle Simulation**, and **Survival & Crafting**.
-- The 3D showcase and genre discovery now lead the site experience. Existing 2D games remain available; V11 does not remove or replace the classic arcade.
+- **203 catalog entries and 35 playable engines** remain the target.
+- **75% of gameplay/graphics effort goes to the eight original 3D games.**
+- **25% goes to the other 27 playable engines.**
+- All eight 3D worlds receive game-specific mechanics upgrades, plus shared pause/resume, control, and visual polish.
+- All 27 non-3D engines receive individual quality-of-life, progression, scoring, hint, replay, or difficulty improvements.
+- No online multiplayer service or account backend is added by V12. Existing local AI and same-device play stay available.
 
-## Quality-over-quantity release rule
+### 3D gameplay changes
 
-V11 adds three games—one carefully scoped first entry for each new genre—rather than padding the catalog with many shallow variations. The goal is a more substantial game loop in each 3D world: readable controls, a clear objective, progression or replay value, responsive behavior, and clean teardown when a game closes.
+- **Neon Strike** — target value tiers, streak rewards, and an escalating target pace.
+- **Gravity Rush** — the exit portal now requires at least three energy shards.
+- **Velocity X** — three-track racing with two rivals, lap and position tracking, boost management, contact, and racing-line control.
+- **Wildlands** — wildlife observation and more reactive animals.
+- **Park Empire** — attraction variety rewards, visitor movement toward rides, and clearer park rating/placement feedback.
+- **Mythic Realms** — spell cooldown and shrine-awakening feedback.
+- **Trailblazer Sim** — deliveries require controlled braking at each stop.
+- **Wildcraft** — optional campfire crafting for a bonus objective.
+- Shared 3D runtime — pause/resume via the on-screen control or P key, paused world time, improved touch targets, focus states, and visual feedback.
 
-The shared on-demand Three.js runtime remains pinned to version 0.164.1. The renderer is loaded only when a 3D game opens. The runtime uses local procedural geometry and does not require downloaded game assets.
+### Other gameplay changes
 
-No software can be honestly guaranteed bug-free. The repository validator checks JavaScript syntax, required assets, catalog counts and IDs, launch routes, V10/V11 3D entry points, and preservation of the classic modes. A real browser pass is still required for WebGL compatibility, gameplay feel, camera behavior, touch controls, and performance on actual devices before release.
+The 27 non-3D engines receive tailored upgrades: dashing, free puzzle hints, delivery combos, best-of-three reaction runs, timed memory combos, shrinking aim targets, faster target waves, timed bonus surges, typing accuracy and streaks, AI difficulty levels, one-use undo, progressive speed, adaptive opponents, multi-wave play, near-miss scoring, protected first reveals, faster memory sequences, extra-letter hints, clicker surges, a recoverable flight shield, math progression, strategy hints, platform checkpoints, trivia/color combos, Lights Out solution hints, and maze speed-run timing.
 
-## Existing arcade features retained
+## V11 foundation retained
 
-- Browser-local favorites, recent games, records, XP, ranks, achievements, and daily quests.
-- Search, category filters, sorting, random play, and responsive desktop/mobile layout.
-- Classic modes including Snake Sprint, Neon Pong, Brick Breaker, Reaction Rush, Memory Match, Number Merge, Tic-Tac-Toe, Type Blitz, Whack-a-Mole, Aim Trainer, Orbit Dodger, Tap Frenzy, Minefield, Simon Sequence, Word Scramble, Cosmic Clicker, Flappy Pixel, Math Sprint, Connect Four, Pixel Platformer, Trivia Blitz, Color Clash, Lights Out, and Maze Runner.
-- Original V7 games: Rift Runner, Circuit Crafter, and Star Courier.
-- Existing V8 AI and same-device modes for Tic-Tac-Toe, Connect Four, and Neon Pong remain local-only. V11 does not add online multiplayer or an account backend.
+V11 introduced the 3D-first discovery experience and expanded the catalog to 203 entries:
+
+- **Eight original 3D games**: Neon Strike, Gravity Rush, Velocity X, Wildlands, Park Empire, Mythic Realms, Trailblazer Sim, and Wildcraft.
+- New genres: **RPG & Fantasy**, **Vehicle Simulation**, and **Survival & Crafting**.
+- Existing 2D games, local player progress, local favorites/recent history/records/XP, and same-device multiplayer remain available.
+- Three.js remains pinned to version 0.164.1 and is loaded only when a 3D game opens. The 3D worlds use procedural geometry.
+
+## Quality and testing
+
+No software can be honestly guaranteed bug-free. V12 validation checks JavaScript syntax, required assets, catalog counts and IDs, all original launch routes, V12 feature markers across all 35 engines, and shared 3D pause lifecycle.
+
+The Chromium browser suite checks the homepage and Daily Drop, search, same-device Tic-Tac-Toe, launch/close of all 27 non-3D engines, and startup/pause behavior or graceful load failure across all eight 3D worlds.
+
+Automated checks are not a substitute for hands-on gameplay. WebGL compatibility, touch handling, balance, camera behavior, and performance still need manual checks on supported browsers and actual devices before the release is considered complete.
 
 ## Development workflow
 
-- `main` is the live publishing branch.
-- `main` is the live publishing branch and includes the V10 foundation plus the current quality-testing setup.
-- `release/v11-3d-universe` is the V11 release candidate, based on current `main` so newer fixes and tests are preserved.
+- `main` is the live publishing branch and remains on V11 during V12 development.
+- `gameplay/v12-overhaul` contains the V12 work and is based on the V11 live commit.
 - Validate with `node scripts/validate-site.cjs`.
-- The GitHub Actions validation workflow checks JavaScript syntax, local assets, catalog integrity, original launch routes, all eight 3D games, and legacy local modes.
-- Keep `main` unchanged until V10 and V11 have been reviewed, tested, and merged in order. V11 is not published by GitHub Pages while it remains on this branch.
+- Run browser tests with `npm run test:e2e` after installing the development-only Playwright package and Chromium.
+- GitHub Pages deploys from `main`; feature branches do not publish the public site.
 
 ## Project structure
 
@@ -49,37 +58,24 @@ No software can be honestly guaranteed bug-free. The repository validator checks
 - `styles.css`: original arcade styling.
 - `v10.css`: V10 redesign and shared responsive 3D game UI.
 - `v11.css`: V11 3D discovery additions.
+- `v12.css`: V12 shared gameplay polish, pause controls, focus states, and responsive controls.
 - `catalog.js`: base engines, themes, and legacy catalog.
 - `v10-catalog.js`: five original V10 3D engines and catalog entries.
 - `v11-catalog.js`: upgraded descriptions plus three new 3D entries.
-- `app.js`: catalog UI, local progress, shared utilities, and original 2D game-launch routing.
-- `v10-runtime.js`: on-demand Three.js loader, shared 3D scene lifecycle, and V10 game foundation.
-- `v11-runtime.js`: upgraded V10 worlds, three additional 3D worlds, and V11 discovery UI.
-- `games/*.js`: the original 27 2D game engines.
+- `app.js`: catalog UI, local progress, shared utilities, and game-launch routing.
+- `v10-runtime.js`: on-demand Three.js loader, shared 3D scene lifecycle, and V12 pause/resume system.
+- `v11-runtime.js`: eight 3D worlds and V12 game-specific 3D upgrades.
+- `games/*.js`: the 27 non-3D game engines with V12 gameplay changes.
+- `V12-AUDIT.md`: V12 source audit and release gates.
 - `scripts/validate-site.cjs`: dependency-free repository checks.
-- `.github/workflows/validate.yml`: repository validation.
-- `.github/workflows/pages.yml`: GitHub Pages deployment from `main`.
+- `tests/smoke.spec.cjs`: Chromium browser regression tests.
+- `.github/workflows/validate.yml`, `.github/workflows/playwright.yml`, and `.github/workflows/pages.yml`: validation, browser testing, and GitHub Pages deployment.
 
 ## Run locally
 
-Keep the project files together and open `index.html` in a modern browser. The site has no build step. The 2D games do not depend on the 3D module; all eight 3D games require an internet connection to load the pinned Three.js module and a browser/device with WebGL support.
+Keep the project files together and open `index.html` in a modern browser. The public site has no frontend build step. The 2D games run without loading the 3D library; 3D games need an internet connection for the pinned Three.js module and a device/browser with WebGL support.
 
-## Deployment
-
-GitHub Pages deploys the repository root using `.github/workflows/pages.yml` on pushes to `main`. Changes on development branches do not publish the public site.
-
-Public site: https://crewliambackup1-star.github.io/pixellab/
-
-## Privacy
-
-Favorites, recently played games, records, and Arcade Passport progress are stored locally in the current browser/device. They do not sync between devices.
-
-
-## Browser smoke tests
-
-The public site has no build step. Browser tests are development-only and run in GitHub Actions.
-
-To run them locally with Node.js:
+To run the browser suite locally with Node.js:
 
 ```sh
 npm install --no-package-lock --no-audit --no-fund
@@ -87,7 +83,11 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The automated browser suite is a smoke test, not a substitute for manually playing each 3D game on supported browsers and devices.
+## Deployment
+
+GitHub Pages deploys the repository root using `.github/workflows/pages.yml` on pushes to `main`. V12 is not live until its release branch is reviewed, its checks pass, and it is merged into `main`.
+
+Public site: https://crewliambackup1-star.github.io/pixellab/
 
 ## Privacy
 

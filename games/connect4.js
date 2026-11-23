@@ -60,6 +60,11 @@ function gameConnect4(g){
    let best=-Infinity,moves=[];for(let cc=0;cc<7;cc++){const v=evaluateCandidate(cc);if(v>best){best=v;moves=[cc]}else if(v===best)moves.push(cc)}
    return moves.length?moves[Math.floor(Math.random()*moves.length)]:-1;
   }
+  function hintColumn(){
+   for(let cc=0;cc<7;cc++){const rr=rowFree(cc);if(rr>=0){board[at(rr,cc)]=1;const win=won(1);board[at(rr,cc)]=0;if(win)return cc;}}
+   for(let cc=0;cc<7;cc++){const rr=rowFree(cc);if(rr>=0){board[at(rr,cc)]=2;const block=won(2);board[at(rr,cc)]=0;if(block)return cc;}}
+   return [3,2,4,1,5,0,6].find(cc=>rowFree(cc)>=0);
+  }
   function drop(c,p){
    if(over||rowFree(c)<0||(mode==='ai'&&p===1&&thinking))return;
    const r=rowFree(c);board[at(r,c)]=p;draw();
@@ -68,7 +73,9 @@ function gameConnect4(g){
    if(mode==='ai'&&p===1){thinking=true;draw();aiTimer=setTimeout(()=>{if(over||!currentGame||mode!=='ai')return;thinking=false;const move=chooseAI();if(move>=0)drop(move,2);else draw()},330)}
   }
   draw();
-  const actions=document.createElement('div');actions.className='mp-actions';actions.append(button('Reset game',()=>startRound(mode)),button('Change mode',showModePicker));b.append(actions);
+  const actions=document.createElement('div');actions.className='mp-actions';
+  actions.append(button('Hint · suggested column',()=>{const hint=hintColumn();if(hint!==undefined)msg.textContent='Try column '+(hint+1)+'. Check for a winning line or a threat to block.';}));
+  actions.append(button('Reset game',()=>startRound(mode)),button('Change mode',showModePicker));b.append(actions);
  }
  showModePicker();cleanup=()=>clearTimeout(aiTimer);
 }

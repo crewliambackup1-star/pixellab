@@ -111,7 +111,8 @@
           const radius = 3.5+Math.random()*8;
           target.root.position.set(Math.cos(angle)*radius, 1.1+Math.random()*5, Math.sin(angle)*radius-2);
           target.phase = Math.random()*6;
-          target.speed = 0.8+Math.random()*0.8;
+          target.speed = Math.min(2.2,0.8+Math.random()*0.8+score*0.0008);
+          target.value = index%3===0?250:index%3===1?160:100;
           target.root.visible = true;
           target.cooldown = 0;
           target.core.material.color.set(palettes[arena].colors[index%3]);
@@ -134,7 +135,7 @@
           streak=0; ctx.setHud('tertiary','STREAK','0');
         });
         ctx.setHud('primary','SCORE','0');ctx.setHud('secondary','TIME','75');ctx.setHud('tertiary','STREAK','0');
-        ctx.setHelp('Click or tap moving targets. Use the Arena button to switch between three visual arenas. Clean hits build a score multiplier.');
+        ctx.setHelp('Click or tap moving targets. Cyan targets are worth 100, violet targets 160, and premium targets 250. Consecutive hits build a multiplier; missed shots reset it.');
         function shoot(event) {
           if(ctx.completed)return;
           const rect=ctx.stage.getBoundingClientRect();
@@ -150,7 +151,7 @@
             const target=live.find(function(t){return t.core===hit.object||t.ring===hit.object;});
             if(target){
               streak++;bestStreak=Math.max(bestStreak,streak);
-              score+=100+Math.min(400,streak*20);
+              score+=target.value+Math.min(500,streak*25);
               target.root.visible=false;target.cooldown=0.65+Math.random()*0.35;
               ctx.setHud('primary','SCORE',score);ctx.setHud('tertiary','STREAK',streak);
             }
@@ -167,7 +168,7 @@
             const live=targets.filter(function(t){return t.root.visible;});
             const meshes=[];live.forEach(function(t){meshes.push(t.core,t.ring);});
             const hit=raycaster.intersectObjects(meshes,false)[0];
-            if(hit){const target=live.find(function(t){return t.core===hit.object||t.ring===hit.object;});if(target){streak++;bestStreak=Math.max(bestStreak,streak);score+=100+Math.min(400,streak*20);target.root.visible=false;target.cooldown=0.7;ctx.setHud('primary','SCORE',score);ctx.setHud('tertiary','STREAK',streak);}}
+            if(hit){const target=live.find(function(t){return t.core===hit.object||t.ring===hit.object;});if(target){streak++;bestStreak=Math.max(bestStreak,streak);score+=target.value+Math.min(500,streak*25);target.root.visible=false;target.cooldown=0.7;ctx.setHud('primary','SCORE',score);ctx.setHud('tertiary','STREAK',streak);}}
             else{streak=0;ctx.setHud('tertiary','STREAK','0');}
           }
           targets.forEach(function(t,i){
@@ -261,7 +262,10 @@
             if(player.position.distanceTo(p.mesh.position)<1.8){p.taken=true;p.mesh.visible=false;shards++;score+=100;ctx.setHud('primary','SHARDS',shards);}
           });
           if(player.position.y<-8){player.position.set(checkpoint.x,1,checkpoint.z);vy=0;jumps=0;}
-          if(player.position.distanceTo(portal.position)<2.7){complete=true;ctx.finish(score+Math.max(0,Math.round(500-runTime*4)),'Skyway cleared','You collected '+shards+' shards and completed Course '+(course+1)+' in '+Math.round(runTime)+' seconds.');}
+          if(player.position.distanceTo(portal.position)<2.7){
+            if(shards<3){ctx.setHelp('The portal is unstable. Collect at least three of the five energy shards before entering.');}
+            else{complete=true;ctx.finish(score+Math.max(0,Math.round(500-runTime*4))+(shards===5?250:0),'Skyway cleared','You collected '+shards+' of 5 shards and completed Course '+(course+1)+' in '+Math.round(runTime)+' seconds.');}
+          }
           ring.rotation.z+=dt*1.8;
           ctx.camera.position.lerp(new T.Vector3(player.position.x,player.position.y+7,player.position.z+13),Math.min(1,dt*3));
           ctx.camera.lookAt(player.position.x,player.position.y+1,player.position.z-4);
@@ -280,72 +284,120 @@
       setup:function(T,ctx){
         const scene=ctx.scene;
         addPlane(T,scene,150,150,'#234236');
-        let track=0,lap=0,score=0,time=0,speed=0,yaw=0,boost=100;
+        let track=0,time=0,speed=0,boost=100,progress=0,lane=0,bumpCooldown=0,offRoadCooldown=0;
         let rx=34,rz=49;
         const trackGroup=new T.Group();scene.add(trackGroup);
-        const rivals=[];
         const car=makeCar(T,scene,'#ff6f8d',false);
-        car.position.set(0,.15,rz-2);
-        const trackDefs=[{name:'Coastal Loop',rx:34,rz:49,color:'#303e58'},{name:'Desert Run',rx:41,rz:43,color:'#55463a'},{name:'Skyline Circuit',rx:29,rz:56,color:'#3f3b58'}];
+        const trackDefs=[
+          {name:'Coastal Loop',rx:34,rz:49,color:'#303e58'},
+          {name:'Desert Run',rx:41,rz:43,color:'#55463a'},
+          {name:'Skyline Circuit',rx:29,rz:56,color:'#3f3b58'}
+        ];
+        const rivals=[
+          {root:makeCar(T,scene,'#76c9ff',false),progress:.32,lane:-2.1,pace:19.5},
+          {root:makeCar(T,scene,'#ffc45e',false),progress:.78,lane:2.2,pace:21}
+        ];
+        function placeCar(root,angle,radialOffset,headingOffset){
+          const x=Math.sin(angle)*(rx+radialOffset),z=Math.cos(angle)*(rz+radialOffset);
+          root.position.set(x,.15,z);
+          root.rotation.y=Math.atan2(rx*Math.cos(angle),rz*Math.sin(angle))+ (headingOffset||0);
+        }
         function buildTrack(){
-          while(trackGroup.children.length){trackGroup.remove(trackGroup.children[trackGroup.children.length-1]);}
+          while(trackGroup.children.length){
+            const child=trackGroup.children[trackGroup.children.length-1];
+            trackGroup.remove(child);
+            child.traverse(function(object){
+              if(object.geometry&&object.geometry.dispose)object.geometry.dispose();
+              if(object.material){const list=Array.isArray(object.material)?object.material:[object.material];list.forEach(function(m){if(m.dispose)m.dispose();});}
+            });
+          }
           rx=trackDefs[track].rx;rz=trackDefs[track].rz;
-          for(let i=0;i<64;i++){
-            const a=i/64*Math.PI*2;
+          for(let i=0;i<80;i++){
+            const a=i/80*Math.PI*2;
             const x=Math.sin(a)*rx,z=Math.cos(a)*rz;
-            const next=(i+1)/64*Math.PI*2;
+            const next=(i+1)/80*Math.PI*2;
             const nx=Math.sin(next)*rx,nz=Math.cos(next)*rz;
             const angle=Math.atan2(nx-x,nz-z);
-            const road=boxMesh(T,13,.26,5.2,material(T,trackDefs[track].color,.87),x,.12,z);
+            const road=boxMesh(T,13,.28,4.4,material(T,trackDefs[track].color,.87),x,.12,z);
             road.rotation.y=angle;trackGroup.add(road);
-            const stripe=boxMesh(T,.18,.04,3.4,material(T,'#e8e5d8',.7),x,.28,z);
+            const stripe=boxMesh(T,.18,.04,3.1,material(T,'#e8e5d8',.7),x,.29,z);
             stripe.rotation.y=angle;trackGroup.add(stripe);
+            if(i%8===0){
+              const marker=boxMesh(T,.45,1.7,.45,material(T,'#e2e9ef',.58,.12),Math.sin(a)*(rx+8),.85,Math.cos(a)*(rz+8));
+              trackGroup.add(marker);
+            }
           }
-          const startLine=boxMesh(T,12,.12,1.2,material(T,'#f4f3e9',.6),0,.35,rz-1);trackGroup.add(startLine);
-          for(let i=0;i<10;i++){
-            const a=i/10*Math.PI*2;
-            const tree=boxMesh(T,1,5,1,material(T,'#426b55',.9),Math.sin(a)*(rx+13),2.5,Math.cos(a)*(rz+13));
+          const startLine=boxMesh(T,12,.12,1.25,material(T,'#f4f3e9',.6),0,.35,rz);trackGroup.add(startLine);
+          for(let i=0;i<12;i++){
+            const a=i/12*Math.PI*2;
+            const tree=boxMesh(T,1,5,1,material(T,track===1?'#8c7047':'#426b55',.9),Math.sin(a)*(rx+16),2.5,Math.cos(a)*(rz+16));
             trackGroup.add(tree);
           }
-          rivals.forEach(function(r,i){const a=i*2.1;r.position.set(Math.sin(a)*rx,.15,Math.cos(a)*rz);});
-          car.position.set(0,.15,rz-2);yaw=0;speed=0;lap=0;
+          progress=0;lane=0;speed=0;time=0;boost=100;
+          placeCar(car,0,0,0);
+          rivals[0].progress=.34;rivals[0].lane=-2.1;
+          rivals[1].progress=.8;rivals[1].lane=2.2;
+          rivals.forEach(function(r){placeCar(r.root,r.progress,r.lane,0);});
+          hud();
         }
-        for(let i=0;i<2;i++)rivals.push(makeCar(T,scene,i?'#76c9ff':'#ffc45e',false));
-        const trackTool=ctx.addTool('Track: Coastal Loop',function(){track=(track+1)%trackDefs.length;trackTool.textContent='Track: '+trackDefs[track].name;buildTrack();});
+        function lapNumber(value){return Math.min(3,Math.floor(value/(Math.PI*2))+1);}
+        function placeRank(){
+          const playerProgress=progress;
+          return 1+rivals.filter(function(r){return r.progress>playerProgress;}).length;
+        }
+        function hud(){
+          ctx.setHud('primary','LAP',Math.min(3,Math.floor(progress/(Math.PI*2)))+' / 3');
+          ctx.setHud('secondary','SPEED',Math.round(Math.abs(speed)*7));
+          ctx.setHud('tertiary','PLACE',placeRank()+' / 3 · '+Math.round(boost)+'% BOOST');
+        }
+        const trackTool=ctx.addTool('Track: Coastal Loop',function(){
+          track=(track+1)%trackDefs.length;trackTool.textContent='Track: '+trackDefs[track].name;
+          buildTrack();ctx.setHelp('New circuit loaded. Hold W to accelerate, use A/D to choose your racing line, and Shift to boost past the two rivals.');
+        });
         ctx.addControl('↑','w');ctx.addControl('↓','s');ctx.addControl('←','a');ctx.addControl('→','d');ctx.addControl('BOOST','shift');
-        ctx.setHud('primary','LAP','0 / 3');ctx.setHud('secondary','SPEED','0');ctx.setHud('tertiary','BOOST','100%');
-        ctx.setHelp('Race three laps on one of three circuits. Ease into turns, use boost on the straights, and keep your wheels on the track for maximum pace.');
+        ctx.setHelp('Race three laps against two rival drivers. W/↑ accelerates, S/↓ brakes, A/D changes your racing line, and Shift boosts. Draft past rivals and avoid contact.');
         buildTrack();
         ctx.setUpdate(function(dt,elapsed){
-          time+=dt;
-          const oldZ=car.position.z;
+          time+=dt;bumpCooldown=Math.max(0,bumpCooldown-dt);offRoadCooldown=Math.max(0,offRoadCooldown-dt);
           const keys=ctx.keys;
-          const accel=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
+          const throttle=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
           const steer=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
-          const boosting=(keys.has('shift')&&boost>0);
-          speed+=accel*(boosting?28:18)*dt;
-          speed*=Math.pow(.985,dt*60);
-          speed=Math.max(-6,Math.min(boosting?34:25,speed));
-          if(boosting){boost=Math.max(0,boost-35*dt);}else{boost=Math.min(100,boost+13*dt);}
-          yaw+=steer*dt*(1.1+Math.abs(speed)*.055)*(speed<0?-1:1);
-          car.position.x+=Math.sin(yaw)*speed*dt;
-          car.position.z-=Math.cos(yaw)*speed*dt;
-          car.rotation.y=yaw;
-          const normalized=Math.sqrt((car.position.x*car.position.x)/(rx*rx)+(car.position.z*car.position.z)/(rz*rz));
-          if(Math.abs(normalized-1)>.16)speed*=Math.pow(.9,dt*60);
-          if(oldZ<rz-2&&car.position.z>=rz-2&&Math.abs(car.position.x)<9&&speed>3){
-            lap++;ctx.setHud('primary','LAP',Math.min(lap,3)+' / 3');
-            if(lap>=3){const result=Math.max(100,Math.round(5000-time*12+boost*5));ctx.finish(result,'Circuit champion','You completed '+trackDefs[track].name+' in '+Math.round(time)+' seconds.');}
+          const boosting=keys.has('shift')&&boost>0&&speed>2;
+          speed+=throttle*(boosting?28:19)*dt;
+          speed*=Math.pow(.988,dt*60);
+          speed=Math.max(-5,Math.min(boosting?35:26,speed));
+          if(boosting)boost=Math.max(0,boost-33*dt);else boost=Math.min(100,boost+14*dt);
+          lane=Math.max(-6.2,Math.min(6.2,lane+steer*(5.2+Math.abs(speed)*.12)*dt));
+          if(Math.abs(lane)>5.3){
+            speed*=Math.pow(.86,dt*60);
+            if(offRoadCooldown<=0){ctx.setHelp('You are outside the racing line. Ease back toward the asphalt to keep your speed.');offRoadCooldown=2;}
+          }
+          progress+=speed*dt/108;
+          const angle=progress%(Math.PI*2);
+          placeCar(car,angle,lane,0);
+          const laps=Math.floor(progress/(Math.PI*2));
+          if(laps>=3){
+            ctx.setHud('primary','LAP','3 / 3');
+            const place=placeRank();
+            const result=Math.max(100,Math.round(5200-time*15+boost*5+(place===1?900:place===2?350:0)));
+            ctx.finish(result,place===1?'Circuit champion':'Race complete',place===1?'You beat both rivals in '+Math.round(time)+' seconds.':'You finished in position '+place+' after '+Math.round(time)+' seconds.');
+            return;
           }
           rivals.forEach(function(r,i){
-            const a=elapsed*(.16+i*.025)+i*2.5;
-            r.position.set(Math.sin(a)*rx,.15,Math.cos(a)*rz);
-            r.rotation.y=Math.atan2(Math.cos(a)*rx,-Math.sin(a)*rz);
+            r.progress+=r.pace*dt/108;
+            const rivalAngle=r.progress%(Math.PI*2);
+            placeCar(r.root,rivalAngle,r.lane,0);
+            if(bumpCooldown<=0){
+              const delta=Math.atan2(Math.sin(rivalAngle-angle),Math.cos(rivalAngle-angle));
+              if(Math.abs(delta)<.045&&Math.abs(r.lane-lane)<1.8){
+                speed=Math.max(4,speed*.72);boost=Math.max(0,boost-8);bumpCooldown=1.1;
+                ctx.setHelp('Rival contact! Hold your line and time your boost to overtake cleanly.');
+              }
+            }
           });
-          ctx.camera.position.lerp(new T.Vector3(car.position.x-Math.sin(yaw)*10,car.position.y+16,car.position.z+Math.cos(yaw)*17),Math.min(1,dt*2.6));
+          ctx.camera.position.lerp(new T.Vector3(car.position.x-Math.sin(car.rotation.y)*11,car.position.y+17,car.position.z+Math.cos(car.rotation.y)*18),Math.min(1,dt*2.6));
           ctx.camera.lookAt(car.position.x,0,car.position.z);
-          ctx.setHud('secondary','SPEED',Math.round(Math.abs(speed)*7));
-          ctx.setHud('tertiary','BOOST',Math.round(boost)+'%');
+          hud();
         });
       }
     });
@@ -371,6 +423,7 @@
         const relicsGroup=new T.Group();biomeGroup.add(relicsGroup);
         const wildlife=[];
         const landmarks=[];
+        let wildlifeSeen=new Set();
         const beacon=new T.Group();scene.add(beacon);beacon.position.set(0,1,-48);
         const beaconRing=new T.Mesh(new T.TorusGeometry(2.3,.18,10,36),material(T,'#e8ffff',.2,.1,'#ffffff'));
         beaconRing.rotation.x=Math.PI/2;beacon.add(beaconRing);
@@ -401,8 +454,8 @@
             const marker=boxMesh(T,1.1,2.5,1.1,material(T,biomes[biome].accent,.42,.2,biomes[biome].accent),(i-1)*24,1.25,-26);
             biomeGroup.add(marker);landmarks.push({mesh:marker,found:false});
           }
-          relics=0;discoveries=0;score=0;
-          ctx.setHud('primary','RELICS','0 / 5');ctx.setHud('tertiary','DISCOVERIES','0 / 3');
+          relics=0;discoveries=0;score=0;wildlifeSeen=new Set();
+          ctx.setHud('primary','RELICS','0 / 5');ctx.setHud('tertiary','WILDLIFE','0 / 3');
         }
         const completedBiomes=[false,false,false];let expeditionScore=0;
         const biomeTool=ctx.addTool('Next biome',function(){
@@ -429,7 +482,16 @@
             if(player.position.distanceTo(relic.position)<2.2){relic.userData.collected=true;relic.visible=false;relics++;totalRelics++;score+=120;ctx.setHud('primary','RELICS',relics+' / 5');}
           });
           landmarks.forEach(function(item){if(!item.found&&player.position.distanceTo(item.mesh.position)<4){item.found=true;item.mesh.material.emissive.set('#ffffff');discoveries++;score+=80;ctx.setHud('tertiary','DISCOVERIES',discoveries+' / 3');}});
-          wildlife.forEach(function(w){w.root.position.x+=Math.sin(elapsed*w.speed+w.phase)*dt*1.5;w.root.position.z+=Math.cos(elapsed*.55+w.phase)*dt*1.1;});
+          wildlife.forEach(function(w,i){
+            const distance=player.position.distanceTo(w.root.position);
+            if(distance<8&&!wildlifeSeen.has(i)){
+              wildlifeSeen.add(i);score+=70;ctx.setHud('tertiary','WILDLIFE',wildlifeSeen.size+' / 3');
+              ctx.setHelp('Wildlife spotted! '+wildlifeSeen.size+' of 3 creatures observed in this biome.');
+            }
+            const flee=distance<5?1.8:1;
+            w.root.position.x+=Math.sin(elapsed*w.speed+w.phase)*dt*1.5*flee;
+            w.root.position.z+=Math.cos(elapsed*.55+w.phase)*dt*1.1*flee;
+          });
           beaconRing.rotation.z+=dt*.8;
           ctx.camera.position.lerp(new T.Vector3(player.position.x,player.position.y+9,player.position.z+16),Math.min(1,dt*2.5));
           ctx.camera.lookAt(player.position.x,1,player.position.z-3);
@@ -444,73 +506,177 @@
 
   function gameParkEmpire(game) {
     startThreeGame(game, {
-      background:'#a8c8cf',fogColor:'#9bbfc4',fogNear:50,fogFar:140,camera:function(T){
-        const camera=new T.OrthographicCamera(-19,19,13,-13,.1,180);camera.position.set(26,34,30);camera.lookAt(0,0,0);return camera;
+      background:'#a8c8cf',
+      fogColor:'#9bbfc4',
+      fogNear:50,
+      fogFar:140,
+      camera:function(T){
+        const camera=new T.OrthographicCamera(-19,19,13,-13,.1,180);
+        camera.position.set(26,34,30);
+        camera.lookAt(0,0,0);
+        return camera;
       },
       setup:function(T,ctx){
         const scene=ctx.scene;
-        addPlane(T,scene,38,30,'#527b5a');
-        const grid=new T.GridHelper(36,12,'#d2e7cb','#8fac9b');grid.position.y=.03;scene.add(grid);
+        const ground=addPlane(T,scene,38,30,'#527b5a');
+        const grid=new T.GridHelper(36,12,'#d2e7cb','#8fac9b');
+        grid.position.y=.03;
+        scene.add(grid);
+        const path=boxMesh(T,36,.09,2.2,material(T,'#b7a28a',.95),0,.04,0);
+        scene.add(path);
+
         const rideTypes=[
           {name:'Carousel',cost:150,income:36,color:'#f4a6bf',height:2},
           {name:'Ferris Wheel',cost:280,income:66,color:'#66c9e8',height:6},
           {name:'Coaster',cost:360,income:82,color:'#f6c66b',height:4},
           {name:'Garden',cost:90,income:18,color:'#8de4a5',height:1}
         ];
-        let selected=0,cash=1200,visitors=0,rating=1,incomeClock=0,rides=[],score=0;
-        const rideGroup=new T.Group();scene.add(rideGroup);
+        let selected=0,cash=1200,visitors=0,rating=1,incomeClock=0,rides=[],elapsed=0;
+        const occupied=new Set();
+        const rideGroup=new T.Group();
+        scene.add(rideGroup);
         const guests=[];
         for(let i=0;i<22;i++){
           const guest=addSphere(T,scene,.22,['#f1c47c','#8bd4e4','#e9a3ce'][i%3],(Math.random()-.5)*26,.35,(Math.random()-.5)*20);
+          guest.userData.phase=i*.7;
           guests.push(guest);
         }
-        function hud(){ctx.setHud('primary','CASH','$'+Math.floor(cash));ctx.setHud('secondary','GUESTS',visitors);ctx.setHud('tertiary','RIDES',rides.length+'/10');}
-        rideTypes.forEach(function(type,index){
-          ctx.addTool(type.name+' $'+type.cost,function(){selected=index;ctx.setHelp('Selected '+type.name+'. Tap or click an empty grid tile to build it.');});
-        });
-        ctx.setHelp('Build a mix of four attractions and gardens. Every ride adds guests and ticket income. Reach ten attractions and a thriving park balance.');
-        const ray=new T.Raycaster(),mouse=new T.Vector2();
-        const floorPlane=new T.Plane(new T.Vector3(0,1,0),0),point=new T.Vector3();
-        ctx.on(ctx.stage,'pointerdown',function(event){
-          const rect=ctx.stage.getBoundingClientRect();mouse.x=((event.clientX-rect.left)/rect.width)*2-1;mouse.y=-((event.clientY-rect.top)/rect.height)*2+1;
-          ray.setFromCamera(mouse,ctx.camera);
-          if(!ray.ray.intersectPlane(floorPlane,point))return;
-          const x=Math.round(point.x/3)*3,z=Math.round(point.z/3)*3;
-          if(Math.abs(x)>15||Math.abs(z)>10)return;
-          if(rides.some(function(r){return r.x===x&&r.z===z;}))return;
-          const type=rideTypes[selected];if(cash<type.cost){ctx.setHelp('Not enough cash for '+type.name+'. Wait for ticket income or choose a smaller attraction.');return;}
-          cash-=type.cost;rating=Math.min(5,rating+.18);
-          const root=new T.Group();root.position.set(x,0,z);
-          const base=boxMesh(T,2.5,.35,2.5,material(T,'#d6e5ed',.8),0,.18,0);root.add(base);
-          if(selected===0){
-            for(let n=0;n<8;n++){const a=n/8*Math.PI*2;const seat=boxMesh(T,.38,.55,.38,material(T,type.color,.45),Math.cos(a)*.8,1.0,Math.sin(a)*.8);seat.rotation.y=-a;root.add(seat);}
-            const pole=boxMesh(T,.25,2,.25,material(T,'#e9eef5',.4),0,1,0);root.add(pole);
-          }else if(selected===1){
-            const wheel=new T.Mesh(new T.TorusGeometry(1.15,.11,8,30),material(T,type.color,.3,.18));wheel.position.y=3;root.add(wheel);
-            const beam=boxMesh(T,.22,5,.22,material(T,'#e8f2fa',.5),0,2.4,0);root.add(beam);
-          }else if(selected===2){
-            const track=new T.Mesh(new T.TorusGeometry(1.1,.17,8,24),material(T,type.color,.4,.2));track.rotation.x=Math.PI/2;track.position.y=1.7;root.add(track);
-            const support=boxMesh(T,.25,3,.25,material(T,'#8b9bab',.6),0,1.5,0);root.add(support);
+        function varietyCount(){
+          return new Set(rides.map(function(ride){return ride.info.name;})).size;
+        }
+        function updateHud(){
+          ctx.setHud('primary','CASH','$'+Math.floor(cash));
+          ctx.setHud('secondary','GUESTS',visitors);
+          ctx.setHud('tertiary','RATING',rating.toFixed(1)+'★ · '+rides.length+'/10');
+        }
+        function makeRide(type,x,z){
+          const root=new T.Group();
+          root.position.set(x,0,z);
+          const base=boxMesh(T,2.5,.35,2.5,material(T,'#d6e5ed',.8),0,.18,0);
+          root.add(base);
+          if(type.name==='Carousel'){
+            for(let n=0;n<8;n++){
+              const angle=n/8*Math.PI*2;
+              const seat=boxMesh(T,.38,.55,.38,material(T,type.color,.45),Math.cos(angle)*.8,1,Math.sin(angle)*.8);
+              seat.rotation.y=-angle;
+              root.add(seat);
+            }
+            root.add(boxMesh(T,.25,2,.25,material(T,'#e9eef5',.4),0,1,0));
+            root.userData.spin=true;
+          }else if(type.name==='Ferris Wheel'){
+            const wheel=new T.Mesh(new T.TorusGeometry(1.15,.11,8,30),material(T,type.color,.3,.18));
+            wheel.position.y=3;
+            root.add(wheel);
+            root.add(boxMesh(T,.22,5,.22,material(T,'#e8f2fa',.5),0,2.4,0));
+            root.userData.spin=true;
+            root.userData.wheel=wheel;
+          }else if(type.name==='Coaster'){
+            const trackMesh=new T.Mesh(new T.TorusGeometry(1.1,.17,8,24),material(T,type.color,.4,.2));
+            trackMesh.rotation.x=Math.PI/2;
+            trackMesh.position.y=1.7;
+            root.add(trackMesh);
+            root.add(boxMesh(T,.25,3,.25,material(T,'#8b9bab',.6),0,1.5,0));
+            root.userData.spin=true;
           }else{
-            const tree=new T.Mesh(new T.ConeGeometry(1.1,2.6,7),material(T,type.color,.9));tree.position.y=1.5;root.add(tree);
+            const tree=new T.Mesh(new T.ConeGeometry(1.1,2.6,7),material(T,type.color,.9));
+            tree.position.y=1.5;
+            root.add(tree);
+            const second=new T.Mesh(new T.ConeGeometry(.8,2,7),material(T,'#4e986b',.92));
+            second.position.set(.9,1.15,.55);
+            root.add(second);
           }
-          rideGroup.add(root);rides.push({x:x,z:z,info:type});
-          score+=type.cost;hud();
+          rideGroup.add(root);
+          const ride={x:x,z:z,info:type,root:root};
+          rides.push(ride);
+          occupied.add(x+':'+z);
+          cash-=type.cost;
+          rating=Math.min(5,1+rides.length*.2+varietyCount()*.25);
+          ctx.setHelp(type.name+' built. Visitors are heading to your attraction.');
+          updateHud();
+        }
+        const tools=rideTypes.map(function(type,index){
+          return ctx.addTool(type.name+' $'+type.cost,function(){
+            selected=index;
+            ctx.setHelp('Selected '+type.name+'. Click an empty grass tile to place it.');
+          },index===selected);
         });
-        function updateHud(){hud();}
-        hud();
-        ctx.setUpdate(function(dt,elapsed){
+        ctx.setHelp('Build ten attractions, use at least three different types, and grow cash to $1,800 with 50 visitors. Variety improves income and park rating.');
+        updateHud();
+
+        const ray=new T.Raycaster();
+        const pointer=new T.Vector2();
+        const floorPlane=new T.Plane(new T.Vector3(0,1,0),0);
+        const hitPoint=new T.Vector3();
+        ctx.on(ctx.renderer.domElement,'pointerdown',function(event){
+          const rect=ctx.renderer.domElement.getBoundingClientRect();
+          pointer.x=((event.clientX-rect.left)/rect.width)*2-1;
+          pointer.y=-((event.clientY-rect.top)/rect.height)*2+1;
+          ray.setFromCamera(pointer,ctx.camera);
+          if(!ray.ray.intersectPlane(floorPlane,hitPoint))return;
+          const x=Math.round(hitPoint.x/3)*3;
+          const z=Math.round(hitPoint.z/3)*3;
+          if(Math.abs(x)>15||Math.abs(z)>10){
+            ctx.setHelp('Choose a tile inside the park boundary.');
+            return;
+          }
+          if(Math.abs(z)<2.9){
+            ctx.setHelp('Keep the main path clear for visitors. Choose another tile.');
+            return;
+          }
+          if(occupied.has(x+':'+z)){
+            ctx.setHelp('That tile is occupied. Choose another space.');
+            return;
+          }
+          const type=rideTypes[selected];
+          if(cash<type.cost){
+            ctx.setHelp('Not enough cash for '+type.name+'. Wait for ticket income or select a smaller attraction.');
+            return;
+          }
+          makeRide(type,x,z);
+        });
+
+        ctx.setUpdate(function(dt,now){
+          elapsed=now;
           incomeClock+=dt;
+          rides.forEach(function(ride,index){
+            if(ride.root.userData.spin){
+              ride.root.rotation.y+=dt*(ride.info.name==='Ferris Wheel'?.42:.68);
+            }
+            if(ride.root.userData.wheel){
+              ride.root.userData.wheel.rotation.z+=dt*.15;
+            }
+          });
+          guests.forEach(function(guest,index){
+            if(rides.length){
+              const ride=rides[index%rides.length];
+              const dx=ride.x-guest.position.x;
+              const dz=ride.z-guest.position.z;
+              const distance=Math.hypot(dx,dz)||1;
+              const pace=Math.min(.7,distance*.16);
+              guest.position.x+=dx/distance*pace*dt;
+              guest.position.z+=dz/distance*pace*dt;
+              if(distance<1.5){
+                guest.position.x+=Math.sin(now*.7+guest.userData.phase)*dt*.18;
+                guest.position.z+=Math.cos(now*.6+guest.userData.phase)*dt*.18;
+              }
+            }else{
+              guest.position.x+=Math.sin(now*.3+guest.userData.phase)*dt*.4;
+              guest.position.z+=Math.cos(now*.27+guest.userData.phase)*dt*.35;
+            }
+          });
           if(incomeClock>=4){
-            incomeClock=0;visitors=Math.min(999,visitors+rides.length*2+1);
-            const income=rides.reduce(function(sum,r){return sum+r.info.income;},0);
-            cash+=income+Math.floor(visitors*.12);rating=Math.min(5,1+rides.length*.35);
+            incomeClock=0;
+            const variety=varietyCount();
+            visitors=Math.min(999,visitors+rides.length*2+variety);
+            const baseIncome=rides.reduce(function(sum,ride){return sum+ride.info.income;},0);
+            cash+=baseIncome+variety*12+Math.floor(visitors*.12);
+            rating=Math.min(5,1+rides.length*.22+variety*.22);
             updateHud();
-            if(rides.length>=10&&cash>=1800&&visitors>=50&&!ctx.completed){
-              ctx.finish(Math.round(cash+visitors*5+rating*100),'Theme park sensation','You built ten attractions, welcomed '+visitors+' guests, and grew the park to $'+Math.floor(cash)+'.');
+            if(rides.length>=10&&cash>=1800&&visitors>=50&&variety>=3&&!ctx.completed){
+              ctx.finish(Math.round(cash+visitors*5+rating*100),'Theme park sensation',
+                'You built ten attractions across '+variety+' attraction types, welcomed '+visitors+' guests, and grew the park to $'+Math.floor(cash)+'.');
             }
           }
-          guests.forEach(function(g,i){g.position.x+=Math.sin(elapsed*.3+i)*dt*.45;g.position.z+=Math.cos(elapsed*.27+i)*dt*.35;});
         });
       }
     });
@@ -542,8 +708,8 @@
         });
         const gate=new T.Group();gate.position.set(0,1,-62);scene.add(gate);
         const ring=new T.Mesh(new T.TorusGeometry(2.5,.18,10,38),material(T,'#b6f9ff',.18,.2,'#62edff'));gate.add(ring);
-        let collected=0,active=0,score=0,pulse=0;
-        const spell=ctx.addTool('Cast pulse ✧',function(){pulse=.45;});
+        let collected=0,active=0,score=0,pulse=0,spellCooldown=0;
+        const spell=ctx.addTool('Cast pulse ✧',function(){if(spellCooldown<=0){pulse=.45;spellCooldown=1.25;}});
         ctx.addControl('SPELL','enter','spell');
         addTouchMove(ctx);
         ctx.setHud('primary','RUNES','0 / 6');ctx.setHud('secondary','SHRINES','0 / 3');ctx.setHud('tertiary','LEVEL','1');
@@ -556,13 +722,14 @@
           runes.forEach(function(r){if(!r.visible)return;r.rotation.y+=dt*1.5;r.position.y=1.5+Math.sin(elapsed*2+r.position.z)*.22;
             if(player.position.distanceTo(r.position)<2.1){r.visible=false;collected++;score+=100;ctx.setHud('primary','RUNES',collected+' / 6');}
           });
-          if(ctx.actions.delete('spell'))pulse=.45;
+          spellCooldown=Math.max(0,spellCooldown-dt);
+          if(ctx.actions.delete('spell')&&spellCooldown<=0){pulse=.45;spellCooldown=1.25;}
           if(pulse>0){
             pulse-=dt;
             const target=shrines.find(function(s){return !s.active&&player.position.distanceTo(s.root.position)<5;});
             if(target&&pulse>.25&&collected>=2){
               target.active=true;target.crystal.material.color.set('#9ffff0');target.crystal.material.emissive.set('#65f0d0');
-              active++;score+=300;ctx.setHud('secondary','SHRINES',active+' / 3');
+              active++;score+=300;ctx.setHud('secondary','SHRINES',active+' / 3');ctx.setHelp('Shrine awakened! '+active+' of 3 restored. Keep exploring for the remaining runes.');
             }
           }
           shrines.forEach(function(s){s.crystal.rotation.y+=dt*.7;if(s.active)s.crystal.position.y=2+Math.sin(elapsed*2)*.2;});
@@ -603,7 +770,7 @@
         const routeTool=ctx.addTool('Route: Scenic County',function(){ctx.setHelp('Scenic County delivery route: pass the glowing gates in order and make all six stops.');});
         ctx.addControl('↑','w');ctx.addControl('↓','s');ctx.addControl('←','a');ctx.addControl('→','d');ctx.addControl('BOOST','shift');
         ctx.setHud('primary','DELIVERIES','0 / 6');ctx.setHud('secondary','SPEED','0');ctx.setHud('tertiary','BOOST','100%');
-        ctx.setHelp('Drive the delivery truck through the glowing gates in order. Make six stops, keep the truck on the route, and use boost for the long stretches.');
+        ctx.setHelp('Drive to each glowing gate in order, then brake below 8 to complete the delivery stop. W/↑ accelerates, S/↓ brakes, A/D steers, and Shift boosts between stops.');
         ctx.setUpdate(function(dt,elapsed){
           time+=dt;const keys=ctx.keys;
           const accel=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
@@ -616,7 +783,8 @@
           gates.forEach(function(g){
             g.ring.rotation.z+=dt*.5;
             if(!g.passed&&truck.position.distanceTo(g.root.position)<4.2&&checkpoint===g.index){
-              g.passed=true;checkpoint++;deliveries++;ctx.setHud('primary','DELIVERIES',deliveries+' / 6');speed+=2;
+              if(Math.abs(speed)>8){ctx.setHelp('Delivery stop ahead: brake with S/↓ and slow below 8 to complete this drop-off.');}
+              else{g.passed=true;checkpoint++;deliveries++;ctx.setHud('primary','DELIVERIES',deliveries+' / 6');speed+=1.2;ctx.setHelp('Delivery '+deliveries+' of 6 complete. Follow the next glowing gate.');}
             }
           });
           ctx.camera.position.lerp(new T.Vector3(truck.position.x-Math.sin(yaw)*9,truck.position.y+18,truck.position.z+Math.cos(yaw)*15),Math.min(1,dt*2.2));
@@ -660,7 +828,8 @@
         const shelter=new T.Group();shelter.visible=false;scene.add(shelter);
         const beacon=new T.Group();beacon.visible=false;beacon.position.set(0,0,-28);scene.add(beacon);
         const beaconCore=new T.Mesh(new T.OctahedronGeometry(1.1),material(T,'#a7f6ff',.2,.2,'#72eaff'));beaconCore.position.y=3;beacon.add(beaconCore);
-        let time=180,builtShelter=false,builtBeacon=false;
+        let time=180,builtShelter=false,builtBeacon=false,builtCampfire=false;
+        const campfire=new T.Group();campfire.visible=false;campfire.position.set(0,0,-13);scene.add(campfire);
         function hud(){ctx.setHud('primary','SUPPLIES',counts.wood+'W '+counts.stone+'S '+counts.berries+'B');ctx.setHud('secondary','TIME',Math.ceil(time));ctx.setHud('tertiary','CAMP',builtBeacon?'READY':builtShelter?'SHELTER':'NOT BUILT');}
         const craft=ctx.addTool('Craft shelter',function(){
           if(builtShelter)return;
@@ -678,6 +847,15 @@
           if(counts.wood<3||counts.berries<2){ctx.setHelp('The beacon needs 3 wood and 2 berries. Explore the forest for more supplies.');return;}
           counts.wood-=3;counts.berries-=2;builtBeacon=true;beacon.visible=true;hud();
         });
+        ctx.addTool('Craft campfire',function(){
+          if(!builtBeacon){ctx.setHelp('Build the beacon first, then use the remaining stone and berries to craft a campfire for a bonus.');return;}
+          if(builtCampfire)return;
+          if(counts.stone<2||counts.berries<2){ctx.setHelp('The campfire needs 2 stone and 2 berries. Gather the remaining supplies.');return;}
+          counts.stone-=2;counts.berries-=2;builtCampfire=true;campfire.visible=true;
+          const ring=new T.Mesh(new T.TorusGeometry(1.15,.16,8,24),material(T,'#b4a18b',.9));ring.rotation.x=Math.PI/2;ring.position.y=.18;campfire.add(ring);
+          const flame=new T.Mesh(new T.ConeGeometry(.62,1.55,7),material(T,'#ff9e55',.3,.1,'#ff6d38'));flame.position.y=.95;campfire.add(flame);
+          ctx.setHelp('Campfire built! Your camp is fully equipped. Return to the beacon to finish with a bonus.');hud();
+        });
         addTouchMove(ctx);
         ctx.setHud('primary','SUPPLIES','0W 0S 0B');ctx.setHud('secondary','TIME','180');ctx.setHud('tertiary','CAMP','NOT BUILT');
         ctx.setHelp('Gather glowing wood, stone, and berries by walking close to them. Craft a shelter with 5 wood and 2 stone, then build the beacon with 3 wood and 2 berries before time runs out.');
@@ -693,7 +871,7 @@
           beaconCore.rotation.y+=dt;beaconCore.position.y=3+Math.sin(elapsed*2)*.18;
           ctx.camera.position.lerp(new T.Vector3(player.position.x,player.position.y+9,player.position.z+16),Math.min(1,dt*2.4));
           ctx.camera.lookAt(player.position.x,1,player.position.z-3);
-          if(builtBeacon&&player.position.distanceTo(beacon.position)<4){ctx.finish(counts.wood*20+counts.stone*25+counts.berries*15+Math.round(time*8),'Camp established','You crafted a shelter and powered the wilderness beacon with '+Math.ceil(time)+' seconds remaining.');}
+          if(builtBeacon&&player.position.distanceTo(beacon.position)<4){ctx.finish(counts.wood*20+counts.stone*25+counts.berries*15+Math.round(time*8)+(builtCampfire?500:0),'Camp established',builtCampfire?'You built the shelter, powered the beacon, and crafted an optional campfire with '+Math.ceil(time)+' seconds remaining.':'You crafted a shelter and powered the wilderness beacon with '+Math.ceil(time)+' seconds remaining. Add a campfire on your next run for a bonus.');}
           if(time<=0&&!builtBeacon){ctx.finish(0,'The day is over','You gathered supplies, but the beacon was not ready before nightfall.');}
         });
       }
