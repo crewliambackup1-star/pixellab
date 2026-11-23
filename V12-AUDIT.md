@@ -60,3 +60,38 @@ The 27 non-3D engines are:
 3. No catalog count or launch-route regression.
 4. Manual WebGL, touch, resizing, and gameplay feel checks remain explicitly documented until completed on actual devices.
 5. Merge/deploy only after the automated gates pass and remaining limitations are stated honestly.
+
+
+## V12 implementation progress — gameplay branch
+
+Working branch: `gameplay/v12-overhaul`, based on the V11 live commit.
+
+### 3D priority — 75%
+
+- Shared renderer: pause/resume button plus P-key shortcut; the simulation clock stops while paused; input and renderer cleanup remain in place.
+- Neon Strike: target tiers and escalating pace with streak rewards.
+- Gravity Rush: portal requires at least three energy shards.
+- Velocity X: three circuits, two rival drivers, lap/place HUD, boost and contact feedback; car heading aligned to the track direction.
+- Wildlands: wildlife observation scoring and proximity-reactive animal movement.
+- Park Empire: attraction variety rewards, guest movement toward rides, rating feedback, and clearer placement errors.
+- Mythic Realms: spell cooldown and shrine progression feedback.
+- Trailblazer Sim: delivery gates require slowing down to complete each stop.
+- Wildcraft: optional campfire crafting objective and bonus.
+
+### Other engines — 25%
+
+All 27 non-3D engines now have targeted V12 changes:
+
+- Rift Runner, Circuit Crafter, Star Courier, Reaction Rush, Memory Match, Aim Trainer, Whack-a-Mole, Tap Frenzy, and Type Blitz.
+- Tic-Tac-Toe, Number Merge, Snake Sprint, Neon Pong, Brick Breaker, Orbit Dodger, Minefield, Simon Sequence, and Word Scramble.
+- Cosmic Clicker, Flappy Pixel, Math Sprint, Connect Four, Pixel Platformer, Trivia Blitz, Color Clash, Lights Out, and Maze Runner.
+
+Changes include new difficulty settings, score streaks, hints, combo rewards, protected first moves, undo/checkpoints, multi-wave progression, speed ramps, timed surges, and improved feedback.
+
+### Current test state
+
+- Source implementation: in progress / ready for automated verification.
+- Static validator now checks every V12 engine marker, the V12 stylesheet link, the shared 3D pause clock, and the game-specific 3D changes.
+- Playwright now exercises all 27 non-3D launch/close routes and all eight 3D startup/pause or graceful-load-error paths.
+- Tests have not yet been confirmed passing on the V12 branch.
+- Manual gameplay feel, all control combinations, mobile touch, WebGL behavior, and real-device performance remain to be checked after automated CI.
