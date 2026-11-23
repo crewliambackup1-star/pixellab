@@ -1295,6 +1295,10 @@
     }
   };
 
+  global.startThreeGame = startThreeGame;
+  global.v11Material = mat;
+  global.v11BoxMesh = boxMesh;
+
   add3DNavigation();
   addShowcase();
   global.render();
