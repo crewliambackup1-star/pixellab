@@ -12,7 +12,7 @@ function gameTyping(g){
   input.addEventListener('keydown',function(e){
     if(e.key!=='Enter'||!started)return;
     if(input.value.trim().toLowerCase()!==label.textContent){misses++;streak=0;input.value='';update();return;}
-    correctWords++;streak++;bestStreak=Math.max(bestStreak,streak);score+=1+Math.floor(streak/5);input.value='';next();update();
+    correctWords++;streak++;bestStreak=Math.max(bestStreak,streak);score+=1+Math.floor(streak/5);if(streak%5===0){sec=Math.min(36,sec+2);flash('Five-word streak · +2 seconds!');}input.value='';next();update();
   });
   b.appendChild(button('Start 30 seconds',function(){
     if(started)return;clearInterval(iv);score=0;correctWords=0;streak=0;bestStreak=0;misses=0;sec=30;started=true;input.disabled=false;input.focus();next();update();

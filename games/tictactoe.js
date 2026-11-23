@@ -1,7 +1,7 @@
 'use strict';
 
 function gameTTT(g){
- const b=baseBox();let mode=null,aiDifficulty='balanced',board=Array(9).fill(''),over=false,turn='X',aiTimer=null;
+ const b=baseBox();let mode=null,aiDifficulty='balanced',board=Array(9).fill(''),over=false,turn='X',aiTimer=null,history=[],undoUsed=false;
  const wins=[[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6],[0,3,6],[1,4,7],[2,5,8]];
  const winner=p=>wins.some(line=>line.every(i=>board[i]===p));
  function modeButton(label,description,next,disabled=false){
@@ -23,14 +23,16 @@ function gameTTT(g){
  function startRound(nextMode=mode){
   clearTimeout(aiTimer);
   if(nextMode.indexOf('ai-')===0){mode='ai';aiDifficulty=nextMode.slice(3);}else mode=nextMode;
-  board=Array(9).fill('');over=false;turn='X';renderBoard();
+  board=Array(9).fill('');history=[];undoUsed=false;over=false;turn='X';renderBoard();
  }
  function renderBoard(){
   b.innerHTML='';const title=document.createElement('div');title.className='big-number mp-title';b.append(title);
   const grid=document.createElement('div');grid.className='ttt-grid';const cells=[];
+  let undoButton=null;
   function draw(){
    title.textContent=over?title.textContent:mode==='ai'?(turn==='X'?'Your turn — X':'Computer thinking… · '+aiDifficulty):(turn==='X'?'Player 1’s turn — X':'Player 2’s turn — O');
    cells.forEach((c,i)=>{c.textContent=board[i];c.className='ttt-cell'+(board[i]==='O'?' o':'');c.disabled=!!board[i]||over||(mode==='ai'&&turn==='O');});
+   if(undoButton)undoButton.disabled=undoUsed||history.length===0||over;
   }
   function finish(msg){
    over=true;title.textContent=msg;draw();
@@ -56,15 +58,23 @@ function gameTTT(g){
    }
    if(move>=0)applyMove(move,'O');
   }
+  function undoTurn(){
+   if(undoUsed||over||!history.length)return;
+   clearTimeout(aiTimer);
+   const count=mode==='ai'&&history.length>=2?2:1;
+   for(let n=0;n<count;n++){const move=history.pop();board[move]='';}
+   undoUsed=true;over=false;turn=mode==='ai'?'X':(board.filter(Boolean).length%2===0?'X':'O');
+   title.textContent='Last turn rewound';draw();
+  }
   function applyMove(i,p){
-   board[i]=p;draw();
+   history.push(i);board[i]=p;draw();
    if(winner(p)){finish(mode==='ai'?(p==='X'?'You win!':'Computer wins!'):(p==='X'?'Player 1 wins!':'Player 2 wins!'));return;}
    if(board.every(Boolean)){finish('Draw game');return;}
    turn=p==='X'?'O':'X';draw();if(mode==='ai'&&turn==='O')aiTimer=setTimeout(aiMove,280);
   }
   for(let i=0;i<9;i++){const c=button('',()=>{if(over||board[i]||(mode==='ai'&&turn!=='X'))return;applyMove(i,turn);});c.className='ttt-cell';cells.push(c);grid.append(c);}
   b.append(grid);const actions=document.createElement('div');actions.className='mp-actions';
-  actions.append(button('Reset board',()=>startRound(mode==='ai'?'ai-'+aiDifficulty:mode)),button('Change mode',showModePicker));b.append(actions);draw();
+  undoButton=button('Undo last turn',undoTurn);actions.append(button('Reset board',()=>startRound(mode==='ai'?'ai-'+aiDifficulty:mode)),undoButton,button('Change mode',showModePicker));b.append(actions);draw();
  }
  showModePicker();cleanup=()=>clearTimeout(aiTimer);
 }
