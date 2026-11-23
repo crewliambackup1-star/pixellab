@@ -40,7 +40,7 @@ function gamePong(g){
    if(ball.x<40&&ball.y>py&&ball.y<py+85){rallies++;bestRally=Math.max(bestRally,rallies);ball.vx=Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-(py+42))*.06;}
    if(ball.x>560&&ball.y>ay&&ball.y<ay+85){rallies++;bestRally=Math.max(bestRally,rallies);ball.vx=-Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-(ay+42))*.06;}
    if(mode==='ai'){const skill=Math.min(5.6,3.1+score*.36);ay+=Math.sign(ball.y-(ay+42))*Math.min(skill,Math.abs(ball.y-(ay+42))*.06);ay=Math.max(0,Math.min(255,ay));}
-   if(ball.x<0){rightScore++;rallies=0;resetBall(1);}if(ball.x>600){score++;rallies=0;resetBall(-1);
+   if(ball.x<0){rightScore++;rallies=0;resetBall(1);}if(ball.x>600){score++;rallies=0;resetBall(-1);}
    draw();if(score>=5||rightScore>=5)finish();
   }
   installKeys(e=>{
