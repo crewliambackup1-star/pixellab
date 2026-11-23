@@ -151,7 +151,8 @@
             const target=live.find(function(t){return t.core===hit.object||t.ring===hit.object;});
             if(target){
               streak++;bestStreak=Math.max(bestStreak,streak);
-              score+=target.value+Math.min(500,streak*25);
+              const precision=hit.object===target.core;score+=target.value+Math.min(500,streak*25)+(precision?120:0);
+              if(precision)ctx.setHelp('Precision core hit! +120 bonus points. Keep the streak alive.');
               target.root.visible=false;target.cooldown=0.65+Math.random()*0.35;
               ctx.setHud('primary','SCORE',score);ctx.setHud('tertiary','STREAK',streak);
             }
@@ -168,7 +169,7 @@
             const live=targets.filter(function(t){return t.root.visible;});
             const meshes=[];live.forEach(function(t){meshes.push(t.core,t.ring);});
             const hit=raycaster.intersectObjects(meshes,false)[0];
-            if(hit){const target=live.find(function(t){return t.core===hit.object||t.ring===hit.object;});if(target){streak++;bestStreak=Math.max(bestStreak,streak);score+=target.value+Math.min(500,streak*25);target.root.visible=false;target.cooldown=0.7;ctx.setHud('primary','SCORE',score);ctx.setHud('tertiary','STREAK',streak);}}
+            if(hit){const target=live.find(function(t){return t.core===hit.object||t.ring===hit.object;});if(target){streak++;bestStreak=Math.max(bestStreak,streak);const precision=hit.object===target.core;score+=target.value+Math.min(500,streak*25)+(precision?120:0);if(precision)ctx.setHelp('Precision core hit! +120 bonus points. Keep the streak alive.');target.root.visible=false;target.cooldown=0.7;ctx.setHud('primary','SCORE',score);ctx.setHud('tertiary','STREAK',streak);}}
             else{streak=0;ctx.setHud('tertiary','STREAK','0');}
           }
           targets.forEach(function(t,i){
@@ -204,7 +205,7 @@
         ring.rotation.x=Math.PI/2;ring.position.y=.12;player.add(ring);
         scene.add(player);
         const platforms=[],pickups=[];
-        let vy=0,grounded=false,jumps=0,checkpoint={x:0,z:7},runTime=0,complete=false;
+        let vy=0,grounded=false,jumps=0,checkpoint={x:0,z:7},runTime=0,complete=false,dashTime=0,dashCooldown=0;
         const portal=new T.Group();
         const portalRing=new T.Mesh(new T.TorusGeometry(2,0.2,12,40),material(T,'#9ffaff',.2,.15,'#28d8ff'));
         portalRing.rotation.y=Math.PI/2;portal.add(portalRing);scene.add(portal);
@@ -234,16 +235,17 @@
         }
         const courseTool=ctx.addTool('Course 1 · Skyway',function(){course=(course+1)%3;courseTool.textContent='Course '+(course+1)+' · '+['Skyway','Emberfall','Verdant'][course];rebuild();});
         addTouchMove(ctx);
-        ctx.addControl('JUMP','space','jump');
+        ctx.addControl('JUMP','space','jump');ctx.addControl('DASH','c','dash');
         ctx.setHelp('Move across the floating route, collect the glowing shards, and reach the portal. A second jump gives you extra airtime; checkpoints keep each run forgiving.');
         rebuild();
         ctx.setUpdate(function(dt,elapsed){
           if(complete)return;
-          runTime+=dt;time+=dt;
+          runTime+=dt;time+=dt;dashCooldown=Math.max(0,dashCooldown-dt);dashTime=Math.max(0,dashTime-dt);
           const keys=ctx.keys;
           const forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
           const side=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
-          player.position.x+=side*8*dt;player.position.z-=forward*8*dt;
+          if((ctx.actions.delete('dash')||keys.has('c'))&&dashCooldown<=0){dashTime=.22;dashCooldown=1.35;vy=Math.max(vy,3.2);ctx.setHelp('Gravity dash! Use the burst to bridge a gap or correct your landing.');}
+          const moveSpeed=dashTime>0?14:8;player.position.x+=side*moveSpeed*dt;player.position.z-=forward*moveSpeed*dt;
           player.position.x=Math.max(-8,Math.min(8,player.position.x));
           if((keys.has('space')||ctx.actions.delete('jump'))&&!player.userData.jumpLock&&jumps<2){
             vy=8.8;jumps++;grounded=false;player.userData.jumpLock=true;
@@ -284,7 +286,7 @@
       setup:function(T,ctx){
         const scene=ctx.scene;
         addPlane(T,scene,150,150,'#234236');
-        let track=0,time=0,speed=0,boost=100,progress=0,lane=0,bumpCooldown=0,offRoadCooldown=0;
+        let track=0,time=0,speed=0,boost=100,progress=0,lane=0,bumpCooldown=0,offRoadCooldown=0,driftCharge=0,bestDrift=0;
         let rx=34,rz=49;
         const trackGroup=new T.Group();scene.add(trackGroup);
         const car=makeCar(T,scene,'#ff6f8d',false);
@@ -348,14 +350,14 @@
         function hud(){
           ctx.setHud('primary','LAP',Math.min(3,Math.floor(progress/(Math.PI*2)))+' / 3');
           ctx.setHud('secondary','SPEED',Math.round(Math.abs(speed)*7));
-          ctx.setHud('tertiary','PLACE',placeRank()+' / 3 · '+Math.round(boost)+'% BOOST');
+          ctx.setHud('tertiary','PLACE',placeRank()+' / 3 · '+Math.round(boost)+'% BOOST · DRIFT '+Math.round(driftCharge)+'%');
         }
         const trackTool=ctx.addTool('Track: Coastal Loop',function(){
           track=(track+1)%trackDefs.length;trackTool.textContent='Track: '+trackDefs[track].name;
           buildTrack();ctx.setHelp('New circuit loaded. Hold W to accelerate, use A/D to choose your racing line, and Shift to boost past the two rivals.');
         });
-        ctx.addControl('↑','w');ctx.addControl('↓','s');ctx.addControl('←','a');ctx.addControl('→','d');ctx.addControl('BOOST','shift');
-        ctx.setHelp('Race three laps against two rival drivers. W/↑ accelerates, S/↓ brakes, A/D changes your racing line, and Shift boosts. Draft past rivals and avoid contact.');
+        ctx.addControl('↑','w');ctx.addControl('↓','s');ctx.addControl('←','a');ctx.addControl('→','d');ctx.addControl('BOOST','shift');ctx.addControl('DRIFT','space','drift');
+        ctx.setHelp('Race three laps against two rival drivers. W/↑ accelerates, S/↓ brakes, A/D changes your racing line, Shift boosts, and Space charges a drift through corners.');
         buildTrack();
         ctx.setUpdate(function(dt,elapsed){
           time+=dt;bumpCooldown=Math.max(0,bumpCooldown-dt);offRoadCooldown=Math.max(0,offRoadCooldown-dt);
@@ -363,6 +365,9 @@
           const throttle=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
           const steer=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
           const boosting=keys.has('shift')&&boost>0&&speed>2;
+          const drifting=keys.has('space')&&Math.abs(steer)>0&&Math.abs(speed)>8;
+          if(drifting)driftCharge=Math.min(100,driftCharge+dt*54);
+          else if(driftCharge>=30){bestDrift=Math.max(bestDrift,Math.round(driftCharge));speed=Math.min(35,speed+1.8);boost=Math.min(100,boost+driftCharge*.35);ctx.setHelp('Clean drift! Your cornering charge converted into speed and boost.');driftCharge=0;}
           speed+=throttle*(boosting?28:19)*dt;
           speed*=Math.pow(.988,dt*60);
           speed=Math.max(-5,Math.min(boosting?35:26,speed));
@@ -379,7 +384,7 @@
           if(laps>=3){
             ctx.setHud('primary','LAP','3 / 3');
             const place=placeRank();
-            const result=Math.max(100,Math.round(5200-time*15+boost*5+(place===1?900:place===2?350:0)));
+            const result=Math.max(100,Math.round(5200-time*15+boost*5+bestDrift*5+(place===1?900:place===2?350:0)));
             ctx.finish(result,place===1?'Circuit champion':'Race complete',place===1?'You beat both rivals in '+Math.round(time)+' seconds.':'You finished in position '+place+' after '+Math.round(time)+' seconds.');
             return;
           }
@@ -448,7 +453,7 @@
             const root=new T.Group();
             const creature=addSphere(T,root,.72,['#a8c5b2','#d9b28a','#b7d7ef'][biome],(i-1)*13,0,0);
             const ear=addSphere(T,root,.25,'#e9f1e8',0,.65,0);root.position.set((i-1)*14,0,-14-i*9);biomeGroup.add(root);
-            wildlife.push({root:root,phase:i*2,speed:.45+i*.14});
+            wildlife.push({root:root,phase:i*2,speed:.45+i*.14,observeTime:0});
           }
           for(let i=0;i<3;i++){
             const marker=boxMesh(T,1.1,2.5,1.1,material(T,biomes[biome].accent,.42,.2,biomes[biome].accent),(i-1)*24,1.25,-26);
@@ -484,9 +489,10 @@
           landmarks.forEach(function(item){if(!item.found&&player.position.distanceTo(item.mesh.position)<4){item.found=true;item.mesh.material.emissive.set('#ffffff');discoveries++;score+=80;ctx.setHud('tertiary','DISCOVERIES',discoveries+' / 3');}});
           wildlife.forEach(function(w,i){
             const distance=player.position.distanceTo(w.root.position);
-            if(distance<8&&!wildlifeSeen.has(i)){
-              wildlifeSeen.add(i);score+=70;ctx.setHud('tertiary','WILDLIFE',wildlifeSeen.size+' / 3');
-              ctx.setHelp('Wildlife spotted! '+wildlifeSeen.size+' of 3 creatures observed in this biome.');
+            if(distance>=2.4&&distance<7.5)w.observeTime+=dt;else w.observeTime=Math.max(0,w.observeTime-dt*2);
+            if(w.observeTime>=.9&&!wildlifeSeen.has(i)){
+              wildlifeSeen.add(i);score+=110;ctx.setHud('tertiary','WILDLIFE',wildlifeSeen.size+' / 3');
+              ctx.setHelp('Field journal updated! You observed '+wildlifeSeen.size+' of 3 creatures. Staying back made the sighting count.');
             }
             const flee=distance<5?1.8:1;
             w.root.position.x+=Math.sin(elapsed*w.speed+w.phase)*dt*1.5*flee;
@@ -531,7 +537,7 @@
           {name:'Coaster',cost:360,income:82,color:'#f6c66b',height:4},
           {name:'Garden',cost:90,income:18,color:'#8de4a5',height:1}
         ];
-        let selected=0,cash=1200,visitors=0,rating=1,incomeClock=0,rides=[],elapsed=0;
+        let selected=0,cash=1200,visitors=0,rating=1,incomeClock=0,rides=[],elapsed=0,buildStreak=0,lastRideType=-1,chainReward=0;
         const occupied=new Set();
         const rideGroup=new T.Group();
         scene.add(rideGroup);
@@ -547,7 +553,7 @@
         function updateHud(){
           ctx.setHud('primary','CASH','$'+Math.floor(cash));
           ctx.setHud('secondary','GUESTS',visitors);
-          ctx.setHud('tertiary','RATING',rating.toFixed(1)+'★ · '+rides.length+'/10');
+          ctx.setHud('tertiary','RATING',rating.toFixed(1)+'★ · '+rides.length+'/10 · BUILD x'+buildStreak);
         }
         function makeRide(type,x,z){
           const root=new T.Group();
@@ -590,6 +596,10 @@
           rides.push(ride);
           occupied.add(x+':'+z);
           cash-=type.cost;
+          const typeIndex=rideTypes.indexOf(type);
+          if(typeIndex!==lastRideType){buildStreak++;chainReward=Math.min(300,chainReward+65);ctx.setHelp('Variety build combo x'+buildStreak+'! New attraction types are drawing extra guests.');}
+          else{buildStreak=1;chainReward=0;}
+          lastRideType=typeIndex;
           rating=Math.min(5,1+rides.length*.2+varietyCount()*.25);
           ctx.setHelp(type.name+' built. Visitors are heading to your attraction.');
           updateHud();
@@ -669,7 +679,7 @@
             const variety=varietyCount();
             visitors=Math.min(999,visitors+rides.length*2+variety);
             const baseIncome=rides.reduce(function(sum,ride){return sum+ride.info.income;},0);
-            cash+=baseIncome+variety*12+Math.floor(visitors*.12);
+            cash+=baseIncome+variety*12+Math.floor(visitors*.12)+chainReward;chainReward=Math.max(0,chainReward-15);
             rating=Math.min(5,1+rides.length*.22+variety*.22);
             updateHud();
             if(rides.length>=10&&cash>=1800&&visitors>=50&&variety>=3&&!ctx.completed){
@@ -708,16 +718,18 @@
         });
         const gate=new T.Group();gate.position.set(0,1,-62);scene.add(gate);
         const ring=new T.Mesh(new T.TorusGeometry(2.5,.18,10,38),material(T,'#b6f9ff',.18,.2,'#62edff'));gate.add(ring);
-        let collected=0,active=0,score=0,pulse=0,spellCooldown=0;
+        let collected=0,active=0,score=0,pulse=0,spellCooldown=0,dashCooldown=0,dashTime=0;
         const spell=ctx.addTool('Cast pulse ✧',function(){if(spellCooldown<=0){pulse=.45;spellCooldown=1.25;}});
-        ctx.addControl('SPELL','enter','spell');
+        ctx.addControl('SPELL','enter','spell');ctx.addControl('DASH','shift','dash');
         addTouchMove(ctx);
         ctx.setHud('primary','RUNES','0 / 6');ctx.setHud('secondary','SHRINES','0 / 3');ctx.setHud('tertiary','LEVEL','1');
         ctx.setHelp('Explore the floating valley, gather six runes, then stand beside each shrine and cast a pulse to awaken it. Restore all three shrines to open the sky gate.');
         ctx.setUpdate(function(dt,elapsed){
           const keys=ctx.keys,forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0);
           const side=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
-          player.position.x+=side*6.5*dt;player.position.z-=forward*6.5*dt;
+          dashCooldown=Math.max(0,dashCooldown-dt);dashTime=Math.max(0,dashTime-dt);
+          if(ctx.actions.delete('dash')&&dashCooldown<=0){dashTime=.42;dashCooldown=1.55;ctx.setHelp('Arcane dash! Surge across the islands while your magic recharges.');}
+          const moveSpeed=dashTime>0?12:6.5;player.position.x+=side*moveSpeed*dt;player.position.z-=forward*moveSpeed*dt;
           player.position.x=Math.max(-37,Math.min(37,player.position.x));player.position.z=Math.max(-70,Math.min(38,player.position.z));
           runes.forEach(function(r){if(!r.visible)return;r.rotation.y+=dt*1.5;r.position.y=1.5+Math.sin(elapsed*2+r.position.z)*.22;
             if(player.position.distanceTo(r.position)<2.1){r.visible=false;collected++;score+=100;ctx.setHud('primary','RUNES',collected+' / 6');}
@@ -766,7 +778,7 @@
           const ring=new T.Mesh(new T.TorusGeometry(3,.22,10,32),material(T,i%2?'#ffd27b':'#82f0ff',.2,.1,'#79dfff'));ring.rotation.x=Math.PI/2;gate.add(ring);
           scene.add(gate);gates.push({root:gate,ring:ring,index:i,passed:false});
         });
-        let checkpoint=0,speed=0,yaw=0,boost=100,time=0,deliveries=0;
+        let checkpoint=0,speed=0,yaw=0,boost=100,time=0,deliveries=0,perfectStops=0;
         const routeTool=ctx.addTool('Route: Scenic County',function(){ctx.setHelp('Scenic County delivery route: pass the glowing gates in order and make all six stops.');});
         ctx.addControl('↑','w');ctx.addControl('↓','s');ctx.addControl('←','a');ctx.addControl('→','d');ctx.addControl('BOOST','shift');
         ctx.setHud('primary','DELIVERIES','0 / 6');ctx.setHud('secondary','SPEED','0');ctx.setHud('tertiary','BOOST','100%');
@@ -784,13 +796,13 @@
             g.ring.rotation.z+=dt*.5;
             if(!g.passed&&truck.position.distanceTo(g.root.position)<4.2&&checkpoint===g.index){
               if(Math.abs(speed)>8){ctx.setHelp('Delivery stop ahead: brake with S/↓ and slow below 8 to complete this drop-off.');}
-              else{g.passed=true;checkpoint++;deliveries++;ctx.setHud('primary','DELIVERIES',deliveries+' / 6');speed+=1.2;ctx.setHelp('Delivery '+deliveries+' of 6 complete. Follow the next glowing gate.');}
+              else{if(Math.abs(speed)<=3){perfectStops++;ctx.setHelp('Perfect parking! Delivery quality bonus '+perfectStops+' / 6.');}g.passed=true;checkpoint++;deliveries++;ctx.setHud('primary','DELIVERIES',deliveries+' / 6');speed+=1.2;ctx.setHelp('Delivery '+deliveries+' of 6 complete. Follow the next glowing gate.');}
             }
           });
           ctx.camera.position.lerp(new T.Vector3(truck.position.x-Math.sin(yaw)*9,truck.position.y+18,truck.position.z+Math.cos(yaw)*15),Math.min(1,dt*2.2));
           ctx.camera.lookAt(truck.position.x,0,truck.position.z);
           ctx.setHud('secondary','SPEED',Math.round(Math.abs(speed)*6));ctx.setHud('tertiary','BOOST',Math.round(boost)+'%');
-          if(deliveries>=6){ctx.finish(Math.max(100,Math.round(4200-time*10+boost*4)),'Delivery route complete','You completed all six stops in '+Math.round(time)+' seconds.');}
+          if(deliveries>=6){ctx.finish(Math.max(100,Math.round(4200-time*10+boost*4+perfectStops*180)),'Delivery route complete','You completed all six stops in '+Math.round(time)+' seconds, including '+perfectStops+' perfect low-speed stops.');}
         });
       }
     });
@@ -828,7 +840,7 @@
         const shelter=new T.Group();shelter.visible=false;scene.add(shelter);
         const beacon=new T.Group();beacon.visible=false;beacon.position.set(0,0,-28);scene.add(beacon);
         const beaconCore=new T.Mesh(new T.OctahedronGeometry(1.1),material(T,'#a7f6ff',.2,.2,'#72eaff'));beaconCore.position.y=3;beacon.add(beaconCore);
-        let time=180,builtShelter=false,builtBeacon=false,builtCampfire=false;
+        let time=180,builtShelter=false,builtBeacon=false,builtCampfire=false,rested=false;
         const campfire=new T.Group();campfire.visible=false;campfire.position.set(0,0,-13);scene.add(campfire);
         function hud(){ctx.setHud('primary','SUPPLIES',counts.wood+'W '+counts.stone+'S '+counts.berries+'B');ctx.setHud('secondary','TIME',Math.ceil(time));ctx.setHud('tertiary','CAMP',builtBeacon?'READY':builtShelter?'SHELTER':'NOT BUILT');}
         const craft=ctx.addTool('Craft shelter',function(){
@@ -840,6 +852,12 @@
           const postMat=material(T,'#9c764d',.9);
           [[-2,1,-9.5],[2,1,-9.5],[-2,1,-6.5],[2,1,-6.5]].forEach(function(p){shelter.add(boxMesh(T,.25,2,.25,postMat,p[0],p[1],p[2]));});
           hud();ctx.setHelp('Shelter complete! Gather 3 more wood and 2 more berries to build the beacon near the far side of camp.');
+        });
+        ctx.addTool('Rest at shelter · +20s',function(){
+          if(!builtShelter){ctx.setHelp('Build your shelter before resting.');return;}
+          if(rested){ctx.setHelp('You already used your one camp rest.');return;}
+          if(player.position.distanceTo(new T.Vector3(0,0,-8))>7){ctx.setHelp('Return to your shelter to rest and recover time.');return;}
+          rested=true;time=Math.min(210,time+20);hud();ctx.setHelp('Rest complete! You recovered 20 seconds before heading back into the forest.');
         });
         ctx.addTool('Build beacon',function(){
           if(!builtShelter){ctx.setHelp('Build your shelter first.');return;}
