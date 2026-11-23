@@ -11,12 +11,13 @@ const requireFile = (relativePath) => {
   assert.ok(fs.existsSync(path.join(root, relativePath)), 'Missing required file: ' + relativePath);
 };
 
-for (const file of ['index.html', 'styles.css', 'v10.css', 'v11.css', 'catalog.js', 'v10-catalog.js', 'v11-catalog.js', 'v10-runtime.js', 'v11-runtime.js', 'app.js', 'icon.svg']) requireFile(file);
+for (const file of ['index.html', 'styles.css', 'v10.css', 'v11.css', 'v12.css', 'catalog.js', 'v10-catalog.js', 'v11-catalog.js', 'v10-runtime.js', 'v11-runtime.js', 'app.js', 'icon.svg']) requireFile(file);
 
 const html = read('index.html');
 const css = read('styles.css');
 const v10Css = read('v10.css');
 const v11Css = read('v11.css');
+const v12Css = read('v12.css');
 const catalog = read('catalog.js');
 const v10Catalog = read('v10-catalog.js');
 const v11Catalog = read('v11-catalog.js');
@@ -43,6 +44,7 @@ assert.match(html, /src="v11-runtime\.js"/, 'The V11 runtime is not linked');
 assert.ok(css.trim().length > 1000, 'The original stylesheet looks unexpectedly small');
 assert.ok(v10Css.trim().length > 1000, 'The V10 stylesheet looks unexpectedly small');
 assert.ok(v11Css.trim().length > 100, 'The V11 stylesheet looks unexpectedly small');
+assert.ok(v12Css.trim().length > 300, 'The V12 gameplay stylesheet looks unexpectedly small');
 assert.ok(!/<style(?:\s|>)/i.test(html), 'Styles should stay in external stylesheets');
 assert.ok(!/<script(?:\s|>)(?![^>]*\bsrc=)/i.test(html), 'JavaScript should be loaded from external files');
 
@@ -129,6 +131,10 @@ for (const route of routes) {
   const module = declaredScripts.find((item) => item.file === expectedFile);
   assert.ok(module && new RegExp('function\\s+' + route.fn + '\\s*\\(').test(module.source), 'Missing ' + route.fn + ' in ' + expectedFile);
 }
+
+assert.match(v10Runtime, /three-pause-toggle/, 'V12 3D pause controls are missing');
+assert.match(v10Runtime, /session\\.paused/, 'V12 3D pause state is missing');
+assert.match(v10Runtime, /elapsedTime \\+= dt/, 'The 3D world clock must pause with the game');
 
 for (const functionName of ['gameNeonStrike', 'gameGravityRush', 'gameVelocityX', 'gameWildlands', 'gameParkEmpire']) {
   assert.match(v10Runtime, new RegExp('function\\s+' + functionName + '\\s*\\('), 'Missing V10 3D game: ' + functionName);
