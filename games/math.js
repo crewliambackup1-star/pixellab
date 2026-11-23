@@ -17,7 +17,7 @@ function gameMath(g){
     const arr=[...opts].sort(()=>Math.random()-.5);choices.innerHTML='';
     arr.forEach(v=>choices.appendChild(button(String(v),()=>{
       if(!started)return;
-      if(v===answer){correct++;streak++;bestStreak=Math.max(bestStreak,streak);score+=1+Math.floor(streak/4);title.textContent='+'+(1+Math.floor(streak/4));next();}
+      if(v===answer){correct++;streak++;bestStreak=Math.max(bestStreak,streak);score+=1+Math.floor(streak/4);title.textContent='+'+(1+Math.floor(streak/4));if(streak%5===0){sec=Math.min(40,sec+2);flash('Five-answer streak · +2 seconds!');}next();}
       else{misses++;streak=0;title.textContent='Keep going';question.textContent='Not quite — streak reset. Try the next one.';next();}
       update();
     })));

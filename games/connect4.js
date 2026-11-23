@@ -67,14 +67,14 @@ function gameConnect4(g){
   }
   function drop(c,p){
    if(over||rowFree(c)<0||(mode==='ai'&&p===1&&thinking))return;
-   const r=rowFree(c);board[at(r,c)]=p;draw();
+   const r=rowFree(c);cols.forEach(el=>{el.style.border='1px solid transparent';el.style.boxShadow='';});board[at(r,c)]=p;draw();
    if(won(p)){end(mode==='ai'?(p===1?'You win!':'CPU wins!'):(p===1?'Player 1 wins!':'Player 2 wins!'));return}
    if(board.every(Boolean)){end('Draw game');return}
    if(mode==='ai'&&p===1){thinking=true;draw();aiTimer=setTimeout(()=>{if(over||!currentGame||mode!=='ai')return;thinking=false;const move=chooseAI();if(move>=0)drop(move,2);else draw()},330)}
   }
   draw();
   const actions=document.createElement('div');actions.className='mp-actions';
-  actions.append(button('Hint · suggested column',()=>{const hint=hintColumn();if(hint!==undefined)msg.textContent='Try column '+(hint+1)+'. Check for a winning line or a threat to block.';}));
+  actions.append(button('Hint · suggested column',()=>{const hint=hintColumn();if(hint!==undefined){cols.forEach((c,i)=>{c.style.border=i===hint?'2px solid #ffc66d':'1px solid transparent';c.style.boxShadow=i===hint?'0 0 14px #ffc66d55':'';});msg.textContent='Try column '+(hint+1)+'. The glow marks a winning move or a threat to block.';}}));
   actions.append(button('Reset game',()=>startRound(mode)),button('Change mode',showModePicker));b.append(actions);
  }
  showModePicker();cleanup=()=>clearTimeout(aiTimer);

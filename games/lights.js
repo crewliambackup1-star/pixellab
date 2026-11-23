@@ -17,7 +17,7 @@ function gameLights(g){
       el.style.background=grid[i]?'linear-gradient(140deg,#8ef2df,#48b8af)':'#202231';el.style.boxShadow=grid[i]?'0 0 16px #5fe3d033':'none';el.textContent=grid[i]?'✦':'';
     });
     const n=grid.filter(Boolean).length;status.innerHTML='<span>Moves: <strong>'+moves+'</strong></span><span>Lights on: <strong>'+n+'</strong></span><span>Hints: <strong>'+Math.min(hintIndex,5)+' / 5</strong></span>';
-    if(n===0&&!over){over=true;setBest(g,moves);b.insertAdjacentHTML('beforeend','<div class="message">All dark in '+moves+' moves!</div>');b.appendChild(button('New puzzle',()=>runGame(g),true));}
+    if(n===0&&!over){over=true;setBest(g,moves);const grade=moves<=16?'Perfect solve!':moves<=21?'Sharp solve!':'Puzzle solved!';b.insertAdjacentHTML('beforeend','<div class="message">'+grade+' All dark in '+moves+' moves · 16-move challenge par.</div>');b.appendChild(button('New puzzle',()=>runGame(g),true));}
   }
   for(let i=0;i<25;i++){const c=button('',()=>press(i));c.className='light-cell';cells.push(c);panel.appendChild(c);}
   const hint=button('Show next solution tile',function(){
