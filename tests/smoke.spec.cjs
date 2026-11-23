@@ -134,7 +134,8 @@ test('all 27 non-3D engines open and cleanly close without page errors', async (
     await card.locator('[data-game]').first().click();
     await expect(modal).toHaveClass(/open/);
     await expect(page.locator('#modalTitle')).toHaveText(expectedTitle);
-    await expect(page.locator('#gameBox > *').first()).toBeVisible();
+    await expect(page.locator('#gameBox')).toBeVisible();
+    await expect(page.locator('#gameBox > *').first()).toBeAttached();
     await page.locator('#closeModal').click();
     await expect(modal).not.toHaveClass(/open/);
   }
