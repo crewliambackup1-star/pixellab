@@ -506,138 +506,177 @@
 
   function gameParkEmpire(game) {
     startThreeGame(game, {
-      background:'#a8c8cf',fogColor:'#9bbfc4',fogNear:50,fogFar:140,camera:function(T){
-        const camera=new T.OrthographicCamera(-19,19,13,-13,.1,180);camera.position.set(26,34,30);camera.lookAt(0,0,0);return camera;
+      background:'#a8c8cf',
+      fogColor:'#9bbfc4',
+      fogNear:50,
+      fogFar:140,
+      camera:function(T){
+        const camera=new T.OrthographicCamera(-19,19,13,-13,.1,180);
+        camera.position.set(26,34,30);
+        camera.lookAt(0,0,0);
+        return camera;
       },
       setup:function(T,ctx){
         const scene=ctx.scene;
-        addPlane(T,scene,38,30,'#527b5a');
-        const grid=new T.GridHelper(36,12,'#d2e7cb','#8fac9b');grid.position.y=.03;scene.add(grid);
+        const ground=addPlane(T,scene,38,30,'#527b5a');
+        const grid=new T.GridHelper(36,12,'#d2e7cb','#8fac9b');
+        grid.position.y=.03;
+        scene.add(grid);
+        const path=boxMesh(T,36,.09,2.2,material(T,'#b7a28a',.95),0,.04,0);
+        scene.add(path);
+
         const rideTypes=[
           {name:'Carousel',cost:150,income:36,color:'#f4a6bf',height:2},
           {name:'Ferris Wheel',cost:280,income:66,color:'#66c9e8',height:6},
           {name:'Coaster',cost:360,income:82,color:'#f6c66b',height:4},
           {name:'Garden',cost:90,income:18,color:'#8de4a5',height:1}
         ];
-        let selected=0,cash=1200,visitors=0,rating=1,incomeClock=0,rides=[],score=0;
-        const rideGroup=new T.Group();scene.add(rideGroup);
+        let selected=0,cash=1200,visitors=0,rating=1,incomeClock=0,rides=[],elapsed=0;
+        const occupied=new Set();
+        const rideGroup=new T.Group();
+        scene.add(rideGroup);
         const guests=[];
         for(let i=0;i<22;i++){
           const guest=addSphere(T,scene,.22,['#f1c47c','#8bd4e4','#e9a3ce'][i%3],(Math.random()-.5)*26,.35,(Math.random()-.5)*20);
+          guest.userData.phase=i*.7;
           guests.push(guest);
         }
-        function varietyCount(){return new Set(rides.map(function(ride){return ride.info.name;})).size;}
-        function hud(){ctx.setHud('primary','CASH','
-        rideTypes.forEach(function(type,index){
-          ctx.addTool(type.name+' $'+type.cost,function(){selected=index;ctx.setHelp('Selected '+type.name+'. Tap or click an empty grid tile to build it.');});
-        });
-        ctx.setHelp('Build at least three different attraction types, bring in visitors, and reach ten attractions with $1,800 cash. Variety boosts your visitor growth and income.');
-        const ray=new T.Raycaster(),mouse=new T.Vector2();
-        const floorPlane=new T.Plane(new T.Vector3(0,1,0),0),point=new T.Vector3();
-        ctx.on(ctx.stage,'pointerdown',function(event){
-          const rect=ctx.stage.getBoundingClientRect();mouse.x=((event.clientX-rect.left)/rect.width)*2-1;mouse.y=-((event.clientY-rect.top)/rect.height)*2+1;
-          ray.setFromCamera(mouse,ctx.camera);
-          if(!ray.ray.intersectPlane(floorPlane,point))return;
-          const x=Math.round(point.x/3)*3,z=Math.round(point.z/3)*3;
-          if(Math.abs(x)>15||Math.abs(z)>10){ctx.setHelp('Choose a clear tile inside the park boundary.');return;}
-          if(rides.some(function(r){return r.x===x&&r.z===z;})){ctx.setHelp('That tile is occupied. Choose another space.');return;}
-          const type=rideTypes[selected];if(cash<type.cost){ctx.setHelp('Not enough cash for '+type.name+'. Wait for ticket income or choose a smaller attraction.');return;}
-          cash-=type.cost;rating=Math.min(5,rating+.18);
-          const root=new T.Group();root.position.set(x,0,z);
-          const base=boxMesh(T,2.5,.35,2.5,material(T,'#d6e5ed',.8),0,.18,0);root.add(base);
-          if(selected===0){
-            for(let n=0;n<8;n++){const a=n/8*Math.PI*2;const seat=boxMesh(T,.38,.55,.38,material(T,type.color,.45),Math.cos(a)*.8,1.0,Math.sin(a)*.8);seat.rotation.y=-a;root.add(seat);}
-            const pole=boxMesh(T,.25,2,.25,material(T,'#e9eef5',.4),0,1,0);root.add(pole);
-          }else if(selected===1){
-            const wheel=new T.Mesh(new T.TorusGeometry(1.15,.11,8,30),material(T,type.color,.3,.18));wheel.position.y=3;root.add(wheel);
-            const beam=boxMesh(T,.22,5,.22,material(T,'#e8f2fa',.5),0,2.4,0);root.add(beam);
-          }else if(selected===2){
-            const track=new T.Mesh(new T.TorusGeometry(1.1,.17,8,24),material(T,type.color,.4,.2));track.rotation.x=Math.PI/2;track.position.y=1.7;root.add(track);
-            const support=boxMesh(T,.25,3,.25,material(T,'#8b9bab',.6),0,1.5,0);root.add(support);
-          }else{
-            const tree=new T.Mesh(new T.ConeGeometry(1.1,2.6,7),material(T,type.color,.9));tree.position.y=1.5;root.add(tree);
-          }
-          rideGroup.add(root);rides.push({x:x,z:z,info:type});
-          score+=type.cost;hud();
-        });
-        function updateHud(){hud();}
-        hud();
-        ctx.setUpdate(function(dt,elapsed){
-          incomeClock+=dt;
-          if(incomeClock>=4){
-            incomeClock=0;visitors=Math.min(999,visitors+rides.length*2+varietyCount());
-            const income=rides.reduce(function(sum,r){return sum+r.info.income;},0);
-            const varietyBonus=varietyCount()*12;
-            cash+=income+varietyBonus+Math.floor(visitors*.12);rating=Math.min(5,1+rides.length*.25+varietyCount()*.2);
-            updateHud();
-            if(rides.length>=10&&cash>=1800&&visitors>=50&&varietyCount()>=3&&!ctx.completed){
-              ctx.finish(Math.round(cash+visitors*5+rating*100),'Theme park sensation','You built ten attractions, welcomed '+visitors+' guests, and grew the park to $'+Math.floor(cash)+'.');
+        function varietyCount(){
+          return new Set(rides.map(function(ride){return ride.info.name;})).size;
+        }
+        function updateHud(){
+          ctx.setHud('primary','CASH','$'+Math.floor(cash));
+          ctx.setHud('secondary','GUESTS',visitors);
+          ctx.setHud('tertiary','RATING',rating.toFixed(1)+'★ · '+rides.length+'/10');
+        }
+        function makeRide(type,x,z){
+          const root=new T.Group();
+          root.position.set(x,0,z);
+          const base=boxMesh(T,2.5,.35,2.5,material(T,'#d6e5ed',.8),0,.18,0);
+          root.add(base);
+          if(type.name==='Carousel'){
+            for(let n=0;n<8;n++){
+              const angle=n/8*Math.PI*2;
+              const seat=boxMesh(T,.38,.55,.38,material(T,type.color,.45),Math.cos(angle)*.8,1,Math.sin(angle)*.8);
+              seat.rotation.y=-angle;
+              root.add(seat);
             }
+            root.add(boxMesh(T,.25,2,.25,material(T,'#e9eef5',.4),0,1,0));
+            root.userData.spin=true;
+          }else if(type.name==='Ferris Wheel'){
+            const wheel=new T.Mesh(new T.TorusGeometry(1.15,.11,8,30),material(T,type.color,.3,.18));
+            wheel.position.y=3;
+            root.add(wheel);
+            root.add(boxMesh(T,.22,5,.22,material(T,'#e8f2fa',.5),0,2.4,0));
+            root.userData.spin=true;
+            root.userData.wheel=wheel;
+          }else if(type.name==='Coaster'){
+            const trackMesh=new T.Mesh(new T.TorusGeometry(1.1,.17,8,24),material(T,type.color,.4,.2));
+            trackMesh.rotation.x=Math.PI/2;
+            trackMesh.position.y=1.7;
+            root.add(trackMesh);
+            root.add(boxMesh(T,.25,3,.25,material(T,'#8b9bab',.6),0,1.5,0));
+            root.userData.spin=true;
+          }else{
+            const tree=new T.Mesh(new T.ConeGeometry(1.1,2.6,7),material(T,type.color,.9));
+            tree.position.y=1.5;
+            root.add(tree);
+            const second=new T.Mesh(new T.ConeGeometry(.8,2,7),material(T,'#4e986b',.92));
+            second.position.set(.9,1.15,.55);
+            root.add(second);
           }
-          guests.forEach(function(g,i){
-            if(rides.length){
-              const destination=rides[i%rides.length];
-              const dx=destination.x-g.position.x,dz=destination.z-g.position.z,dist=Math.hypot(dx,dz)||1;
-              const pace=Math.min(.55,dist*.12);
-              g.position.x+=dx/dist*pace*dt;
-              g.position.z+=dz/dist*pace*dt;
-              if(dist<1.6){g.position.x+=Math.sin(elapsed+i)*dt*.25;g.position.z+=Math.cos(elapsed*.8+i)*dt*.25;}
-            }else{
-              g.position.x+=Math.sin(elapsed*.3+i)*dt*.45;
-              g.position.z+=Math.cos(elapsed*.27+i)*dt*.35;
+          rideGroup.add(root);
+          const ride={x:x,z:z,info:type,root:root};
+          rides.push(ride);
+          occupied.add(x+':'+z);
+          cash-=type.cost;
+          rating=Math.min(5,1+rides.length*.2+varietyCount()*.25);
+          ctx.setHelp(type.name+' built. Visitors are heading to your attraction.');
+          updateHud();
+        }
+        const tools=rideTypes.map(function(type,index){
+          return ctx.addTool(type.name+' $'+type.cost,function(){
+            selected=index;
+            ctx.setHelp('Selected '+type.name+'. Click an empty grass tile to place it.');
+          },index===selected);
+        });
+        ctx.setHelp('Build ten attractions, use at least three different types, and grow cash to $1,800 with 50 visitors. Variety improves income and park rating.');
+        updateHud();
+
+        const ray=new T.Raycaster();
+        const pointer=new T.Vector2();
+        const floorPlane=new T.Plane(new T.Vector3(0,1,0),0);
+        const hitPoint=new T.Vector3();
+        ctx.on(ctx.renderer.domElement,'pointerdown',function(event){
+          const rect=ctx.renderer.domElement.getBoundingClientRect();
+          pointer.x=((event.clientX-rect.left)/rect.width)*2-1;
+          pointer.y=-((event.clientY-rect.top)/rect.height)*2+1;
+          ray.setFromCamera(pointer,ctx.camera);
+          if(!ray.ray.intersectPlane(floorPlane,hitPoint))return;
+          const x=Math.round(hitPoint.x/3)*3;
+          const z=Math.round(hitPoint.z/3)*3;
+          if(Math.abs(x)>15||Math.abs(z)>10){
+            ctx.setHelp('Choose a tile inside the park boundary.');
+            return;
+          }
+          if(Math.abs(z)<2.9){
+            ctx.setHelp('Keep the main path clear for visitors. Choose another tile.');
+            return;
+          }
+          if(occupied.has(x+':'+z)){
+            ctx.setHelp('That tile is occupied. Choose another space.');
+            return;
+          }
+          const type=rideTypes[selected];
+          if(cash<type.cost){
+            ctx.setHelp('Not enough cash for '+type.name+'. Wait for ticket income or select a smaller attraction.');
+            return;
+          }
+          makeRide(type,x,z);
+        });
+
+        ctx.setUpdate(function(dt,now){
+          elapsed=now;
+          incomeClock+=dt;
+          rides.forEach(function(ride,index){
+            if(ride.root.userData.spin){
+              ride.root.rotation.y+=dt*(ride.info.name==='Ferris Wheel'?.42:.68);
+            }
+            if(ride.root.userData.wheel){
+              ride.root.userData.wheel.rotation.z+=dt*.15;
             }
           });
-        });
-      }
-    });
-  }
-+Math.floor(cash));ctx.setHud('secondary','GUESTS',visitors);ctx.setHud('tertiary','RATING',rating.toFixed(1)+'★ · '+rides.length+'/10');}
-        rideTypes.forEach(function(type,index){
-          ctx.addTool(type.name+' $'+type.cost,function(){selected=index;ctx.setHelp('Selected '+type.name+'. Tap or click an empty grid tile to build it.');});
-        });
-        ctx.setHelp('Build a mix of four attractions and gardens. Every ride adds guests and ticket income. Reach ten attractions and a thriving park balance.');
-        const ray=new T.Raycaster(),mouse=new T.Vector2();
-        const floorPlane=new T.Plane(new T.Vector3(0,1,0),0),point=new T.Vector3();
-        ctx.on(ctx.stage,'pointerdown',function(event){
-          const rect=ctx.stage.getBoundingClientRect();mouse.x=((event.clientX-rect.left)/rect.width)*2-1;mouse.y=-((event.clientY-rect.top)/rect.height)*2+1;
-          ray.setFromCamera(mouse,ctx.camera);
-          if(!ray.ray.intersectPlane(floorPlane,point))return;
-          const x=Math.round(point.x/3)*3,z=Math.round(point.z/3)*3;
-          if(Math.abs(x)>15||Math.abs(z)>10)return;
-          if(rides.some(function(r){return r.x===x&&r.z===z;}))return;
-          const type=rideTypes[selected];if(cash<type.cost){ctx.setHelp('Not enough cash for '+type.name+'. Wait for ticket income or choose a smaller attraction.');return;}
-          cash-=type.cost;rating=Math.min(5,rating+.18);
-          const root=new T.Group();root.position.set(x,0,z);
-          const base=boxMesh(T,2.5,.35,2.5,material(T,'#d6e5ed',.8),0,.18,0);root.add(base);
-          if(selected===0){
-            for(let n=0;n<8;n++){const a=n/8*Math.PI*2;const seat=boxMesh(T,.38,.55,.38,material(T,type.color,.45),Math.cos(a)*.8,1.0,Math.sin(a)*.8);seat.rotation.y=-a;root.add(seat);}
-            const pole=boxMesh(T,.25,2,.25,material(T,'#e9eef5',.4),0,1,0);root.add(pole);
-          }else if(selected===1){
-            const wheel=new T.Mesh(new T.TorusGeometry(1.15,.11,8,30),material(T,type.color,.3,.18));wheel.position.y=3;root.add(wheel);
-            const beam=boxMesh(T,.22,5,.22,material(T,'#e8f2fa',.5),0,2.4,0);root.add(beam);
-          }else if(selected===2){
-            const track=new T.Mesh(new T.TorusGeometry(1.1,.17,8,24),material(T,type.color,.4,.2));track.rotation.x=Math.PI/2;track.position.y=1.7;root.add(track);
-            const support=boxMesh(T,.25,3,.25,material(T,'#8b9bab',.6),0,1.5,0);root.add(support);
-          }else{
-            const tree=new T.Mesh(new T.ConeGeometry(1.1,2.6,7),material(T,type.color,.9));tree.position.y=1.5;root.add(tree);
-          }
-          rideGroup.add(root);rides.push({x:x,z:z,info:type});
-          score+=type.cost;hud();
-        });
-        function updateHud(){hud();}
-        hud();
-        ctx.setUpdate(function(dt,elapsed){
-          incomeClock+=dt;
+          guests.forEach(function(guest,index){
+            if(rides.length){
+              const ride=rides[index%rides.length];
+              const dx=ride.x-guest.position.x;
+              const dz=ride.z-guest.position.z;
+              const distance=Math.hypot(dx,dz)||1;
+              const pace=Math.min(.7,distance*.16);
+              guest.position.x+=dx/distance*pace*dt;
+              guest.position.z+=dz/distance*pace*dt;
+              if(distance<1.5){
+                guest.position.x+=Math.sin(now*.7+guest.userData.phase)*dt*.18;
+                guest.position.z+=Math.cos(now*.6+guest.userData.phase)*dt*.18;
+              }
+            }else{
+              guest.position.x+=Math.sin(now*.3+guest.userData.phase)*dt*.4;
+              guest.position.z+=Math.cos(now*.27+guest.userData.phase)*dt*.35;
+            }
+          });
           if(incomeClock>=4){
-            incomeClock=0;visitors=Math.min(999,visitors+rides.length*2+1);
-            const income=rides.reduce(function(sum,r){return sum+r.info.income;},0);
-            cash+=income+Math.floor(visitors*.12);rating=Math.min(5,1+rides.length*.35);
+            incomeClock=0;
+            const variety=varietyCount();
+            visitors=Math.min(999,visitors+rides.length*2+variety);
+            const baseIncome=rides.reduce(function(sum,ride){return sum+ride.info.income;},0);
+            cash+=baseIncome+variety*12+Math.floor(visitors*.12);
+            rating=Math.min(5,1+rides.length*.22+variety*.22);
             updateHud();
-            if(rides.length>=10&&cash>=1800&&visitors>=50&&!ctx.completed){
-              ctx.finish(Math.round(cash+visitors*5+rating*100),'Theme park sensation','You built ten attractions, welcomed '+visitors+' guests, and grew the park to $'+Math.floor(cash)+'.');
+            if(rides.length>=10&&cash>=1800&&visitors>=50&&variety>=3&&!ctx.completed){
+              ctx.finish(Math.round(cash+visitors*5+rating*100),'Theme park sensation',
+                'You built ten attractions across '+variety+' attraction types, welcomed '+visitors+' guests, and grew the park to $'+Math.floor(cash)+'.');
             }
           }
-          guests.forEach(function(g,i){g.position.x+=Math.sin(elapsed*.3+i)*dt*.45;g.position.z+=Math.cos(elapsed*.27+i)*dt*.35;});
         });
       }
     });
