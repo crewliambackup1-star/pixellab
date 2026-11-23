@@ -1,0 +1,11 @@
+/* PixelLab V12 — gameplay-first shared polish */
+.three-hud-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.three-pause-toggle{border:1px solid #ffffff35;border-radius:999px;background:#18253b;color:#eff6ff;padding:7px 12px;font:700 12px/1.1 system-ui;cursor:pointer;transition:background .18s ease,transform .18s ease}
+.three-pause-toggle:hover{background:#29415e;transform:translateY(-1px)}
+.three-pause-toggle[aria-pressed="true"]{background:#315b66;border-color:#72e8d5}
+.three-pause-toggle:disabled{opacity:.72;cursor:default}
+.three-pause-banner{position:absolute;inset:0;z-index:8;display:grid;place-items:center;background:#07101dcc;backdrop-filter:blur(7px);color:#f4f7ff;font:800 clamp(20px,4vw,30px)/1.2 system-ui;text-align:center;padding:20px}
+.three-pause-banner[hidden]{display:none}
+.three-stage{position:relative}
+.three-touch-control{min-width:52px;min-height:44px;touch-action:none;user-select:none;-webkit-user-select:none}
+.three-tool{min-height:40px}
