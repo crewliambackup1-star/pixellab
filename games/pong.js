@@ -1,7 +1,7 @@
 'use strict';
 
 function gamePong(g){
- const box=baseBox();let mode=null,iv=null,py=125,ay=125,ball={x:300,y:170,vx:4,vy:2},score=0,rightScore=0,started=false;
+ const box=baseBox();let mode=null,iv=null,py=125,ay=125,ball={x:300,y:170,vx:4,vy:2},score=0,rightScore=0,started=false,rallies=0,bestRally=0;
  function modeCard(label,description,next,disabled=false){
   const wrap=document.createElement('div');wrap.className='mp-mode-card';
   const btn=button(label,()=>{if(!disabled)startMode(next);});btn.className='mp-mode-button';btn.disabled=disabled;wrap.append(btn);
@@ -27,20 +27,20 @@ function gamePong(g){
    ctx.fillStyle='#a48bff';ctx.fillRect(22,py,11,85);ctx.fillStyle='#5fe3d0';ctx.fillRect(567,ay,11,85);
    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,Math.PI*2);ctx.fill();
    ctx.font='bold 28px system-ui';ctx.fillStyle='#fff';ctx.fillText(score,240,38);ctx.fillText(rightScore,335,38);
-   status.innerHTML='<span>'+(mode==='ai'?'You':'Player 1')+': <strong>'+score+'</strong></span><span>'+(mode==='ai'?'CPU':'Player 2')+': <strong>'+rightScore+'</strong></span>';
+   status.innerHTML='<span>'+(mode==='ai'?'You':'Player 1')+': <strong>'+score+'</strong></span><span>'+(mode==='ai'?'CPU':'Player 2')+': <strong>'+rightScore+'</strong></span><span>Rally: <strong>'+rallies+'</strong></span>'; 
   }
   function finish(){
    clearInterval(iv);iv=null;started=false;const leftWon=score>rightScore;
-   message.textContent=leftWon?(mode==='ai'?'You win the rally!':'Player 1 wins the rally!'):(mode==='ai'?'Computer takes this round.':'Player 2 wins the rally!');
+   message.textContent=(leftWon?(mode==='ai'?'You win the rally!':'Player 1 wins the rally!'):(mode==='ai'?'Computer takes this round.':'Player 2 wins the rally!'))+' Best rally: '+bestRally+' returns.';
    if(mode==='ai')setBest(g,-score);start.remove();const actions=document.createElement('div');actions.className='mp-actions';
    actions.append(button('Play again',()=>startMode(mode),true),button('Change mode',showModePicker));box.append(actions);
   }
   function tick(){
    if(!started)return;ball.x+=ball.vx;ball.y+=ball.vy;if(ball.y<8||ball.y>332)ball.vy*=-1;
-   if(ball.x<40&&ball.y>py&&ball.y<py+85){ball.vx=Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-(py+42))*.06;}
-   if(ball.x>560&&ball.y>ay&&ball.y<ay+85){ball.vx=-Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-(ay+42))*.06;}
+   if(ball.x<40&&ball.y>py&&ball.y<py+85){rallies++;bestRally=Math.max(bestRally,rallies);ball.vx=Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-(py+42))*.06;}
+   if(ball.x>560&&ball.y>ay&&ball.y<ay+85){rallies++;bestRally=Math.max(bestRally,rallies);ball.vx=-Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-(ay+42))*.06;}
    if(mode==='ai'){const skill=Math.min(5.6,3.1+score*.36);ay+=Math.sign(ball.y-(ay+42))*Math.min(skill,Math.abs(ball.y-(ay+42))*.06);ay=Math.max(0,Math.min(255,ay));}
-   if(ball.x<0){rightScore++;resetBall(1);}if(ball.x>600){score++;resetBall(-1);}
+   if(ball.x<0){rightScore++;rallies=0;resetBall(1);}if(ball.x>600){score++;rallies=0;resetBall(-1);
    draw();if(score>=5||rightScore>=5)finish();
   }
   installKeys(e=>{

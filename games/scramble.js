@@ -2,7 +2,7 @@
 
 function gameScramble(g){
   const b=baseBox(),words=['planet','puzzle','rocket','pixel','galaxy','jungle','castle','winter','comet','orange','thunder','diamond','monster','journey','rainbow','keyboard','mystery','volcano','gravity','lantern','crystal','adventure'];
-  let word='',score=0,sec=45,iv=null,started=false,used=[],streak=0,bestStreak=0,hintUsed=false;
+  let word='',score=0,sec=45,iv=null,started=false,used=[],streak=0,bestStreak=0,hintUsed=false,wordStartedAt=0;
   const label=document.createElement('div');label.className='big-number';label.textContent='Unscramble it';b.appendChild(label);
   const status=scoreLine([['Points','0'],['Time','45s'],['Streak','0']]);b.appendChild(status);
   const input=document.createElement('input');input.className='type-input';input.placeholder='Your answer…';input.autocomplete='off';input.disabled=true;b.appendChild(input);
@@ -10,7 +10,7 @@ function gameScramble(g){
   function update(){status.innerHTML='<span>Points: <strong>'+score+'</strong></span><span>Time: <strong>'+sec+'s</strong></span><span>Streak: <strong>'+streak+'</strong></span>';}
   function next(){
     let remain=words.filter(w=>!used.includes(w));if(!remain.length){used=[];remain=words.slice();}
-    word=remain[Math.floor(Math.random()*remain.length)];used.push(word);
+    word=remain[Math.floor(Math.random()*remain.length)];used.push(word);wordStartedAt=performance.now();
     let mixed=word.split('');
     for(let i=mixed.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[mixed[i],mixed[j]]=[mixed[j],mixed[i]];}
     if(mixed.join('')===word&&mixed.length>1){const first=mixed.shift();mixed.push(first);}
@@ -34,7 +34,7 @@ function gameScramble(g){
   });
   function correct(){
     streak++;bestStreak=Math.max(bestStreak,streak);
-    score+=hintUsed?1:1+Math.floor(streak/3);
+    const speedBonus=!hintUsed&&performance.now()-wordStartedAt<5000?2:0;score+=(hintUsed?1:1+Math.floor(streak/3))+speedBonus;if(speedBonus)flash('Quick solve! +2 speed bonus.');
     input.value='';next();update();input.focus();
   }
   const hintButton=button('Extra letter hint',function(){
