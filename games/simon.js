@@ -2,7 +2,7 @@
 
 function gameSimon(g){
   const b=baseBox(),colors=[['#ff729f','Coral'],['#60dfcd','Mint'],['#a48bff','Violet'],['#ffc66d','Gold']];
-  let seq=[],step=0,playing=false,started=false,best=0,timers=[],mistakes=0;
+  let seq=[],step=0,playing=false,started=false,best=0,timers=[],mistakes=0,echoUsed=false;
   const label=document.createElement('div');label.className='big-number';label.style.fontSize='38px';label.textContent='Simon says…';b.appendChild(label);
   const sub=document.createElement('div');sub.className='subtext';sub.textContent='Watch, remember, repeat. The pattern speeds up as you advance.';b.appendChild(sub);
   const status=scoreLine([['Round','0'],['Best this run','0'],['Mistakes','0']]);b.appendChild(status);
@@ -20,12 +20,14 @@ function gameSimon(g){
     seq.forEach((v,n)=>{later(()=>light(v,true),delayStart+n*gap);later(()=>light(v,false),delayStart+n*gap+flashMs);});
     later(()=>{playing=false;label.textContent='Your turn!';sub.textContent='Repeat all '+seq.length+' colors in order.';},delayStart+seq.length*gap);
   }
-  function start(){clearTimers();seq=[];step=0;best=0;mistakes=0;started=true;nextRound();}
+  function start(){clearTimers();seq=[];step=0;best=0;mistakes=0;echoUsed=false;started=true;nextRound();}
   function nextRound(){seq.push(Math.floor(Math.random()*4));update();playSequence();}
   function tap(i){
     if(!started||playing)return;light(i,true);later(()=>light(i,false),140);
     if(seq[step]!==i){
-      started=false;mistakes++;label.textContent='Sequence broken!';sub.textContent='You reached round '+seq.length+'. Try to beat your best run.';
+      mistakes++;
+      if(seq.length>=5&&!echoUsed){echoUsed=true;step=0;label.textContent='Echo Save!';sub.textContent='One free retry — watch the same sequence again.';update();later(playSequence,700);return;}
+      started=false;label.textContent='Sequence broken!';sub.textContent='You reached round '+seq.length+'. Try to beat your best run.';
       update();setBest(g,-best);b.appendChild(button('Play again',start,true));return;
     }
     step++;

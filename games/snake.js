@@ -2,7 +2,7 @@
 
 function gameSnake(g){
  const {box,c,ctx}=startCanvas(600,340);
- let snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}],dir={x:1,y:0},food={x:15,y:8},bonus=null,score=0,foodCount=0,iv=null,tickMs=125;
+ let snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}],dir={x:1,y:0},food={x:15,y:8},bonus=null,score=0,foodCount=0,foodStreak=0,bestFoodStreak=0,iv=null,tickMs=125;
  const cols=30,rows=17,cell=20;
  function spot(){
   let p,tries=0;do{p={x:Math.floor(Math.random()*cols),y:Math.floor(Math.random()*rows)};tries++;}
@@ -16,12 +16,12 @@ function gameSnake(g){
   if(bonus){ctx.fillStyle='#ffc66d';ctx.beginPath();ctx.arc(bonus.x*cell+cell/2,bonus.y*cell+cell/2,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff4c9';ctx.fillRect(bonus.x*cell+8,bonus.y*cell+4,3,12);}
   snake.forEach((p,i)=>{ctx.fillStyle=i?'#8270cd':'#b7a7ff';ctx.fillRect(p.x*cell+2,p.y*cell+2,cell-4,cell-4);});
   ctx.fillStyle='#e8e5ff';ctx.font='bold 15px system-ui';ctx.fillText('SCORE '+score,12,22);
-  ctx.fillText('SPEED '+(125-tickMs+125),150,22);
+  ctx.fillText('SPEED '+(125-tickMs+125),150,22);ctx.fillText('FOOD CHAIN x'+foodStreak,285,22);
   if(bonus){ctx.fillStyle='#ffc66d';ctx.font='bold 12px system-ui';ctx.fillText('BONUS FRUIT +3',430,22);}
  }
  function gameOver(){
   clearInterval(iv);setBest(g,-score);
-  box.insertAdjacentHTML('beforeend','<div class="message">Game over · Score '+score+' · Bonus points: '+(score-foodCount)+'.</div>');
+  box.insertAdjacentHTML('beforeend','<div class="message">Game over · Score '+score+' · Best food chain: '+bestFoodStreak+'x · Bonus points: '+(score-foodCount)+'.</div>');
   box.appendChild(button('Play again',()=>runGame(g),true));
  }
  function step(){
@@ -32,10 +32,10 @@ function gameSnake(g){
   if(head.x<0||head.x>=cols||head.y<0||head.y>=rows||body.some(p=>p.x===head.x&&p.y===head.y)){gameOver();return;}
   snake.unshift(head);
   if(willEat){
-    score++;foodCount++;placeFood();
+    foodStreak++;bestFoodStreak=Math.max(bestFoodStreak,foodStreak);score+=foodStreak;foodCount++;placeFood();
     if(foodCount%4===0){bonus=spot();bonus.expiresAt=Date.now()+5000;}
     if(foodCount%5===0){tickMs=Math.max(72,tickMs-7);clearInterval(iv);iv=setInterval(step,tickMs);flash('Snake speed increased!');}
-  }else if(bonus&&head.x===bonus.x&&head.y===bonus.y){score+=3;bonus=null;}else snake.pop();
+  }else if(bonus&&head.x===bonus.x&&head.y===bonus.y){score+=3*foodStreak;bonus=null;}else snake.pop();
   draw();
  }
  installKeys(e=>{
@@ -43,7 +43,7 @@ function gameSnake(g){
   const v=map[e.key];if(v&&!(v[0]===-dir.x&&v[1]===-dir.y))dir={x:v[0],y:v[1]};
  });
  function reset(){
-  clearInterval(iv);snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}];dir={x:1,y:0};score=0;foodCount=0;bonus=null;tickMs=125;placeFood();iv=setInterval(step,tickMs);draw();
+  clearInterval(iv);snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}];dir={x:1,y:0};score=0;foodCount=0;foodStreak=0;bestFoodStreak=0;bonus=null;tickMs=125;placeFood();iv=setInterval(step,tickMs);draw();
  }
  draw();box.appendChild(button('Start / restart',reset,true));
  const controls=document.createElement('div');controls.className='mobile-controls';
