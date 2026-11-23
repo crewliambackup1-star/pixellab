@@ -9,3 +9,87 @@
 .three-stage{position:relative}
 .three-touch-control{min-width:52px;min-height:44px;touch-action:none;user-select:none;-webkit-user-select:none}
 .three-tool{min-height:40px}
+
+/* Shared gameplay polish across the 2D and 3D catalog */
+#gameBox button,
+#gameBox input,
+#gameBox select {
+  font: inherit;
+}
+#gameBox button {
+  transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+#gameBox button:not(:disabled):hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+#gameBox button:not(:disabled):active {
+  transform: translateY(1px) scale(.985);
+}
+#gameBox button:focus-visible,
+#gameBox input:focus-visible,
+.three-pause-toggle:focus-visible {
+  outline: 3px solid #79e8d4;
+  outline-offset: 3px;
+}
+#gameBox canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px #03081238;
+}
+#gameBox .message {
+  border: 1px solid #8debd833;
+  border-radius: 13px;
+  background: linear-gradient(135deg,#1b3447e8,#202642e8);
+  color: #f5f8ff;
+  padding: 13px 16px;
+  margin: 12px 0;
+}
+#gameBox .mobile-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+  margin: 12px auto;
+}
+#gameBox .mobile-controls button,
+.three-touch-control {
+  min-width: 48px;
+  min-height: 44px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.three-hud {
+  gap: 12px;
+}
+.three-hud-stats > div {
+  border: 1px solid #ffffff18;
+  border-radius: 10px;
+  background: #0e1929a8;
+  padding: 8px 11px;
+}
+.three-toolbar,
+.three-controls {
+  gap: 9px;
+}
+.three-tool,
+.three-touch-control {
+  border-radius: 11px;
+  border: 1px solid #ffffff24;
+  box-shadow: 0 5px 16px #02071233;
+}
+.three-pause-toggle {
+  min-height: 36px;
+}
+@media (prefers-reduced-motion: reduce) {
+  #gameBox button,
+  .three-pause-toggle {
+    transition: none;
+  }
+  #gameBox button:not(:disabled):hover {
+    transform: none;
+  }
+}
