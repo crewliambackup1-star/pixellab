@@ -80,3 +80,75 @@ test('Daily Drop button launches the featured game', async ({ page }) => {
   await expect(page.locator('#modal')).toHaveClass(/open/);
   await expect(page.locator('#modalTitle')).toHaveText(dailyTitle);
 });
+
+
+const nonThreeGameNames = [
+  'Rift Runner', 'Circuit Crafter', 'Star Courier', 'Reaction Rush',
+  'Memory Match', 'Aim Trainer', 'Whack-a-Mole', 'Tap Frenzy', 'Type Blitz',
+  'Tic Tac Toe', 'Number Merge', 'Snake Sprint', 'Neon Pong', 'Brick Breaker',
+  'Orbit Dodger', 'Minefield', 'Simon Sequence', 'Word Scramble',
+  'Cosmic Clicker', 'Flappy Pixel', 'Math Sprint', 'Connect Four',
+  'Pixel Platformer', 'Trivia Blitz', 'Color Clash', 'Lights Out', 'Maze Runner',
+];
+
+const threeDGameNames = [
+  'Neon Strike', 'Gravity Rush', 'Velocity X', 'Wildlands',
+  'Park Empire', 'Mythic Realms', 'Trailblazer Sim', 'Wildcraft',
+];
+
+test('all 27 non-3D engines open and cleanly close without page errors', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.goto('/');
+
+  const search = page.locator('#search');
+  const modal = page.locator('#modal');
+  for (const name of nonThreeGameNames) {
+    await search.fill(name);
+    const card = page.locator('#gameGrid .game-card').first();
+    await expect(card, 'Search should find ' + name).toBeVisible();
+    const expectedTitle = (await card.locator('.card-title').innerText()).trim();
+    await card.locator('[data-game]').first().click();
+    await expect(modal).toHaveClass(/open/);
+    await expect(page.locator('#modalTitle')).toHaveText(expectedTitle);
+    await expect(page.locator('#gameBox').locator(':scope > *').first()).toBeVisible();
+    await page.locator('#closeModal').click();
+    await expect(modal).not.toHaveClass(/open/);
+  }
+  expect(pageErrors).toEqual([]);
+});
+
+test('all eight 3D worlds start the shared runtime and expose pause or a graceful load error', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.goto('/');
+  const search = page.locator('#search');
+  const modal = page.locator('#modal');
+
+  for (const name of threeDGameNames) {
+    await search.fill(name);
+    const card = page.locator('#gameGrid .game-card').first();
+    await expect(card, 'Search should find ' + name).toBeVisible();
+    const expectedTitle = (await card.locator('.card-title').innerText()).trim();
+    await card.locator('[data-game]').first().click();
+    await expect(modal).toHaveClass(/open/);
+    await expect(page.locator('#modalTitle')).toHaveText(expectedTitle);
+    await expect(page.locator('.three-stage')).toBeVisible();
+    await expect.poll(async () => {
+      const pauseControls = await page.locator('.three-pause-toggle').count();
+      const loadErrors = await page.locator('.three-load-error').count();
+      return pauseControls + loadErrors;
+    }, { timeout: 20000 }).toBeGreaterThan(0);
+
+    const pauseButton = page.locator('.three-pause-toggle');
+    if (await pauseButton.isVisible()) {
+      await pauseButton.click();
+      await expect(page.locator('.three-pause-banner')).toBeVisible();
+      await pauseButton.click();
+      await expect(page.locator('.three-pause-banner')).toBeHidden();
+    }
+    await page.locator('#closeModal').click();
+    await expect(modal).not.toHaveClass(/open/);
+  }
+  expect(pageErrors).toEqual([]);
+});
