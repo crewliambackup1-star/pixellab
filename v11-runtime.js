@@ -300,7 +300,7 @@
         function placeCar(root,angle,radialOffset,headingOffset){
           const x=Math.sin(angle)*(rx+radialOffset),z=Math.cos(angle)*(rz+radialOffset);
           root.position.set(x,.15,z);
-          root.rotation.y=-Math.atan2(rx*Math.cos(angle),rz*Math.sin(angle))+ (headingOffset||0);
+          root.rotation.y=Math.atan2(rx*Math.cos(angle),rz*Math.sin(angle))+ (headingOffset||0);
         }
         function buildTrack(){
           while(trackGroup.children.length){
