@@ -119,4 +119,5 @@ Working branch: `gameplay/v12-1-fun-pass`, based on the V12 gameplay branch. The
 - Static validator expanded to check the new 3D and 27 arcade feature markers.
 - Browser regression tests expanded for Tic-Tac-Toe's one-use undo and Trivia Blitz's 50/50 lifeline.
 - Automated validation status: pending the V12.1 draft pull request checks.
+- Draft PR #15 targets `main` as a cumulative V12 + V12.1 candidate so both repository workflows can run; this does not merge or deploy either version.
 - Hands-on gameplay feel, keyboard/touch control combinations, mobile behavior, camera behavior, WebGL compatibility, and real-device performance still need manual QA before release.
