@@ -48,7 +48,7 @@
   function usernameFor(user) {
     const candidate = user && user.user_metadata && user.user_metadata.username;
     if (typeof candidate === 'string' && /^[A-Za-z0-9_]{3,16}$/.test(candidate)) return candidate;
-    return user && user.email ? user.email.split('@')[0].slice(0, 16) : 'Player';
+    return 'Player';
   }
 
   function showLobby(gameId, container, onReady) {
