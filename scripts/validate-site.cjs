@@ -169,7 +169,7 @@ for (const [name, source] of [['Tic-Tac-Toe', ticTacToe], ['Connect Four', conne
   assert.match(source, /2 Players · Same Device/, name + ' must offer same-device play');
   assert.match(source, /modeButton\('🌐 Online room'.*'online'\)/s, name + ' must enable private online rooms');
   assert.match(source, /openOnlineLobby/, name + ' must launch the multiplayer lobby');
-  assert.match(source, /play_multiplayer_move|session\.move/, name + ' must send server-validated moves');
+  assert.match(source, /play_multiplayer_move|onlineSession\.move/, name + ' must send server-validated moves');
 }
 assert.match(neonPong, /Online room/, 'Neon Pong should disclose the staged multiplayer rollout');
 assert.match(neonPong, /modeCard\('🌐 Online room'.*true\)/s, 'Neon Pong must remain disabled until real-time multiplayer is ready');
