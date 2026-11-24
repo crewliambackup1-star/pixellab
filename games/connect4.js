@@ -14,7 +14,10 @@ function gameConnect4(g){
  }
  function clearOnline(){
   if(onlineUnsubscribe){onlineUnsubscribe();onlineUnsubscribe=null;}
-  if(onlineSession){onlineSession.close();onlineSession=null;}
+  if(onlineSession){
+   const active=onlineSession;onlineSession=null;
+   active.leave().catch(()=>active.close());
+  }
   onlineBusy=false;
  }
  function beginOnline(session){
