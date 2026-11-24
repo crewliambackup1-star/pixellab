@@ -235,7 +235,7 @@
     const playerNumber = room.host_id === user.id ? 1 : room.guest_id === user.id ? 2 : 0;
     if (!playerNumber) throw new Error('This account is not a player in the room.');
     const channel = client.channel('pl-room:' + room.id, {
-      config: { private: true, presence: { key: user.id } },
+      config: { private: true },
     });
     const listeners = new Set();
     let closed = false;
@@ -259,7 +259,6 @@
       let settled = false;
       channel
         .on('broadcast', { event: 'room-update' }, () => { refresh(); })
-        .on('presence', { event: 'sync' }, () => { refresh(); })
         .subscribe((status, error) => {
           if (status === 'SUBSCRIBED' && !settled) {
             settled = true;
@@ -270,8 +269,6 @@
           }
         });
     });
-    await channel.track({ user_id: user.id, username: usernameFor(user) });
-
     const session = {
       userId: user.id,
       playerNumber,
@@ -296,6 +293,9 @@
       async leave() {
         if (!closed && (room.status === 'waiting' || room.status === 'playing')) {
           const { error } = await client.rpc('cancel_game_room', { p_room_id: room.id });
+          if (!error) {
+            await channel.send({ type: 'broadcast', event: 'room-update', payload: { cancelled: true } });
+          }
           await session.close();
           if (error) throw error;
         } else {
