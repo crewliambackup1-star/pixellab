@@ -11,13 +11,15 @@ const requireFile = (relativePath) => {
   assert.ok(fs.existsSync(path.join(root, relativePath)), 'Missing required file: ' + relativePath);
 };
 
-for (const file of ['index.html', 'styles.css', 'v10.css', 'v11.css', 'v12.css', 'catalog.js', 'v10-catalog.js', 'v11-catalog.js', 'v10-runtime.js', 'v11-runtime.js', 'app.js', 'icon.svg']) requireFile(file);
+for (const file of ['index.html', 'styles.css', 'v10.css', 'v11.css', 'v12.css', 'multiplayer.css', 'multiplayer.js', 'catalog.js', 'supabase/migrations/20261124151113_create_invite_multiplayer_tables.sql', 'supabase/migrations/20261124151151_add_multiplayer_room_functions.sql', 'supabase/migrations/20261124151157_authorize_private_multiplayer_channels.sql', 'supabase/migrations/20261124151326_index_multiplayer_room_foreign_keys.sql', 'supabase/migrations/20261124152003_reject_moves_in_expired_rooms.sql', 'v10-catalog.js', 'v11-catalog.js', 'v10-runtime.js', 'v11-runtime.js', 'app.js', 'icon.svg']) requireFile(file);
 
 const html = read('index.html');
 const css = read('styles.css');
 const v10Css = read('v10.css');
 const v11Css = read('v11.css');
 const v12Css = read('v12.css');
+const multiplayerCss = read('multiplayer.css');
+const multiplayer = read('multiplayer.js');
 const catalog = read('catalog.js');
 const v10Catalog = read('v10-catalog.js');
 const v11Catalog = read('v11-catalog.js');
@@ -36,6 +38,8 @@ assert.match(html, /href="styles\.css"/, 'The original stylesheet is not linked'
 assert.match(html, /href="v10\.css"/, 'The V10 redesign stylesheet is not linked');
 assert.match(html, /href="v11\.css"/, 'The V11 expansion stylesheet is not linked');
 assert.match(html, /href="v12\.css"/, 'The V12 gameplay stylesheet is not linked');
+assert.match(html, /href="multiplayer\.css"/, 'The V12.2 multiplayer stylesheet is not linked');
+assert.match(html, /src="multiplayer\.js"/, 'The V12.2 multiplayer client is not linked');
 assert.match(html, /src="catalog\.js"/, 'The base game catalog is not linked');
 assert.match(html, /src="v10-catalog\.js"/, 'The V10 catalog extension is not linked');
 assert.match(html, /src="v11-catalog\.js"/, 'The V11 catalog extension is not linked');
@@ -46,6 +50,7 @@ assert.ok(css.trim().length > 1000, 'The original stylesheet looks unexpectedly 
 assert.ok(v10Css.trim().length > 1000, 'The V10 stylesheet looks unexpectedly small');
 assert.ok(v11Css.trim().length > 100, 'The V11 stylesheet looks unexpectedly small');
 assert.ok(v12Css.trim().length > 300, 'The V12 gameplay stylesheet looks unexpectedly small');
+assert.ok(multiplayerCss.includes('.pl-mp-panel'), 'The multiplayer account and room UI styles are missing');
 assert.ok(!/<style(?:\s|>)/i.test(html), 'Styles should stay in external stylesheets');
 assert.ok(!/<script(?:\s|>)(?![^>]*\bsrc=)/i.test(html), 'JavaScript should be loaded from external files');
 
@@ -66,6 +71,7 @@ const scriptFiles = [
   'app.js',
   'v10-runtime.js',
   'v11-runtime.js',
+  'multiplayer.js',
   ...fs.readdirSync(path.join(root, 'games')).filter((name) => name.endsWith('.js')).sort().map((name) => path.posix.join('games', name)),
 ];
 for (const file of scriptFiles) {
@@ -154,17 +160,29 @@ assert.match(v11Runtime, /completedBiomes/, 'Wildlands must track completion acr
 assert.match(v11Runtime, /Craft shelter/, 'Wildcraft must include a crafting objective');
 
 const scriptTags = [...html.matchAll(/<script\s+src="([^"]+)"\s*><\/script>/g)].map((m) => m[1]);
-assert.equal(scriptTags.length, 6 + routes.length, 'All base, V10, V11, and original game scripts must be included in index.html');
+assert.equal(scriptTags.length, 7 + routes.length, 'All base, V10, V11, V12.2 and original game scripts must be included in index.html');
 assert.ok(html.includes('Search 203 games'), 'Search placeholder should reflect the expanded catalog count');
 assert.match(html, /id="allCount">203</, 'The displayed game count should be 203');
 
-for (const [name, source] of [['Tic-Tac-Toe', ticTacToe], ['Connect Four', connectFour], ['Neon Pong', neonPong]]) {
-  assert.match(source, /Play vs AI/, name + ' must retain its AI mode');
+for (const [name, source] of [['Tic-Tac-Toe', ticTacToe], ['Connect Four', connectFour]]) {
+  assert.match(source, /Play vs AI|Easy AI/, name + ' must retain its AI mode');
   assert.match(source, /2 Players · Same Device/, name + ' must offer same-device play');
-  assert.match(source, /Online room/, name + ' should disclose the online-room roadmap');
-  assert.match(source, /mode(?:Button|Card)\('🌐 Online room'.*true\)/s, name + ' must not present online rooms as working yet');
-  assert.match(source, /btn\.disabled=disabled/, name + ' must be able to disable unavailable modes');
+  assert.match(source, /modeButton\('🌐 Online room'.*'online'\)/s, name + ' must enable private online rooms');
+  assert.match(source, /openOnlineLobby/, name + ' must launch the multiplayer lobby');
+  assert.match(source, /play_multiplayer_move|onlineSession\.move/, name + ' must send server-validated moves');
 }
+assert.match(neonPong, /Online room/, 'Neon Pong should disclose the staged multiplayer rollout');
+assert.match(neonPong, /modeCard\('🌐 Online room'.*true\)/s, 'Neon Pong must remain disabled until real-time multiplayer is ready');
+
+assert.match(multiplayer, /https:\/\/gfctivjdghxbcfgytsbs\.supabase\.co/, 'The Supabase project URL is missing');
+assert.match(multiplayer, /sb_publishable_[A-Za-z0-9_-]+/, 'The browser must use a publishable Supabase key');
+assert.match(multiplayer, /supabase-js@2\.119\.2/, 'The Supabase client version must stay pinned');
+assert.match(multiplayer, /private:\s*true/, 'Realtime rooms must use private channels');
+assert.match(multiplayer, /new Set\(\['tictactoe', 'connect4'\]\)/, 'Only the first two turn-based games should be online-enabled');
+for (const rpc of ['create_game_room', 'join_game_room', 'get_game_room', 'play_multiplayer_move', 'cancel_game_room']) {
+  assert.ok(multiplayer.includes("'" + rpc + "'"), 'Missing Supabase multiplayer RPC: ' + rpc);
+}
+assert.doesNotMatch(multiplayer, /service_role|sb_secret_/i, 'A privileged Supabase key must never be exposed in browser code');
 
 assert.match(v10Css, /\.v10-showcase/, 'The V10 3D showcase styles are missing');
 assert.match(v10Css, /\.three-stage/, 'The responsive 3D game stage styles are missing');

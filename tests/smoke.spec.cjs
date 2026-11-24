@@ -45,29 +45,79 @@ test('search filters the catalog to matching games', async ({ page }) => {
   expect(titles.every((title) => title.toLowerCase().includes('tic tac toe'))).toBe(true);
 });
 
-test('Tic Tac Toe supports same-device turns and keeps online rooms disabled', async ({ page }) => {
+test('Tic Tac Toe exposes the online account gate and preserves same-device turns', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/+esm', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: "export function createClient(){return {auth:{getSession:async()=>({data:{session:null},error:null})}};}",
+  }));
   await page.goto('/');
   await page.locator('#search').fill('Tic Tac Toe');
 
-  const ticTacToeCard = page.locator('#gameGrid [data-game^="tictactoe-"]').first();
-  await expect(ticTacToeCard).toBeVisible();
-  const expectedTitle = (await ticTacToeCard.getAttribute('aria-label')).replace(/^Play\s+/, '');
-  await ticTacToeCard.click();
+  const card = page.locator('#gameGrid .game-card').first();
+  await expect(card).toBeVisible();
+  const expectedTitle = (await card.locator('.card-title').innerText()).trim();
+  await card.locator('[data-game]').first().click();
   await expect(page.locator('#modalTitle')).toHaveText(expectedTitle);
 
   const onlineRoomButton = page.getByRole('button', { name: /Online room/i });
-  await expect(onlineRoomButton).toBeDisabled();
+  await expect(onlineRoomButton).toBeEnabled();
+  await onlineRoomButton.click();
+  await expect(page.locator('.pl-mp-panel')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.pl-mp-form button[type="submit"]')).toHaveText('Create account');
+  await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
 
+  await page.locator('#closeModal').click();
+  await page.locator('#search').fill('Tic Tac Toe');
+  const secondCard = page.locator('#gameGrid .game-card').first();
+  await secondCard.locator('[data-game]').first().click();
   await page.getByRole('button', { name: /2 Players · Same Device/ }).click();
 
   const cells = page.locator('#gameBox .ttt-cell');
   await expect(cells).toHaveCount(9);
-
   await cells.nth(0).click();
   await cells.nth(4).click();
-
   await expect(cells.nth(0)).toHaveText('X');
   await expect(cells.nth(4)).toHaveText('O');
+});
+
+
+test('Connect Four exposes private online rooms and preserves same-device play', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/+esm', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: "export function createClient(){return {auth:{getSession:async()=>({data:{session:null},error:null})}};}",
+  }));
+  await page.goto('/');
+  await page.locator('#search').fill('Connect Four');
+  const card = page.locator('#gameGrid .game-card').first();
+  await card.locator('[data-game]').first().click();
+
+  const online = page.getByRole('button', { name: /Online room/i });
+  await expect(online).toBeEnabled();
+  await online.click();
+  await expect(page.locator('.pl-mp-panel')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.pl-mp-form button[type="submit"]')).toHaveText('Create account');
+
+  await page.locator('#closeModal').click();
+  await page.locator('#search').fill('Connect Four');
+  const secondCard = page.locator('#gameGrid .game-card').first();
+  await secondCard.locator('[data-game]').first().click();
+  await page.getByRole('button', { name: /2 Players · Same Device/ }).click();
+  const columns = page.locator('#gameBox .connect-drop');
+  await expect(columns).toHaveCount(7);
+  await columns.nth(3).click();
+  await expect(page.locator('#gameBox .connect-cell').nth(38)).toHaveCSS('background-color', 'rgb(255, 99, 127)');
+});
+
+
+test('Neon Pong keeps online play unavailable during the turn-based rollout', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#search').fill('Neon Pong');
+  await page.locator('#gameGrid [data-game]').first().click();
+  const online = page.getByRole('button', { name: /Online room/i });
+  await expect(online).toBeDisabled();
+  await expect(page.locator('#gameBox')).toContainText('Tic-Tac-Toe and Connect Four first');
 });
 
 

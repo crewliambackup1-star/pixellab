@@ -14,7 +14,7 @@ function gamePong(g){
   const choices=document.createElement('div');choices.className='mp-mode-picker';
   choices.append(modeCard('🤖 Play vs AI','The computer starts friendly and adapts as rallies get longer.','ai'));
   choices.append(modeCard('👥 2 Players · Same Device','Player 1: W/S · Player 2: ↑/↓. First to 5 points wins.','local'));
-  choices.append(modeCard('🌐 Online room','Play across devices — coming soon.','online',true));box.append(choices);
+  choices.append(modeCard('🌐 Online room','Online rooms are available in Tic-Tac-Toe and Connect Four first.','online',true));box.append(choices);
  }
  function startMode(nextMode){
   clearInput();mode=nextMode;py=ay=125;score=rightScore=0;resetBall(Math.random()<.5?-1:1);started=false;box.innerHTML='';

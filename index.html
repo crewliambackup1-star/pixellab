@@ -4,20 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b1321">
-<meta name="description" content="PixelLab is a free browser arcade with original 3D adventures, racing, action, simulation, puzzles, and quick games. No account needed.">
+<meta name="description" content="PixelLab is a free browser arcade with original 3D adventures, racing, action, simulation, puzzles, and private online multiplayer in selected games.">
 <title>PixelLab — Play Beyond the Screen</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="v10.css">
 <link rel="stylesheet" href="v11.css">
 <link rel="stylesheet" href="v12.css">
+<link rel="stylesheet" href="multiplayer.css">
 </head>
 <body>
 <div class="app">
 <header class="topbar">
 <a href="#" class="brand" aria-label="PixelLab home"><span class="logo">✳</span><span>Pixel<em>Lab</em></span></a>
 <div class="search-wrap"><span>⌕</span><input id="search" class="search" type="search" placeholder="Search 203 games…" aria-label="Search games"><span class="search-hint">⌘ K</span></div>
-<div class="top-pill">✦ 3D worlds · No downloads · No account</div>
+<div class="top-pill">✦ 3D worlds · No downloads · Online invites</div>
 </header>
 <div class="layout">
 <aside class="sidebar" aria-label="Game navigation">
@@ -58,7 +59,7 @@
 <div class="chip-row" id="chips" aria-label="Genres"></div>
 <div id="gameGrid" class="game-grid"></div>
 <div id="empty" class="empty"><strong>No games found</strong>Try another search, or choose a different category.</div>
-<footer class="footer"><div><strong>✳ PixelLab</strong> · A little arcade for your downtime.</div><div>Free to play · No account · Progress saved locally</div></footer>
+<footer class="footer"><div><strong>✳ PixelLab</strong> · A little arcade for your downtime.</div><div>Free offline play · Account for online rooms · Progress saved locally</div></footer>
 </main>
 </div>
 </div>
@@ -99,5 +100,6 @@
 <script src="games/color.js"></script>
 <script src="games/lights.js"></script>
 <script src="games/maze.js"></script>
+<script src="multiplayer.js"></script>
 </body>
 </html>

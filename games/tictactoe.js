@@ -1,13 +1,79 @@
 'use strict';
 
 function gameTTT(g){
- const b=baseBox();let mode=null,aiDifficulty='balanced',board=Array(9).fill(''),over=false,turn='X',aiTimer=null,history=[],undoUsed=false;
+ const b=baseBox();let mode=null,aiDifficulty='balanced',board=Array(9).fill(''),over=false,turn='X',aiTimer=null,history=[],undoUsed=false,onlineSession=null,onlineUnsubscribe=null,onlineBusy=false;
  const wins=[[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6],[0,3,6],[1,4,7],[2,5,8]];
  const winner=p=>wins.some(line=>line.every(i=>board[i]===p));
  function modeButton(label,description,next,disabled=false){
   const wrap=document.createElement('div');wrap.className='mp-mode-card';
-  const btn=button(label,()=>{if(!disabled)startRound(next)});btn.className='mp-mode-button';btn.disabled=disabled;wrap.append(btn);
+  const btn=button(label,()=>{if(disabled)return;if(next==='online'){openOnlineLobby();return;}startRound(next)});btn.className='mp-mode-button';btn.disabled=disabled;wrap.append(btn);
   const note=document.createElement('p');note.className='mp-mode-note';note.textContent=description;wrap.append(note);return wrap;
+ }
+ function openOnlineLobby(){
+  const start=api=>{if(!api)throw new Error(window.PixelLabMultiplayerReadyError||'Online multiplayer could not load.');api.showLobby('tictactoe',b,beginOnline);};
+  if(window.PixelLabMultiplayer)start(window.PixelLabMultiplayer);
+  else window.PixelLabMultiplayerReady.then(start).catch(error=>{b.innerHTML='';const note=document.createElement('p');note.className='pl-mp-message error';note.textContent=error.message||'Online multiplayer could not load.';b.append(note);});
+ }
+ function clearOnline(){
+  if(onlineUnsubscribe){onlineUnsubscribe();onlineUnsubscribe=null;}
+  if(onlineSession){
+   const active=onlineSession;onlineSession=null;
+   active.leave().catch(()=>active.close());
+  }
+  onlineBusy=false;
+ }
+ function beginOnline(session){
+  clearTimeout(aiTimer);
+  if(onlineSession)clearOnline();
+  onlineSession=session;mode='online';history=[];undoUsed=false;
+  onlineUnsubscribe=session.onUpdate(onlineSync);
+ }
+ function onlineSync(room){
+  if(!onlineSession||mode!=='online')return;
+  board=room.state.board.slice();turn=room.turn===1?'X':'O';over=room.status==='completed'||room.status==='cancelled';
+  renderOnlineBoard();
+ }
+ function renderOnlineBoard(){
+  if(!onlineSession)return;
+  const room=onlineSession.room;
+  b.innerHTML='';
+  const title=document.createElement('div');title.className='big-number mp-title';b.append(title);
+  if(room.status==='waiting'){
+   const invite=document.createElement('div');invite.className='pl-mp-room-code';
+   const label=document.createElement('span');label.textContent='Share this invite code';
+   const value=document.createElement('strong');value.textContent=room.room_code;
+   const copy=button('Copy code',()=>{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(room.room_code).then(()=>flash('Invite code copied')).catch(()=>flash('Copy unavailable — select the code'));else flash('Select and copy the invite code');});
+   invite.append(label,value,copy);b.append(invite);
+  }
+  const grid=document.createElement('div');grid.className='ttt-grid';const cells=[];
+  function statusText(){
+   if(room.status==='waiting')return 'Waiting for a friend to join…';
+   if(room.status==='cancelled')return 'This room was closed.';
+   if(room.status==='completed'){
+    if(!room.winner_id)return 'Draw game';
+    return room.winner_id===onlineSession.userId?'You win!':'Your opponent wins!';
+   }
+   return onlineSession.playerNumber===room.turn?'Your turn — '+(onlineSession.playerNumber===1?'X':'O'):'Opponent’s turn';
+  }
+  function draw(){
+   title.textContent=statusText();
+   cells.forEach((cell,i)=>{cell.textContent=board[i];cell.className='ttt-cell'+(board[i]==='O'?' o':'');cell.disabled=room.status!=='playing'||onlineSession.playerNumber!==room.turn||!!board[i]||onlineBusy;});
+  }
+  async function move(i){
+   if(room.status!=='playing'||onlineSession.playerNumber!==room.turn||board[i]||onlineBusy)return;
+   onlineBusy=true;draw();
+   try{await onlineSession.move({index:i});}
+   catch(error){flash(error.message||'Move could not be sent.');}
+   finally{onlineBusy=false;draw();}
+  }
+  for(let i=0;i<9;i++){const cell=button('',()=>move(i));cell.className='ttt-cell';cells.push(cell);grid.append(cell);}
+  b.append(grid);
+  const note=document.createElement('p');note.className='pl-mp-inline-note';note.textContent=room.status==='waiting'?'Your board will appear when your friend joins.':room.status==='playing'?'Moves are checked by the server and synced to both players.':'The match has ended.';
+  b.append(note);
+  const actions=document.createElement('div');actions.className='pl-mp-actions';
+  actions.append(button('Leave online room',async()=>{try{await onlineSession.leave();}catch(error){flash(error.message||'Room already closed.');}clearOnline();showModePicker();}));
+  if(room.status==='completed'||room.status==='cancelled')actions.append(button('Change mode',()=>{clearOnline();showModePicker();}));
+  b.append(actions);draw();
  }
  function showModePicker(){
   clearTimeout(aiTimer);mode=null;b.innerHTML='';
@@ -17,11 +83,11 @@ function gameTTT(g){
   choices.append(modeButton('🤖 Play vs AI · Balanced','A fair challenge with smart moves and room to win.','ai-balanced'));
   choices.append(modeButton('🔥 Expert AI','The original unbeatable minimax opponent.','ai-expert'));
   choices.append(modeButton('👥 2 Players · Same Device','Take turns on this screen. X goes first.','local'));
-  choices.append(modeButton('🌐 Online room','Invite someone on another device — coming soon.','online',true));
+  choices.append(modeButton('🌐 Online room','Play across devices with a private invite code.','online'));
   b.append(choices);
  }
  function startRound(nextMode=mode){
-  clearTimeout(aiTimer);
+  clearTimeout(aiTimer);if(onlineSession)clearOnline();
   if(nextMode.indexOf('ai-')===0){mode='ai';aiDifficulty=nextMode.slice(3);}else mode=nextMode;
   board=Array(9).fill('');history=[];undoUsed=false;over=false;turn='X';renderBoard();
  }
@@ -77,5 +143,5 @@ function gameTTT(g){
   b.append(grid);const actions=document.createElement('div');actions.className='mp-actions';
   undoButton=button('Undo last turn',undoTurn);actions.append(button('Reset board',()=>startRound(mode==='ai'?'ai-'+aiDifficulty:mode)),undoButton,button('Change mode',showModePicker));b.append(actions);draw();
  }
- showModePicker();cleanup=()=>clearTimeout(aiTimer);
+ showModePicker();cleanup=()=>{clearTimeout(aiTimer);clearOnline();};
 }

@@ -122,3 +122,18 @@ Working branch: `gameplay/v12-1-fun-pass`, based on the V12 gameplay branch. The
 - Chromium browser smoke tests: **passed** on the same commit, including all current launch/close checks and the new Tic-Tac-Toe/Trivia regression (run [45112216180](https://github.com/crewliambackup1-star/pixellab/actions/runs/45112216180)).
 - Draft PR #15 targets `main` as a cumulative V12 + V12.1 candidate so both repository workflows can run; this does not merge or deploy either version.
 - Hands-on gameplay feel, keyboard/touch control combinations, mobile behavior, camera behavior, WebGL compatibility, and real-device performance still need manual QA before release.
+
+
+
+## V12.2 implementation — Supabase multiplayer
+
+- Working branch: `multiplayer/v12-2-supabase`, based on merged V12 + V12.1 `main`.
+- Scope: optional account-based private invite rooms for Tic-Tac-Toe and Connect Four; local/AI modes remain intact; Neon Pong online mode remains disabled.
+- Supabase project verified ACTIVE_HEALTHY (Postgres 17). Four migrations applied: room/membership tables and RLS; server-validated room RPCs; private Realtime authorization policies; foreign-key indexes.
+- Database tables: `public.game_rooms` and `public.game_room_members`, both with RLS enabled. Direct browser writes are revoked; online room mutations occur through authenticated RPCs.
+- Client uses pinned `@supabase/supabase-js` ESM import and the publishable key only. No service-role/secret key is shipped.
+- Private Realtime channels use topic `pl-room:<room-uuid>`; the Supabase project setting **Allow public access** must be disabled before production use so private-channel RLS is enforced.
+- Auth Site URL and Redirect URL must include `https://crewliambackup1-star.github.io/pixellab/` before production sign-up/confirmation links work.
+- Automated browser tests cover online account-gate UI, same-device Tic-Tac-Toe/Connect Four, and Pong's disabled online roadmap. A true two-account cross-device match still requires manual QA with two confirmed accounts.
+- Security advisor reports the pre-existing `public.rls_auto_enable()` function as publicly executable SECURITY DEFINER; it predates V12.2 and was not modified. Authenticated SECURITY DEFINER room RPCs are intentional entry points; each checks the caller's membership/turn and has execute revoked from PUBLIC and anon.
+- V12.2 release state: implementation branch only; do not merge/deploy until CI, Supabase dashboard settings, and two-account test are verified.
