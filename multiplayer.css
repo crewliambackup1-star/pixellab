@@ -1,0 +1,26 @@
+/* PixelLab V12.2 — private online multiplayer UI */
+.pl-mp-panel{width:min(100%,560px);margin:0 auto;padding:18px;border:1px solid #6fdacb38;border-radius:18px;background:linear-gradient(145deg,#111e31,#141a2d);color:#f4f7ff;box-shadow:0 16px 38px #03071250}
+.pl-mp-heading{margin:0 0 7px;font:800 22px/1.2 system-ui}
+.pl-mp-copy{margin:0 0 14px;color:#b9c6dc;line-height:1.5}
+.pl-mp-message{margin:12px 0 0;padding:10px 12px;border-radius:11px;background:#20354a;color:#e4f8ff;font:600 13px/1.45 system-ui;overflow-wrap:anywhere}
+.pl-mp-message.error{background:#492b3a;color:#ffe3ec}
+.pl-mp-tabs,.pl-mp-room-picker,.pl-mp-form{display:grid;gap:10px}
+.pl-mp-tabs{grid-template-columns:1fr 1fr;margin-bottom:12px}
+.pl-mp-button{min-height:42px;padding:10px 14px;border:1px solid #ffffff2b;border-radius:11px;background:#24344b;color:#f5f8ff;font:700 14px/1.2 system-ui;cursor:pointer}
+.pl-mp-button.primary{background:linear-gradient(110deg,#386e82,#5262a5);border-color:#8debd866}
+.pl-mp-button:disabled{opacity:.55;cursor:wait}
+.pl-mp-form-wrap,.pl-mp-room-picker{min-width:0}
+.pl-mp-input{width:100%;min-height:44px;padding:11px 13px;border:1px solid #ffffff30;border-radius:11px;background:#0b1424;color:#fff;font:500 14px system-ui;box-sizing:border-box}
+.pl-mp-input:focus{outline:2px solid #72e8d5;outline-offset:2px}
+.pl-mp-input::placeholder{color:#93a5bd}
+.pl-mp-footnote,.pl-mp-or{margin:0;color:#9eacc2;font:500 12px/1.5 system-ui;text-align:center}
+.pl-mp-or{padding:2px 0}
+.pl-mp-join-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.pl-mp-join-form .pl-mp-button{white-space:nowrap}
+.pl-mp-room-code{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:6px auto 14px;padding:12px;border:1px dashed #7de8d2a0;border-radius:13px;background:#102e37}
+.pl-mp-room-code strong{font:900 24px/1.1 ui-monospace,monospace;letter-spacing:.14em;color:#9cf6e5}
+.pl-mp-game-status{margin:0 0 12px;text-align:center;color:#c7d5e9;font:700 14px/1.4 system-ui}
+.pl-mp-inline-note{margin:8px 0 12px;color:#9eacc2;text-align:center;font:500 12px/1.45 system-ui}
+.pl-mp-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:14px}
+.pl-mp-actions .pl-mp-button{min-width:135px}
+@media(max-width:520px){.pl-mp-panel{padding:14px}.pl-mp-join-form{grid-template-columns:1fr}.pl-mp-heading{font-size:20px}.pl-mp-room-code strong{font-size:20px}}
