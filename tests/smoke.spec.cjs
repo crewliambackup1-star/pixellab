@@ -64,7 +64,7 @@ test('Tic Tac Toe exposes the online account gate and preserves same-device turn
   await expect(onlineRoomButton).toBeEnabled();
   await onlineRoomButton.click();
   await expect(page.locator('.pl-mp-panel')).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('button', { name: 'Create account' })).toBeVisible();
+  await expect(page.locator('.pl-mp-form button[type="submit"]')).toHaveText('Create account');
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
 
   await page.locator('#closeModal').click();
@@ -97,7 +97,7 @@ test('Connect Four exposes private online rooms and preserves same-device play',
   await expect(online).toBeEnabled();
   await online.click();
   await expect(page.locator('.pl-mp-panel')).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('button', { name: 'Create account' })).toBeVisible();
+  await expect(page.locator('.pl-mp-form button[type="submit"]')).toHaveText('Create account');
 
   await page.locator('#closeModal').click();
   await page.locator('#search').fill('Connect Four');
